@@ -52,7 +52,7 @@ lazy val microservice = Project("income-tax-financial-details", file("."))
       "-Wunused:explicits",
       "-Wunused:privates"
     ),
-    PlayKeys.playDefaultPort := 9089
+    PlayKeys.playDefaultPort := 9090
   )
 
 lazy val it = project
