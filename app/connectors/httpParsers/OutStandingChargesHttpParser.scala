@@ -17,10 +17,11 @@
 package connectors.httpParsers
 
 import models.outStandingCharges.{OutStandingCharge, OutstandingChargesSuccessResponse}
+import play.api.Logging
 import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND, OK}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
-object OutStandingChargesHttpParser extends ResponseHttpParsers {
+object OutStandingChargesHttpParser extends Logging {
 
   sealed trait OutStandingChargesError
 
