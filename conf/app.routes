@@ -1,3 +1,4 @@
 # microservice specific routes
 
 GET        /out-standing-charges/:idType/:idNumber/:taxYear         controllers.OutStandingChargesController.listOutStandingCharges(idType, idNumber, taxYear)
+POST        /submit-claim-to-adjust-poa                              controllers.ClaimToAdjustPoaController.submitClaimToAdjustPoa()
