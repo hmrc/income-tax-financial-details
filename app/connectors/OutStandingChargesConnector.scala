@@ -18,6 +18,7 @@ package connectors
 
 import config.MicroserviceAppConfig
 import connectors.httpParsers.OutStandingChargesHttpParser.{OutStandingChargeResponse, OutStandingChargesReads}
+import play.api.Logging
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.http.client.HttpClientV2
 
@@ -27,7 +28,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class OutStandingChargesConnector @Inject()(val http: HttpClientV2,
                                             val appConfig: MicroserviceAppConfig
-                                           )(implicit ec: ExecutionContext) extends RawResponseReads {
+                                           )(implicit ec: ExecutionContext) extends Logging {
 
   def listOutStandingChargesUrl(idType: String, idNumber: String, taxYearEndDate: String): String =
     s"${appConfig.desUrl}/income-tax/charges/outstanding/$idType/$idNumber/$taxYearEndDate"

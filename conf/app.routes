@@ -1,4 +1,3 @@
 # microservice specific routes
 
-GET        /hello-world                                             controllers.MicroserviceHelloWorldController.hello
 GET        /out-standing-charges/:idType/:idNumber/:taxYear         controllers.OutStandingChargesController.listOutStandingCharges(idType, idNumber, taxYear)
