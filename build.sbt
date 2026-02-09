@@ -7,29 +7,75 @@ import uk.gov.hmrc.DefaultBuildSettings
 import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
 val appName = "income-tax-financial-details"
-val currentScalaVersion = "3.3.6"
-ThisBuild / majorVersion := 0
 
+val bootstrapPlayVersion = "10.5.0"
+val mockitoVersion = "5.21.0"
+val wiremockVersion = "3.8.0"
+val scalaMockVersion = "7.5.3"
+val jsoupVersion = "1.21.1"
+val currentScalaVersion = "3.3.6"
+val mongoVersion = "2.3.0"
+
+val compile: Seq[ModuleID] = Seq(
+  PlayImport.ws,
+  "uk.gov.hmrc" %% "bootstrap-backend-play-30"   % bootstrapPlayVersion,
+  "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-30" % mongoVersion
+)
+
+def test(scope: String = "test"): Seq[ModuleID] = Seq(
+  "org.scalamock" %% "scalamock" % scalaMockVersion % scope,
+  "org.jsoup" % "jsoup" % jsoupVersion % scope,
+  "uk.gov.hmrc" %% "bootstrap-test-play-30" % bootstrapPlayVersion % scope,
+  "org.mockito" % "mockito-core" % mockitoVersion % scope,
+  "com.github.tomakehurst" % "wiremock" % wiremockVersion % scope,
+  "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.17.1",
+  "org.scalatest"       %% "scalatest"              % "3.2.19" % scope,
+  "uk.gov.hmrc.mongo" %% "hmrc-mongo-test-play-30" % mongoVersion % Test,
+  caffeine
+)
+
+def it(scope: String = "test"): Seq[ModuleID] = Seq(
+  "org.scalamock" %% "scalamock" % scalaMockVersion % scope,
+  "org.jsoup" % "jsoup" % jsoupVersion % scope,
+  "org.mockito" % "mockito-core" % mockitoVersion % scope,
+  "com.github.tomakehurst" % "wiremock" % wiremockVersion % scope,
+  "org.scalatest"       %% "scalatest"              % "3.2.19",
+  "uk.gov.hmrc.mongo" %% "hmrc-mongo-test-play-30" % mongoVersion % Test,
+  caffeine
+)
+
+lazy val appDependencies: Seq[ModuleID] = compile ++ test()
+lazy val appDependenciesIt: Seq[ModuleID] = it()
 lazy val plugins: Seq[Plugins] = Seq.empty
 lazy val playSettings: Seq[Setting[_]] = Seq.empty
 
-lazy val microservice = Project("income-tax-financial-details", file("."))
+lazy val scoverageSettings = {
+  import scoverage.ScoverageKeys
+  Seq(
+    // Semicolon-separated list of regexs matching classes to exclude
+    ScoverageKeys.coverageExcludedPackages := "<empty>;Reverse.*;uk.gov.hmrc.BuildInfo;models\\.data\\..*;app.*;prod.*;config.*;com.*;testOnly.*;testOnlyDoNotUseInAppConf.*;",
+    ScoverageKeys.coverageMinimumStmtTotal := 80,
+    ScoverageKeys.coverageFailOnMinimum := true,
+    ScoverageKeys.coverageHighlighting := true
+  )
+}
+
+lazy val microservice = Project(appName, file("."))
   .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
-  .disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427
+  .disablePlugins(JUnitXmlReportPlugin)
   .settings(playSettings: _*)
   .settings(scalaSettings: _*)
   .settings(scalaVersion := currentScalaVersion)
-  .settings(
-    libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
-    // https://www.scala-lang.org/2021/01/12/configuring-and-suppressing-warnings.html
-    // suppress warnings in generated routes files
-    retrieveManaged := true
-  )
-  .settings(CodeCoverageSettings.settings: _*)
+  .settings(scoverageSettings: _*)
   .settings(defaultSettings(): _*)
+  .settings(majorVersion := 1)
   .settings(RoutesKeys.routesImport -= "controllers.Assets.Asset")
   .settings(scalacOptions += "-Xfatal-warnings")
   .settings(scalacOptions += "-deprecation:false")
+  .settings(
+    libraryDependencies ++= appDependencies,
+    retrieveManaged := true
+  )
   .settings(
     Test / Keys.fork := true,
     scalaVersion := currentScalaVersion,
@@ -52,20 +98,21 @@ lazy val microservice = Project("income-tax-financial-details", file("."))
       "-Wunused:explicits",
       "-Wunused:privates"
     ),
-    PlayKeys.playDefaultPort := 9090
   )
 
 lazy val it = project
-  .enablePlugins(PlayScala)
   .dependsOn(microservice % "test->test")
-  .settings(DefaultBuildSettings.itSettings())
+  .settings(DefaultBuildSettings.itSettings(true).head)
   .enablePlugins(play.sbt.PlayScala)
   .settings(
     publish / skip := true
   )
   .settings(scalaVersion := currentScalaVersion)
+  .settings(majorVersion := 1)
   .settings(
     testForkedParallel := true
   )
-  .settings(libraryDependencies ++= AppDependencies.it)
+  .settings(
+    libraryDependencies ++= appDependenciesIt
+  )
   .settings(ThisBuild / scalacOptions += "-Wconf:msg=Flag.*repeatedly:s")
