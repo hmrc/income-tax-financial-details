@@ -14,10 +14,12 @@ val wiremockVersion = "3.8.0"
 val scalaMockVersion = "7.5.3"
 val jsoupVersion = "1.21.1"
 val currentScalaVersion = "3.3.6"
+val mongoVersion = "2.3.0"
 
 val compile: Seq[ModuleID] = Seq(
   PlayImport.ws,
-  "uk.gov.hmrc" %% "bootstrap-backend-play-30"   % bootstrapPlayVersion
+  "uk.gov.hmrc" %% "bootstrap-backend-play-30"   % bootstrapPlayVersion,
+  "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-30" % mongoVersion
 )
 
 def test(scope: String = "test"): Seq[ModuleID] = Seq(
@@ -28,6 +30,7 @@ def test(scope: String = "test"): Seq[ModuleID] = Seq(
   "com.github.tomakehurst" % "wiremock" % wiremockVersion % scope,
   "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.17.1",
   "org.scalatest"       %% "scalatest"              % "3.2.19" % scope,
+  "uk.gov.hmrc.mongo" %% "hmrc-mongo-test-play-30" % mongoVersion % Test,
   caffeine
 )
 
@@ -37,6 +40,7 @@ def it(scope: String = "test"): Seq[ModuleID] = Seq(
   "org.mockito" % "mockito-core" % mockitoVersion % scope,
   "com.github.tomakehurst" % "wiremock" % wiremockVersion % scope,
   "org.scalatest"       %% "scalatest"              % "3.2.19",
+  "uk.gov.hmrc.mongo" %% "hmrc-mongo-test-play-30" % mongoVersion % Test,
   caffeine
 )
 

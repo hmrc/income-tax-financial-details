@@ -16,8 +16,6 @@
 
 package helpers
 
-import helpers.servicemocks.AuthStub
-import models.hip.{GetCalcListTYSHipApi, GetFinancialDetailsHipApi, GetLegacyCalcListHipApi}
 import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, TestSuite}
@@ -47,13 +45,7 @@ trait ComponentSpecBase extends TestSuite with CustomMatchers
   def config: Map[String, String] = Map(
     "microservice.services.auth.host" -> mockHost,
     "microservice.services.auth.port" -> mockPort,
-    "microservice.services.if.url" -> mockUrl,
-    "microservice.services.des.url" -> mockUrl,
-    "microservice.services.hip.host" -> mockHost,
-    "microservice.services.hip.port" -> mockPort,
-    s"microservice.services.hip.${GetLegacyCalcListHipApi()}.feature-switch" -> "false",
-    s"microservice.services.hip.${GetFinancialDetailsHipApi()}.feature-switch" -> "false",
-    s"microservice.services.hip.${GetCalcListTYSHipApi()}.feature-switch" -> "false"
+    "microservice.services.des.url" -> mockUrl
   )
 
   override implicit lazy val app: Application = new GuiceApplicationBuilder()
@@ -82,78 +74,11 @@ trait ComponentSpecBase extends TestSuite with CustomMatchers
   }
 
   object IncomeTaxFinancialDetails {
-    def getPaymentAllocations(nino: String, paymentLot: String, paymentLotItem: String): WSResponse = {
-      get(s"/$nino/payment-allocations/$paymentLot/$paymentLotItem")
-    }
 
     def get(uri: String): WSResponse = buildClient(uri).get().futureValue
     def put(uri: String, requestBody: JsValue): WSResponse = buildClient(uri).put(requestBody).futureValue
-
-    def getChargeDetails(nino: String, from: String, to: String): WSResponse = {
-      get(s"/$nino/financial-details/charges/from/$from/to/$to")
-    }
-
-    def getCreditDetails(nino: String, from: String, to: String): WSResponse = {
-      get(s"/$nino/financial-details/credits/from/$from/to/$to")
-    }
-
-    def getPaymentAllocationDetails(nino: String, documentId: String): WSResponse = {
-      get(s"/$nino/financial-details/charges/documentId/$documentId")
-    }
-
-    def getOnlyOpenItems(nino: String): WSResponse = {
-      get(s"/$nino/financial-details/only-open-items")
-    }
-
-    def getChargeHistory(nino: String, chargeReference: String): WSResponse = {
-      get(s"/charge-history/$nino/chargeReference/$chargeReference")
-    }
-
-    def getPaymentDetails(nino: String, from: String, to: String): WSResponse = {
-      get(s"/$nino/financial-details/payments/from/$from/to/$to")
-    }
-
-    def getPreviousCalculation(nino: String, year: String): WSResponse = get(s"/previous-tax-calculation/$nino/$year")
-
-    def getCalculationList(nino: String, taxYear: String): WSResponse = get(s"/list-of-calculation-results/$nino/$taxYear")
-
-    def getCalculationListTYS(nino: String, taxYear: String): WSResponse = get(s"/calculation-list/$nino/$taxYear")
-
-    def getNino(mtdRef: String): WSResponse = get(s"/nino-lookup/$mtdRef")
-
-    def getIncomeSources(mtdRef: String): WSResponse = get(s"/income-sources/$mtdRef")
-
-    def getBusinessDetails(nino: String): WSResponse = get(s"/get-business-details/nino/$nino")
-
-    def getOpenObligations(nino: String): WSResponse = get(s"/$nino/open-obligations")
-
-    def getAllObligations(nino: String, from: String, to: String): WSResponse = get(s"/$nino/obligations/from/$from/to/$to")
-
+    
     def getOutStandingChargeDetails(idType: String, idNumber: String, taxYearEndDate: String): WSResponse = get(s"/out-standing-charges/$idType/$idNumber/$taxYearEndDate")
-
-    def getRepaymentHistoryById(nino: String, repaymentId: String): WSResponse = {
-      get(s"/repayments/$nino/repaymentId/$repaymentId")
-    }
-
-    def getAllRepaymentHistory(nino: String): WSResponse = {
-      get(s"/repayments/$nino")
-    }
-
-    def putUpdateIncomeSource(body: JsValue): WSResponse = {
-      buildClient("/update-income-source").put(body).futureValue
-    }
-
-    def getITSAStatus(taxableEntityId: String, taxYear: String, futureYears: Boolean = true, history: Boolean = true): WSResponse = {
-      get(s"/itsa-status/status/$taxableEntityId/$taxYear?futureYears=$futureYears&history=$history")
-    }
-
-    def updateItsaStatus(taxableEntityId: String, requestBody: JsValue): WSResponse = {
-      put(s"/itsa-status/update/$taxableEntityId", requestBody)
-    }
-
-    def createBusinessDetails(body: JsValue): WSResponse = {
-      buildClient(s"/create-income-source/business").post(body).futureValue
-    }
 
     def postClaimToAdjustPoa(body: JsValue): WSResponse = {
       buildClient(s"/submit-claim-to-adjust-poa").post(body).futureValue
