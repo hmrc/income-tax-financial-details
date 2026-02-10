@@ -78,8 +78,12 @@ trait ComponentSpecBase extends TestSuite with CustomMatchers
 
     def get(uri: String): WSResponse = buildClient(uri).get().futureValue
     def put(uri: String, requestBody: JsValue): WSResponse = buildClient(uri).put(requestBody).futureValue
-    
+
     def getOutStandingChargeDetails(idType: String, idNumber: String, taxYearEndDate: String): WSResponse = get(s"/out-standing-charges/$idType/$idNumber/$taxYearEndDate")
+
+    def getPaymentAllocations(nino: String, paymentLot: String, paymentLotItem: String): WSResponse = {
+      get(s"/$nino/payment-allocations/$paymentLot/$paymentLotItem")
+    }
 
     def postClaimToAdjustPoa(body: JsValue): WSResponse = {
       buildClient(s"/submit-claim-to-adjust-poa").post(body).futureValue
