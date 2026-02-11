@@ -1,0 +1,87 @@
+/*
+ * Copyright 2024 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package models.credits
+
+import models.financialDetails.hip.{ChargesHipResponse, DocumentDetailHip}
+import play.api.libs.json.{Json, OFormat}
+
+case class CreditsModel(availableCreditForRepayment: BigDecimal,
+                        allocatedCreditForFutureCharges: BigDecimal,
+                        unallocatedCredit: BigDecimal,
+                        totalCredit: BigDecimal,
+                        firstPendingAmountRequested: Option[BigDecimal],
+                        secondPendingAmountRequested: Option[BigDecimal],
+                        transactions: List[Transaction])
+
+object CreditsModel {
+
+  implicit val format: OFormat[CreditsModel] = Json.format[CreditsModel]
+
+  private def getCreditOrPaymentAmountForHip(documentDetail: DocumentDetailHip): BigDecimal = {
+    Option(documentDetail.outstandingAmount)
+      .filter(_ < 0)
+      .map(_.abs)
+      .getOrElse(0.0)
+  }
+
+  private def createPendingRefundTransactionsForHip(chargesResponse: ChargesHipResponse): List[Transaction] = {
+    Seq(
+      chargesResponse.balanceDetails.firstPendingAmountRequested.map(_.abs),
+      chargesResponse.balanceDetails.secondPendingAmountRequested.map(_.abs))
+      .flatten.map(amount => Transaction(
+        Repayment,
+        amount,
+        None,
+        None,
+        None,
+        ""
+      )).toList
+  }
+
+  private def getCreditTransactionsForHip(chargesResponse: ChargesHipResponse): List[Transaction] = {
+    chargesResponse.documentDetails.flatMap(documentDetail => {
+      for {
+        fd <- chargesResponse.financialDetails.find(_.transactionId == documentDetail.transactionId)
+        mainTransaction <- fd.mainTransaction
+        transactionType <- TransactionType.fromCode(mainTransaction)
+      } yield {
+        Transaction(
+          transactionType = transactionType,
+          amount = getCreditOrPaymentAmountForHip(documentDetail),
+          // TODO: convert TaxYear to Int in the actual model?
+          taxYear = Some(documentDetail.taxYear),
+          dueDate = documentDetail.documentDueDate,
+          effectiveDateOfPayment = documentDetail.effectiveDateOfPayment,
+          transactionId = documentDetail.transactionId
+        )
+      }
+    })
+  }
+
+  def fromHipChargesResponse(chargesResponse: ChargesHipResponse): CreditsModel = {
+    CreditsModel(
+      chargesResponse.balanceDetails.totalCreditAvailableForRepayment.map(_.abs).getOrElse(0.0),
+      chargesResponse.balanceDetails.allocatedCreditForFutureCharges.map(_.abs).getOrElse(0.0),
+      chargesResponse.balanceDetails.unallocatedCredit.map(_.abs).getOrElse(0.0),
+      chargesResponse.balanceDetails.totalCredit.map(_.abs).getOrElse(0.0),
+      chargesResponse.balanceDetails.firstPendingAmountRequested.map(_.abs),
+      chargesResponse.balanceDetails.secondPendingAmountRequested.map(_.abs),
+      getCreditTransactionsForHip(chargesResponse) :++ createPendingRefundTransactionsForHip(chargesResponse)
+    )
+  }
+
+}

@@ -1,5 +1,13 @@
 # microservice specific routes
 
+GET        /:nino/financial-details/only-open-items                  controllers.FinancialDetailsController.getOnlyOpenItems(nino)
+GET        /:nino/financial-details/charges/from/:from/to/:to        controllers.FinancialDetailChargesController.getChargeDetails(nino, from, to)
+GET        /:nino/financial-details/charges/documentId/:documentId   controllers.FinancialDetailChargesController.getPaymentAllocationDetails(nino,documentId)
+GET        /:nino/financial-details/payments/from/:from/to/:to       controllers.FinancialDetailPaymentsController.getPaymentDetails(nino, from, to)
+GET        /:nino/financial-details/credits/from/:from/to/:to        controllers.FinancialDetailCreditsController.getCredits(nino, from, to)
+
 GET        /:nino/payment-allocations/:paymentLot/:paymentLotItem    controllers.PaymentAllocationsController.getPaymentAllocations(nino, paymentLot, paymentLotItem)
+
 GET        /out-standing-charges/:idType/:idNumber/:taxYear         controllers.OutStandingChargesController.listOutStandingCharges(idType, idNumber, taxYear)
+
 POST       /submit-claim-to-adjust-poa                              controllers.ClaimToAdjustPoaController.submitClaimToAdjustPoa()

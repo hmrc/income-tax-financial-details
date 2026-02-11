@@ -79,10 +79,30 @@ trait ComponentSpecBase extends TestSuite with CustomMatchers
     def get(uri: String): WSResponse = buildClient(uri).get().futureValue
     def put(uri: String, requestBody: JsValue): WSResponse = buildClient(uri).put(requestBody).futureValue
 
-    def getOutStandingChargeDetails(idType: String, idNumber: String, taxYearEndDate: String): WSResponse = get(s"/out-standing-charges/$idType/$idNumber/$taxYearEndDate")
+    def getChargeDetails(nino: String, from: String, to: String): WSResponse = {
+      get(s"/$nino/financial-details/charges/from/$from/to/$to")
+    }
+    
+    def getCreditDetails(nino: String, from: String, to: String): WSResponse = {
+      get(s"/$nino/financial-details/credits/from/$from/to/$to")
+    }
+
+    def getOnlyOpenItems(nino: String): WSResponse = {
+      get(s"/$nino/financial-details/only-open-items")
+    }
+    
+    def getOutStandingChargeDetails(idType: String, idNumber: String, taxYearEndDate: String): WSResponse = 
+      get(s"/out-standing-charges/$idType/$idNumber/$taxYearEndDate")
 
     def getPaymentAllocations(nino: String, paymentLot: String, paymentLotItem: String): WSResponse = {
       get(s"/$nino/payment-allocations/$paymentLot/$paymentLotItem")
+    }
+    def getPaymentAllocationDetails(nino: String, documentId: String): WSResponse = {
+      get(s"/$nino/financial-details/charges/documentId/$documentId")
+    }
+
+    def getPaymentDetails(nino: String, from: String, to: String): WSResponse = {
+      get(s"/$nino/financial-details/payments/from/$from/to/$to")
     }
 
     def postClaimToAdjustPoa(body: JsValue): WSResponse = {
