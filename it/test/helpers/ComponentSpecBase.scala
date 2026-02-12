@@ -17,6 +17,7 @@
 package helpers
 
 import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
+import models.hip.{GetCalcListTYSHipApi, GetFinancialDetailsHipApi, GetLegacyCalcListHipApi}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, TestSuite}
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
@@ -46,7 +47,12 @@ trait ComponentSpecBase extends TestSuite with CustomMatchers
     "microservice.services.auth.host" -> mockHost,
     "microservice.services.auth.port" -> mockPort,
     "microservice.services.des.url" -> mockUrl,
-    "microservice.services.if.url" -> mockUrl
+    "microservice.services.if.url" -> mockUrl,
+    "microservice.services.hip.host" -> mockHost,
+    "microservice.services.hip.port" -> mockPort,
+    s"microservice.services.hip.${GetLegacyCalcListHipApi()}.feature-switch" -> "false",
+    s"microservice.services.hip.${GetFinancialDetailsHipApi()}.feature-switch" -> "false",
+    s"microservice.services.hip.${GetCalcListTYSHipApi()}.feature-switch" -> "false"
   )
 
   override implicit lazy val app: Application = new GuiceApplicationBuilder()
