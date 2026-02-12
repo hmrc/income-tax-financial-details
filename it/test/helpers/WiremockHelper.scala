@@ -27,7 +27,7 @@ import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.libs.ws.{WSClient, WSRequest}
 
 object WiremockHelper extends Eventually with IntegrationPatience {
-  val wiremockPort = 11111
+  val wiremockPort = 9090
   val wiremockHost = "localhost"
   val url = s"http://$wiremockHost:$wiremockPort"
 
