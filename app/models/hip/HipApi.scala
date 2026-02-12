@@ -30,10 +30,10 @@ case object GetLegacyCalcListHipApi extends HipApi {
   def apply(): String = name
 }
 
-case object GetBusinessDetailsHipApi extends HipApi {
-  val name = "get-business-details"
-  def apply(): String = name
-}
+//case object GetBusinessDetailsHipApi extends HipApi {
+//  val name = "get-business-details"
+//  def apply(): String = name
+//}
 
 //case object ITSAStatusHipApi extends HipApi {
 //  val name = "get-itsa-status"
@@ -45,17 +45,17 @@ case object GetFinancialDetailsHipApi extends HipApi {
   def apply(): String = name
 }
 
-case object CreateIncomeSourceHipApi extends HipApi {
-  val name = "create-income-source"
-  def apply(): String = name
-}
+//case object CreateIncomeSourceHipApi extends HipApi {
+//  val name = "create-income-source"
+//  def apply(): String = name
+//}
 
 case object GetChargeHistoryHipApi extends HipApi {
   val name = "get-charge-history"
   def apply(): String = name
 }
 
-case object UpdateCustomerFactHipApi extends HipApi {
-  val name = "update-customer-fact"
-  def apply(): String = name
-}
+//case object UpdateCustomerFactHipApi extends HipApi {
+//  val name = "update-customer-fact"
+//  def apply(): String = name
+//}

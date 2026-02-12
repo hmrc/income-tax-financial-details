@@ -16,7 +16,7 @@
 
 package config
 
-import models.hip.{CreateIncomeSourceHipApi, GetBusinessDetailsHipApi, GetLegacyCalcListHipApi}
+import models.hip.{GetLegacyCalcListHipApi}
 import utils.TestSupport
 
 class MicroserviceAppConfigSpec extends TestSupport {
@@ -62,10 +62,6 @@ class MicroserviceAppConfigSpec extends TestSupport {
 
         // because these are extracted from app~Config
         microserviceAppConfig.getHIPHeaders(GetLegacyCalcListHipApi).toMap.keys.toList should contain theSameElementsAs List("Authorization", "correlationId")
-        microserviceAppConfig.getHIPHeaders(GetBusinessDetailsHipApi).toMap.keys.toList should contain theSameElementsAs List(
-          "Authorization", "correlationId", "X-Originating-System", "X-Receipt-Date", "X-Regime-Type", "X-Transmitting-System")
-        microserviceAppConfig.getHIPHeaders(CreateIncomeSourceHipApi).toMap.keys.toList should contain theSameElementsAs List(
-          "Authorization", "correlationId", "X-Originating-System", "X-Receipt-Date", "X-Regime", "X-Transmitting-System")
 
       }
     }
