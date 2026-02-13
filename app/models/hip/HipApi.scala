@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,12 @@ sealed trait HipApi {
 
 case object GetCalcListTYSHipApi extends HipApi {
   val name = "get-calc-list-TYS"
-  }
-case object GetBusinessDetailsHipApi extends HipApi {
-  val name = "get-business-details"
   def apply(): String = name
 }
+//case object GetBusinessDetailsHipApi extends HipApi {
+//  val name = "get-business-details"
+//  def apply(): String = name
+//}
 
 case object GetLegacyCalcListHipApi extends HipApi {
   val name = "get-legacy-calc-list"
@@ -48,17 +49,17 @@ case object GetFinancialDetailsHipApi extends HipApi {
   def apply(): String = name
 }
 
-case object CreateIncomeSourceHipApi extends HipApi {
-  val name = "create-income-source"
-  def apply(): String = name
-}
+//case object CreateIncomeSourceHipApi extends HipApi {
+//  val name = "create-income-source"
+//  def apply(): String = name
+//}
 
 case object GetChargeHistoryHipApi extends HipApi {
   val name = "get-charge-history"
   def apply(): String = name
 }
 
-case object UpdateCustomerFactHipApi extends HipApi {
-  val name = "update-customer-fact"
-  def apply(): String = name
-}
+//case object UpdateCustomerFactHipApi extends HipApi {
+//  val name = "update-customer-fact"
+//  def apply(): String = name
+//}

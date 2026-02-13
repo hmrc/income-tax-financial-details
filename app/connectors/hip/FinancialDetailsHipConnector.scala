@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ class FinancialDetailsHipConnector @Inject()(val http: HttpClientV2,
       .takeRight(7)
   }
 
-  def buildQueryString(queryParams: Seq[(String, String)]) = {
+  def buildQueryString(queryParams: Seq[(String, String)]):String = {
     val paramPairs = queryParams.map { case (k, v) => s"$k=${URLEncoder.encode(v, "utf-8")}" }
     if (paramPairs.isEmpty) "" else paramPairs.mkString("?", "&", "")
   }

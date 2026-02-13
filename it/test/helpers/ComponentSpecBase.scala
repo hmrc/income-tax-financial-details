@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,10 +83,15 @@ trait ComponentSpecBase extends TestSuite with CustomMatchers
   object IncomeTaxFinancialDetails {
 
     def get(uri: String): WSResponse = buildClient(uri).get().futureValue
+
     def put(uri: String, requestBody: JsValue): WSResponse = buildClient(uri).put(requestBody).futureValue
 
     def getChargeDetails(nino: String, from: String, to: String): WSResponse = {
       get(s"/$nino/financial-details/charges/from/$from/to/$to")
+    }
+
+    def getChargeHistory(nino: String, chargeReference: String): WSResponse = {
+      get(s"/charge-history/$nino/chargeReference/$chargeReference")
     }
 
     def getCreditDetails(nino: String, from: String, to: String): WSResponse = {
@@ -103,6 +108,7 @@ trait ComponentSpecBase extends TestSuite with CustomMatchers
     def getPaymentAllocations(nino: String, paymentLot: String, paymentLotItem: String): WSResponse = {
       get(s"/$nino/payment-allocations/$paymentLot/$paymentLotItem")
     }
+
     def getPaymentAllocationDetails(nino: String, documentId: String): WSResponse = {
       get(s"/$nino/financial-details/charges/documentId/$documentId")
     }
@@ -113,21 +119,6 @@ trait ComponentSpecBase extends TestSuite with CustomMatchers
 
     def postClaimToAdjustPoa(body: JsValue): WSResponse = {
       buildClient(s"/submit-claim-to-adjust-poa").post(body).futureValue
-    }
-  }
-
-  object IncomeTaxViewChange {
-
-    def get(uri: String): WSResponse = buildClient(uri).get().futureValue
-
-    def put(uri: String, requestBody: JsValue): WSResponse = buildClient(uri).put(requestBody).futureValue
-
-    def getChargeDetails(nino: String, from: String, to: String): WSResponse = {
-      get(s"/$nino/financial-details/charges/from/$from/to/$to")
-    }
-
-    def getChargeHistory(nino: String, chargeReference: String): WSResponse = {
-      get(s"/charge-history/$nino/chargeReference/$chargeReference")
     }
   }
 }
