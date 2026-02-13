@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package config
 
-//import models.hip.{CreateIncomeSourceHipApi, GetBusinessDetailsHipApi, GetLegacyCalcListHipApi}
+import models.hip.{GetLegacyCalcListHipApi}
 import utils.TestSupport
 
 class MicroserviceAppConfigSpec extends TestSupport {
@@ -55,6 +55,14 @@ class MicroserviceAppConfigSpec extends TestSupport {
 
       "has a correct HiP base url" in {
         microserviceAppConfig.ifUrl shouldBe "http://localhost:9090"
+      }
+
+      "has a correct Http Hip auth headers" in {
+        microserviceAppConfig.getHIPHeaders(GetLegacyCalcListHipApi).toMap should contain("Authorization" -> "Basic dGVzdENsaWVudElkQ29uZmlnOnRlc3RTZWNyZXRDb25maWc=")
+
+        // because these are extracted from app~Config
+        microserviceAppConfig.getHIPHeaders(GetLegacyCalcListHipApi).toMap.keys.toList should contain theSameElementsAs List("Authorization", "correlationId")
+
       }
     }
   }

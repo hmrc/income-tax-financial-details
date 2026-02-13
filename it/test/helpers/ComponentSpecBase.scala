@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package helpers
 
 import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
+import models.hip.{GetCalcListTYSHipApi, GetFinancialDetailsHipApi, GetLegacyCalcListHipApi}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, TestSuite}
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
@@ -48,7 +49,10 @@ trait ComponentSpecBase extends TestSuite with CustomMatchers
     "microservice.services.des.url" -> mockUrl,
     "microservice.services.if.url" -> mockUrl,
     "microservice.services.hip.host" -> mockHost,
-    "microservice.services.hip.port" -> mockPort
+    "microservice.services.hip.port" -> mockPort,
+    s"microservice.services.hip.${GetLegacyCalcListHipApi()}.feature-switch" -> "false",
+    s"microservice.services.hip.${GetFinancialDetailsHipApi()}.feature-switch" -> "false",
+    s"microservice.services.hip.${GetCalcListTYSHipApi()}.feature-switch" -> "false"
   )
 
   override implicit lazy val app: Application = new GuiceApplicationBuilder()
@@ -79,22 +83,6 @@ trait ComponentSpecBase extends TestSuite with CustomMatchers
   object IncomeTaxFinancialDetails {
 
     def get(uri: String): WSResponse = buildClient(uri).get().futureValue
-    def put(uri: String, requestBody: JsValue): WSResponse = buildClient(uri).put(requestBody).futureValue
-
-    def getOutStandingChargeDetails(idType: String, idNumber: String, taxYearEndDate: String): WSResponse = get(s"/out-standing-charges/$idType/$idNumber/$taxYearEndDate")
-
-    def getPaymentAllocations(nino: String, paymentLot: String, paymentLotItem: String): WSResponse = {
-      get(s"/$nino/payment-allocations/$paymentLot/$paymentLotItem")
-    }
-
-    def postClaimToAdjustPoa(body: JsValue): WSResponse = {
-      buildClient(s"/submit-claim-to-adjust-poa").post(body).futureValue
-    }
-  }
-
-  object IncomeTaxViewChange {
-
-    def get(uri: String): WSResponse = buildClient(uri).get().futureValue
 
     def put(uri: String, requestBody: JsValue): WSResponse = buildClient(uri).put(requestBody).futureValue
 
@@ -104,6 +92,33 @@ trait ComponentSpecBase extends TestSuite with CustomMatchers
 
     def getChargeHistory(nino: String, chargeReference: String): WSResponse = {
       get(s"/charge-history/$nino/chargeReference/$chargeReference")
+    }
+
+    def getCreditDetails(nino: String, from: String, to: String): WSResponse = {
+      get(s"/$nino/financial-details/credits/from/$from/to/$to")
+    }
+
+    def getOnlyOpenItems(nino: String): WSResponse = {
+      get(s"/$nino/financial-details/only-open-items")
+    }
+
+    def getOutStandingChargeDetails(idType: String, idNumber: String, taxYearEndDate: String): WSResponse =
+      get(s"/out-standing-charges/$idType/$idNumber/$taxYearEndDate")
+
+    def getPaymentAllocations(nino: String, paymentLot: String, paymentLotItem: String): WSResponse = {
+      get(s"/$nino/payment-allocations/$paymentLot/$paymentLotItem")
+    }
+
+    def getPaymentAllocationDetails(nino: String, documentId: String): WSResponse = {
+      get(s"/$nino/financial-details/charges/documentId/$documentId")
+    }
+
+    def getPaymentDetails(nino: String, from: String, to: String): WSResponse = {
+      get(s"/$nino/financial-details/payments/from/$from/to/$to")
+    }
+
+    def postClaimToAdjustPoa(body: JsValue): WSResponse = {
+      buildClient(s"/submit-claim-to-adjust-poa").post(body).futureValue
     }
   }
 }
