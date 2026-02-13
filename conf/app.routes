@@ -11,3 +11,5 @@ GET        /:nino/payment-allocations/:paymentLot/:paymentLotItem    controllers
 GET        /out-standing-charges/:idType/:idNumber/:taxYear         controllers.OutStandingChargesController.listOutStandingCharges(idType, idNumber, taxYear)
 
 POST       /submit-claim-to-adjust-poa                              controllers.ClaimToAdjustPoaController.submitClaimToAdjustPoa()
+
+GET         /charge-history/:nino/chargeReference/:chargeReference 	    controllers.ChargeHistoryController.getChargeHistoryDetails(nino, chargeReference)

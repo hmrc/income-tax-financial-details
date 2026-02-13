@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,19 @@
  * limitations under the License.
  */
 
-package models.hip
+package helpers.servicemocks
 
-//import play.api.http.Status.{BAD_GATEWAY, INTERNAL_SERVER_ERROR}
-import play.api.libs.json.{Format, JsValue, Json}
+import helpers.WiremockHelper
+import play.api.libs.json.{JsValue, Json}
 
-sealed trait Errors
+object HipGetChargeHistoryStub {
 
-case class HipResponseError(code: String, text: String)
+  def chargeHistoryUrl(nino: String, chargeRef: String): String = {
+    s"/etmp/RESTAdapter/ITSA/TaxPayer/GetChargeHistory?idType=NINO&idValue=$nino&chargeReference=$chargeRef"
+  }
 
-object HipResponseError {
-  implicit val formats: Format[HipResponseError] = Json.format[HipResponseError]
-}
+  def stubGetChargeHistory(nino: String, chargeRef: String, status: Int, response: JsValue = Json.obj()): Unit = {
+    WiremockHelper.stubGet(chargeHistoryUrl(nino, chargeRef), status, response.toString())
+  }
 
-case class HipResponseErrorsObject(errors: HipResponseError)
-
-object HipResponseErrorsObject {
-  implicit val formats: Format[HipResponseErrorsObject] = Json.format[HipResponseErrorsObject]
 }

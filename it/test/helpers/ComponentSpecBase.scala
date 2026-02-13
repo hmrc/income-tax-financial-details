@@ -88,7 +88,7 @@ trait ComponentSpecBase extends TestSuite with CustomMatchers
     def getChargeDetails(nino: String, from: String, to: String): WSResponse = {
       get(s"/$nino/financial-details/charges/from/$from/to/$to")
     }
-    
+
     def getCreditDetails(nino: String, from: String, to: String): WSResponse = {
       get(s"/$nino/financial-details/credits/from/$from/to/$to")
     }
@@ -96,8 +96,8 @@ trait ComponentSpecBase extends TestSuite with CustomMatchers
     def getOnlyOpenItems(nino: String): WSResponse = {
       get(s"/$nino/financial-details/only-open-items")
     }
-    
-    def getOutStandingChargeDetails(idType: String, idNumber: String, taxYearEndDate: String): WSResponse = 
+
+    def getOutStandingChargeDetails(idType: String, idNumber: String, taxYearEndDate: String): WSResponse =
       get(s"/out-standing-charges/$idType/$idNumber/$taxYearEndDate")
 
     def getPaymentAllocations(nino: String, paymentLot: String, paymentLotItem: String): WSResponse = {
@@ -113,6 +113,21 @@ trait ComponentSpecBase extends TestSuite with CustomMatchers
 
     def postClaimToAdjustPoa(body: JsValue): WSResponse = {
       buildClient(s"/submit-claim-to-adjust-poa").post(body).futureValue
+    }
+  }
+
+  object IncomeTaxViewChange {
+
+    def get(uri: String): WSResponse = buildClient(uri).get().futureValue
+
+    def put(uri: String, requestBody: JsValue): WSResponse = buildClient(uri).put(requestBody).futureValue
+
+    def getChargeDetails(nino: String, from: String, to: String): WSResponse = {
+      get(s"/$nino/financial-details/charges/from/$from/to/$to")
+    }
+
+    def getChargeHistory(nino: String, chargeReference: String): WSResponse = {
+      get(s"/charge-history/$nino/chargeReference/$chargeReference")
     }
   }
 }

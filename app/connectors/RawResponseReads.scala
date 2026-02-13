@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,13 @@
  * limitations under the License.
  */
 
-package models.hip
+package connectors
 
-//import play.api.http.Status.{BAD_GATEWAY, INTERNAL_SERVER_ERROR}
-import play.api.libs.json.{Format, JsValue, Json}
+import play.api.Logging
+import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
-sealed trait Errors
+trait RawResponseReads extends Logging {
 
-case class HipResponseError(code: String, text: String)
+  implicit val httpReads: HttpReads[HttpResponse] = (method: String, url: String, response: HttpResponse) => response
 
-object HipResponseError {
-  implicit val formats: Format[HipResponseError] = Json.format[HipResponseError]
-}
-
-case class HipResponseErrorsObject(errors: HipResponseError)
-
-object HipResponseErrorsObject {
-  implicit val formats: Format[HipResponseErrorsObject] = Json.format[HipResponseErrorsObject]
 }
