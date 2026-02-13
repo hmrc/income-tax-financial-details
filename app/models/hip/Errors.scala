@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package models.hip
 
+//import play.api.http.Status.{BAD_GATEWAY, INTERNAL_SERVER_ERROR}
 import play.api.libs.json.{Format, JsValue, Json}
 
 sealed trait Errors

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ class ChargeHistoryControllerISpec extends ComponentSpecBase {
 
         stubGetChargeHistory(nino, chargeReference, OK, chargeHistoryJson)
 
-        val res: WSResponse = IncomeTaxViewChange.getChargeHistory(nino, chargeReference)
+        val res: WSResponse = IncomeTaxFinancialDetails.getChargeHistory(nino, chargeReference)
 
         val expectedResponseBody: JsValue = Json.toJson(ChargeHistoryDetails(
           idType = "NINO",
@@ -98,7 +98,7 @@ class ChargeHistoryControllerISpec extends ComponentSpecBase {
 
         stubGetChargeHistory(nino, chargeReference, NOT_FOUND, Json.toJson(chargeHistoryNotFound))
 
-        val res: WSResponse = IncomeTaxViewChange.getChargeHistory(nino, chargeReference)
+        val res: WSResponse = IncomeTaxFinancialDetails.getChargeHistory(nino, chargeReference)
 
         res should have(
           httpStatus(NOT_FOUND)
@@ -118,7 +118,7 @@ class ChargeHistoryControllerISpec extends ComponentSpecBase {
 
         stubGetChargeHistory(nino, chargeReference, UNPROCESSABLE_ENTITY, Json.toJson(errorJson422NotFoundError))
 
-        val res: WSResponse = IncomeTaxViewChange.getChargeHistory(nino, chargeReference)
+        val res: WSResponse = IncomeTaxFinancialDetails.getChargeHistory(nino, chargeReference)
 
         res should have(
           httpStatus(NOT_FOUND)
@@ -134,7 +134,7 @@ class ChargeHistoryControllerISpec extends ComponentSpecBase {
 
         stubGetChargeHistory(nino, chargeReference, INTERNAL_SERVER_ERROR, Json.toJson(chargeHistoryError))
 
-        val res: WSResponse = IncomeTaxViewChange.getChargeHistory(nino, chargeReference)
+        val res: WSResponse = IncomeTaxFinancialDetails.getChargeHistory(nino, chargeReference)
 
         res should have(
           httpStatus(INTERNAL_SERVER_ERROR)
