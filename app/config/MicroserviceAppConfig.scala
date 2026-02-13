@@ -16,7 +16,12 @@
 
 package config
 
+import models.hip.{CreateIncomeSourceHipApi, GetBusinessDetailsHipApi, GetChargeHistoryHipApi, HipApi, UpdateCustomerFactHipApi}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import utils.DateUtils
+import uk.gov.hmrc.http.HeaderNames
+
+import java.util.{Base64, UUID}
 import javax.inject.{Inject, Singleton}
 
 @Singleton
@@ -56,6 +61,41 @@ class MicroserviceAppConfig @Inject()(servicesConfig: ServicesConfig) {
   }
 
   lazy val hipUrl: String = servicesConfig.baseUrl("hip")
+
+  private def getHipCredentials: String = {
+    val clientId = loadConfig(s"microservice.services.hip.clientId")
+    val secret = loadConfig(s"microservice.services.hip.secret")
+
+    val encoded = Base64.getEncoder.encodeToString(s"$clientId:$secret".getBytes("UTF-8"))
+
+    s"Basic $encoded"
+  }
+
+  def getHIPHeaders(hipApi: HipApi, messageTypeHeaderValue: Option[String] = None): Seq[(String, String)] = {
+    val additionalHeaders: Seq[(String, String)] = {
+      hipApi match {
+        case GetBusinessDetailsHipApi | GetChargeHistoryHipApi | UpdateCustomerFactHipApi =>
+          Seq(
+            ("X-Originating-System", "MDTPITVC"),
+            ("X-Receipt-Date", DateUtils.nowAsUtc),
+            ("X-Regime-Type", "ITSA"),
+            ("X-Transmitting-System", "HIP")
+          )
+        case CreateIncomeSourceHipApi =>
+          Seq(
+            ("X-Originating-System", "MDTPITVC"),
+            ("X-Receipt-Date", DateUtils.nowAsUtc),
+            ("X-Regime", "ITSA"),
+            ("X-Transmitting-System", "HIP")
+          )
+        case _ => Seq.empty
+      }
+    }
+    messageTypeHeaderValue.map(mtv => Seq(("X-Message-Type", mtv))).getOrElse(Seq()) ++ Seq(
+      (HeaderNames.authorisation, getHipCredentials),
+      ("correlationId", UUID.randomUUID().toString)
+    ) ++ additionalHeaders
+  }
   
   val claimToAdjustTimeout: Int = servicesConfig.getInt("claim-to-adjust.timeout")
 
