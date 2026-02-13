@@ -46,17 +46,17 @@ case object Repayment extends TransactionType {
   override val key = "refund"
 }
 
-case object PoaOneReconciliationCredit extends TransactionType {
-  override val key = "POA1RR-credit"
-}
+//case object PoaOneReconciliationCredit extends TransactionType {
+//  override val key = "POA1RR-credit"
+//}
+//
+//case object PoaTwoReconciliationCredit extends TransactionType {
+//  override val key = "POA2RR-credit"
+//}
 
-case object PoaTwoReconciliationCredit extends TransactionType {
-  override val key = "POA2RR-credit"
-}
-
-case object ITSAReturnAmendmentCredit extends TransactionType {
-  override val key = "IRA-credit"
-}
+//case object ITSAReturnAmendmentCredit extends TransactionType {
+//  override val key = "IRA-credit"
+//}
 
 object TransactionType {
 
@@ -73,9 +73,9 @@ object TransactionType {
     case RepaymentInterest.key => RepaymentInterest
     case PaymentType.key => PaymentType
     case Repayment.key => Repayment
-    case PoaOneReconciliationCredit.key => PoaOneReconciliationCredit
-    case PoaTwoReconciliationCredit.key => PoaTwoReconciliationCredit
-    case ITSAReturnAmendmentCredit.key => ITSAReturnAmendmentCredit
+//    case PoaOneReconciliationCredit.key => PoaOneReconciliationCredit
+//    case PoaTwoReconciliationCredit.key => PoaTwoReconciliationCredit
+//    case ITSAReturnAmendmentCredit.key => ITSAReturnAmendmentCredit
   }
 
   implicit val format: Format[TransactionType] = Format( read, write)
@@ -84,9 +84,9 @@ object TransactionType {
   private val cutOver = "6110"
   private val balancingCharge = "4905"
   private val repaymentInterest = "6020"
-  private val poaOneReconciliationCredit = "4912"
-  private val poaTwoReconciliationCredit = "4914"
-  private val returnAmendmentCredit = "4916"
+//  private val poaOneReconciliationCredit = "4912"
+//  private val poaTwoReconciliationCredit = "4914"
+//  private val returnAmendmentCredit = "4916"
   private val mfaCredit = Range.inclusive(4004, 4025)
     .filterNot(_ == 4010).filterNot(_ == 4020).map(_.toString)
     .toList
@@ -100,12 +100,12 @@ object TransactionType {
         Some(BalancingChargeCreditType)
       case TransactionType.repaymentInterest =>
         Some(RepaymentInterest)
-      case TransactionType.poaOneReconciliationCredit =>
-        Some(PoaOneReconciliationCredit)
-      case TransactionType.poaTwoReconciliationCredit =>
-        Some(PoaTwoReconciliationCredit)
-      case TransactionType.returnAmendmentCredit =>
-        Some(ITSAReturnAmendmentCredit)
+//      case TransactionType.poaOneReconciliationCredit =>
+//        Some(PoaOneReconciliationCredit)
+//      case TransactionType.poaTwoReconciliationCredit =>
+//        Some(PoaTwoReconciliationCredit)
+//      case TransactionType.returnAmendmentCredit =>
+//        Some(ITSAReturnAmendmentCredit)
       case x if mfaCredit.contains(x) =>
         Some(MfaCreditType)
       case x if payment.contains(x) =>
