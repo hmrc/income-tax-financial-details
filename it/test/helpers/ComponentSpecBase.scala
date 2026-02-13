@@ -46,7 +46,9 @@ trait ComponentSpecBase extends TestSuite with CustomMatchers
     "microservice.services.auth.host" -> mockHost,
     "microservice.services.auth.port" -> mockPort,
     "microservice.services.des.url" -> mockUrl,
-    "microservice.services.if.url" -> mockUrl
+    "microservice.services.if.url" -> mockUrl,
+    "microservice.services.hip.host" -> mockHost,
+    "microservice.services.hip.port" -> mockPort
   )
 
   override implicit lazy val app: Application = new GuiceApplicationBuilder()
@@ -87,6 +89,21 @@ trait ComponentSpecBase extends TestSuite with CustomMatchers
 
     def postClaimToAdjustPoa(body: JsValue): WSResponse = {
       buildClient(s"/submit-claim-to-adjust-poa").post(body).futureValue
+    }
+  }
+
+  object IncomeTaxViewChange {
+
+    def get(uri: String): WSResponse = buildClient(uri).get().futureValue
+
+    def put(uri: String, requestBody: JsValue): WSResponse = buildClient(uri).put(requestBody).futureValue
+
+    def getChargeDetails(nino: String, from: String, to: String): WSResponse = {
+      get(s"/$nino/financial-details/charges/from/$from/to/$to")
+    }
+
+    def getChargeHistory(nino: String, chargeReference: String): WSResponse = {
+      get(s"/charge-history/$nino/chargeReference/$chargeReference")
     }
   }
 }
