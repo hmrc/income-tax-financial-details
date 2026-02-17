@@ -41,7 +41,6 @@ class ViewAndChangeConnector @Inject()( val appConfig: MicroserviceAppConfig,
     http
       .post(url"$endpoint")
       .withBody(Json.toJson(request))
-      .setHeader(appConfig.getIFHeaders("1773"): _*)
       .transform(_.withRequestTimeout(Duration(appConfig.claimToAdjustTimeout, SECONDS)))
       .execute[ClaimToAdjustPoaResponse]
       .recover {
