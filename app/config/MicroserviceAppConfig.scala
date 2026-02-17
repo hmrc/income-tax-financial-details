@@ -32,7 +32,7 @@ class MicroserviceAppConfig @Inject()(servicesConfig: ServicesConfig) {
   val desUrl: String = loadConfig("microservice.services.des.url")
   val desEnvironment: String = loadConfig("microservice.services.des.environment")
   val desToken: String = s"Bearer ${loadConfig("microservice.services.des.authorization-token")}"
-
+  val viewAndChangeBaseUrl = servicesConfig.baseUrl("income-tax-view-change")
   val desAuthHeaders: Seq[(String, String)] = {
     Seq(
       "Environment" -> desEnvironment,
