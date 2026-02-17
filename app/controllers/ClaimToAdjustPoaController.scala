@@ -16,7 +16,6 @@
 
 package controllers
 
-import connectors.ClaimToAdjustPoaConnector
 import controllers.predicates.AuthenticationPredicate
 import models.claimToAdjustPoa.ClaimToAdjustPoaApiResponse.*
 import models.claimToAdjustPoa.ClaimToAdjustPoaRequest
@@ -24,6 +23,7 @@ import models.claimToAdjustPoa.ClaimToAdjustPoaResponse.ErrorResponse
 import play.api.libs.json.Json
 import play.api.mvc.*
 import play.api.{Logger, Logging}
+import services.ClaimToAdjustPoaService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.Inject
@@ -31,13 +31,13 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class ClaimToAdjustPoaController @Inject()(authentication: AuthenticationPredicate,
                                            cc: ControllerComponents,
-                                           connector: ClaimToAdjustPoaConnector)
+                                           claimToAdjustPoaService: ClaimToAdjustPoaService)
                                           (implicit ec: ExecutionContext) extends BackendController(cc) with Logging {
 
   def submitClaimToAdjustPoa(): Action[AnyContent] = authentication.async {
     implicit request: Request[AnyContent] =>
       withValidRequest { claimToAdjustRequest =>
-        connector.postClaimToAdjustPoa(claimToAdjustRequest).map {
+        claimToAdjustPoaService.postClaimToAdjustPoa(claimToAdjustRequest).map {
           response =>
             response.claimToAdjustPoaBody match {
             case Right(x: SuccessResponse)  => Created(Json.toJson(x))
