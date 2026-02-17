@@ -16,7 +16,6 @@
 
 package controllers
 
-import connectors.ClaimToAdjustPoaConnector
 import controllers.predicates.AuthenticationPredicate
 import mocks.MockMicroserviceAuthConnector
 import models.claimToAdjustPoa.ClaimToAdjustPoaApiResponse.SuccessResponse
@@ -29,6 +28,7 @@ import play.api.http.Status.{BAD_REQUEST, CREATED, INTERNAL_SERVER_ERROR}
 import play.api.libs.json.Json
 import play.api.mvc.ControllerComponents
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
+import services.ClaimToAdjustPoaService
 
 import scala.concurrent.Future
 
@@ -36,15 +36,16 @@ class ClaimToAdjustPoaControllerSpec extends ControllerBaseSpec with MockMicrose
 
   val mockCC: ControllerComponents = stubControllerComponents()
   val authPredicate = new AuthenticationPredicate(mockMicroserviceAuthConnector, mockCC, microserviceAppConfig)
-  val mockConnector = mock[ClaimToAdjustPoaConnector]
+  val mockService = mock[ClaimToAdjustPoaService]
 
-  object TestClaimToAdjustPoaController extends ClaimToAdjustPoaController(authPredicate,mockCC, mockConnector)
+  object TestClaimToAdjustPoaController extends ClaimToAdjustPoaController(authPredicate,mockCC, mockService)
 
   "ClaimToAdjustPoaConnector.submitClaimToAdjustPoa" should {
     s"return $INTERNAL_SERVER_ERROR" when {
       "user is authenticated and ClaimToAdjustPoaConnector returns an error response" in {
         mockAuth()
-        when(mockConnector.postClaimToAdjustPoa(any())(any()))
+        when(mockService.postClaimToAdjustPoa(any()
+          )(any(), any()))
           .thenReturn(Future.successful(ClaimToAdjustPoaResponse(INTERNAL_SERVER_ERROR, Left(ErrorResponse("Error message")))))
 
         val result = TestClaimToAdjustPoaController.submitClaimToAdjustPoa()(
@@ -68,7 +69,8 @@ class ClaimToAdjustPoaControllerSpec extends ControllerBaseSpec with MockMicrose
     s"return $BAD_REQUEST" when {
       "an invalid json body is sent" in {
         mockAuth()
-        when(mockConnector.postClaimToAdjustPoa(any())(any()))
+        when(mockService.postClaimToAdjustPoa(any()
+        )(any(), any()))
           .thenReturn(Future.successful(ClaimToAdjustPoaResponse(BAD_REQUEST, Left(ErrorResponse("INVALID_PAYLOAD")))))
 
         val result = TestClaimToAdjustPoaController.submitClaimToAdjustPoa()(
@@ -87,7 +89,8 @@ class ClaimToAdjustPoaControllerSpec extends ControllerBaseSpec with MockMicrose
       "a ClaimToAdjustPoa model as json body is sent" in {
         mockAuth()
 
-        when(mockConnector.postClaimToAdjustPoa(any())(any()))
+        when(mockService.postClaimToAdjustPoa(any()
+        )(any(), any()))
           .thenReturn(Future.successful(
             ClaimToAdjustPoaResponse(
               status = CREATED,
