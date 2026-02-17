@@ -52,7 +52,9 @@ trait ComponentSpecBase extends TestSuite with CustomMatchers
     "microservice.services.hip.port" -> mockPort,
     s"microservice.services.hip.${GetLegacyCalcListHipApi()}.feature-switch" -> "false",
     s"microservice.services.hip.${GetFinancialDetailsHipApi()}.feature-switch" -> "false",
-    s"microservice.services.hip.${GetCalcListTYSHipApi()}.feature-switch" -> "false"
+    s"microservice.services.hip.${GetCalcListTYSHipApi()}.feature-switch" -> "false",
+    "microservice.services.income-tax-view-change.host" -> mockHost,
+    "microservice.services.income-tax-view-change.port" -> mockPort
   )
 
   override implicit lazy val app: Application = new GuiceApplicationBuilder()
