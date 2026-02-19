@@ -18,22 +18,23 @@ package services
 
 import config.MicroserviceAppConfig
 import connectors.hip.FinancialDetailsHipConnector
+import connectors.ViewAndChangeConnector
 import connectors.hip.httpParsers.ChargeHipHttpParser.ChargeHipResponse
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.{mock, when}
 import org.mockito.stubbing.OngoingStubbing
 import play.api.libs.json.Json
 import utils.{FinancialDetailsHipDataHelper, TestSupport}
-
 import scala.concurrent.Future
 
 class FinancialDetailServiceSpec  extends TestSupport with FinancialDetailsHipDataHelper{
 
   val mockFinancialDetailsHipConnector: FinancialDetailsHipConnector = mock(classOf[FinancialDetailsHipConnector])
   val mockAppConfig: MicroserviceAppConfig = mock(classOf[MicroserviceAppConfig])
+  private val mockViewAndChangeConnector: ViewAndChangeConnector = org.mockito.Mockito.mock(classOf[ViewAndChangeConnector])
 
   object ServiceUnderTest
-    extends FinancialDetailService(mockFinancialDetailsHipConnector, mockAppConfig)
+    extends FinancialDetailService(mockFinancialDetailsHipConnector, mockViewAndChangeConnector, mockAppConfig)
 
   def setupMockGetPayment(nino: String, fromDate: String, toDate: String)
                          (response: ChargeHipResponse): OngoingStubbing[Future[ChargeHipResponse]] = {

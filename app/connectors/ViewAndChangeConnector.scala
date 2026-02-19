@@ -17,46 +17,45 @@
 package connectors
 
 import config.MicroserviceAppConfig
-import connectors.httpParsers.ChargeHttpParser.UnexpectedChargeResponse
-import models.financialDetails.Payment
-import models.financialDetails.hip.FinancialDetailHip
-import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
-import play.api.mvc.{Action, AnyContent}
+import connectors.httpParsers.ViewAndChangeHttpParser.{ViewAndChangeJsonResponse, ViewAndChangeReads}
+import play.api.Logging
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class ViewAndChangeConnector @Inject()(val http: HttpClientV2,
-                                       val appConfig: MicroserviceAppConfig
-                                      )(implicit ec: ExecutionContext) extends RawResponseReads {
+class ViewAndChangeConnector @Inject()(
+                                        val http: HttpClientV2,
+                                        val appConfig: MicroserviceAppConfig
+                                      )(implicit ec: ExecutionContext) extends Logging {
 
-  def getOnlyOpenItems(nino: String)(implicit hc: HeaderCarrier): Future[FinancialDetailHip] = {
-    val url = s"${appConfig.viewAndChangeBaseUrl}/income-tax-view-change/$nino/financial-details/only-open-items"
+  private def base(nino: String): String =
+    s"${appConfig.viewAndChangeBaseUrl}/income-tax-view-change/$nino/financial-details"
 
-    http.get(url"$url")
-      .execute[HttpResponse]
-      .map { response =>
-        response.status match {
-          case OK =>
-            response.json.validate[FinancialDetailHip](FinancialDetailHip.reads).fold(
-              invalid => {
-                logger.error(s"Json validation error: $invalid")
-                OnlyOpenItemsErrorModel(INTERNAL_SERVER_ERROR, "Json Validation Error. Parsing Only Open Items Data")
-              },
-              valid => valid
-            )
+  def getOnlyOpenItems(nino: String)(implicit hc: HeaderCarrier): Future[ViewAndChangeJsonResponse] = {
+    val url = s"${base(nino)}/only-open-items"
+    http.get(url"$url").execute[ViewAndChangeJsonResponse]
+  }
 
-          case _ =>
-            logger.error(s"RESPONSE status: ${response.status}, body: ${response.body}")
-            response.json.as[FinancialDetailHip]
-        }
-      }
-      .recover { case ex =>
-        logger.error(s"Unexpected failed future, ${ex.getMessage}")
-        OnlyOpenItemsErrorModel(INTERNAL_SERVER_ERROR, "Unexpected failed future")
-      }
+  def getCredits(nino: String, from: String, to: String)(implicit hc: HeaderCarrier): Future[ViewAndChangeJsonResponse] = {
+    val url = s"${base(nino)}/credits/from/$from/to/$to"
+    http.get(url"$url").execute[ViewAndChangeJsonResponse]
+  }
+
+  def getChargeDetails(nino: String, from: String, to: String)(implicit hc: HeaderCarrier): Future[ViewAndChangeJsonResponse] = {
+    val url = s"${base(nino)}/charges/from/$from/to/$to"
+    http.get(url"$url").execute[ViewAndChangeJsonResponse]
+  }
+
+  def getChargeDetailsByDocumentId(nino: String, docId: String)(implicit hc: HeaderCarrier): Future[ViewAndChangeJsonResponse] = {
+    val url = s"${base(nino)}/charges/documentId/$docId"
+    http.get(url"$url").execute[ViewAndChangeJsonResponse]
+  }
+
+  def getPayments(nino: String, from: String, to: String)(implicit hc: HeaderCarrier): Future[ViewAndChangeJsonResponse] = {
+    val url = s"${base(nino)}/payments/from/$from/to/$to"
+    http.get(url"$url").execute[ViewAndChangeJsonResponse]
   }
 }
