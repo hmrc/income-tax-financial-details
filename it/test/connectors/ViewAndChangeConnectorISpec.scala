@@ -16,6 +16,7 @@
 
 package connectors
 
+<<<<<<< HEAD
 import connectors.httpParsers.ChargeHttpParser.{UnexpectedChargeErrorResponse, UnexpectedChargeResponse}
 import constants.FinancialDetailIntegrationTestConstants.chargeJson
 import constants.ViewAndChangeConnectorIntegrationTestConstants.*
@@ -31,6 +32,13 @@ import play.api.libs.json.{JsValue, Json}
 import utils.AChargesResponse
 
 import java.time.LocalDate
+=======
+import constants.ViewAndChangeConnectorIntegrationTestConstants.{invalidResponseBody, paymentAllocations, request, responseBody, validResponseBody}
+import helpers.{ComponentSpecBase, WiremockHelper}
+import models.claimToAdjustPoa.ClaimToAdjustPoaResponse.ClaimToAdjustPoaResponse
+import play.api.http.Status.{CREATED, INTERNAL_SERVER_ERROR, OK}
+import play.api.libs.json.Json
+>>>>>>> 4ed52c7 (Error with final test in ViewAndChangeConnectorISpec.scala - need to understand what the result should be)
 
 class ViewAndChangeConnectorISpec extends ComponentSpecBase {
 
@@ -368,7 +376,7 @@ class ViewAndChangeConnectorISpec extends ComponentSpecBase {
 }
   ".getPaymentAllocations() is called" when {
 
-    s"the response is a $OK" should {
+    s"the response is $OK" should {
 
       "return a valid model when successfully retrieved" in {
 
@@ -379,13 +387,13 @@ class ViewAndChangeConnectorISpec extends ComponentSpecBase {
         WiremockHelper.stubGet(
           url = s"/cross-regime/payment-allocation/NINO/$nino/ITSA?paymentLot=$paymentLot&paymentLotItem=$paymentLotItem",
           status = CREATED,
-          responseBody = Json.toJson("valid response").toString()
+          body = Json.toJson("valid response").toString()
         )
 
         val result =
           connector.getPaymentAllocations(nino, paymentLot, paymentLotItem).futureValue
 
-        result shouldBe Right("valid response")
+        result shouldBe Right(paymentAllocations)
       }
       "the response cannot be parsed" should {
 
@@ -398,13 +406,13 @@ class ViewAndChangeConnectorISpec extends ComponentSpecBase {
           WiremockHelper.stubGet(
             url = s"/cross-regime/payment-allocation/NINO/$nino/ITSA?paymentLot=$paymentLot&paymentLotItem=$paymentLotItem",
             status = CREATED,
-            responseBody = Json.toJson("invalid response").toString()
+            body = Json.toJson("invalid response").toString()
           )
 
           val result =
             connector.getPaymentAllocations(nino, paymentLot, paymentLotItem).futureValue
 
-          result shouldBe Left(UnexpectedPaymentAllocationsResponse(CREATED, Json.toJson("invalid response").toString()))
+          result shouldBe Left(INTERNAL_SERVER_ERROR)
         }
       }
     }
