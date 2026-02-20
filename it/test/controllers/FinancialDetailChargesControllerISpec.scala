@@ -18,7 +18,7 @@ package controllers
 
 import constants.BaseIntegrationTestConstants.*
 import constants.FinancialDetailIntegrationTestConstants.*
-import helpers.ComponentSpecBase
+import helpers.{ComponentSpecBase, WiremockHelper}
 import helpers.servicemocks.DesChargesStub.*
 import models.financialDetails.hip.ChargesHipResponse
 import play.api.http.Status.*
@@ -99,6 +99,9 @@ class FinancialDetailChargesControllerISpec extends ComponentSpecBase {
           status = SERVICE_UNAVAILABLE
         )
 
+        val vcChargesUrl = s"/income-tax-view-change/$testNino/financial-details/charges/from/$from/to/$to"
+        WiremockHelper.stubGet(vcChargesUrl, SERVICE_UNAVAILABLE, "")
+
         val res: WSResponse = IncomeTaxFinancialDetails.getChargeDetails(testNino, from, to)
 
         res should have(
@@ -175,6 +178,9 @@ class FinancialDetailChargesControllerISpec extends ComponentSpecBase {
         stubGetSingleDocumentDetails(testNino, documentId)(
           status = SERVICE_UNAVAILABLE
         )
+
+        val vcDocIdUrl = s"/income-tax-view-change/$testNino/financial-details/charges/documentId/$documentId"
+        WiremockHelper.stubGet(vcDocIdUrl, SERVICE_UNAVAILABLE, "")
 
         val res: WSResponse = IncomeTaxFinancialDetails.getPaymentAllocationDetails(testNino, documentId)
 

@@ -18,7 +18,7 @@ package controllers
 
 import constants.BaseIntegrationTestConstants.*
 import constants.FinancialDetailIntegrationTestConstants.*
-import helpers.ComponentSpecBase
+import helpers.{ComponentSpecBase, WiremockHelper}
 import helpers.servicemocks.DesChargesStub.*
 import models.financialDetails.hip.ChargesHipResponse
 import play.api.http.Status.*
@@ -28,7 +28,8 @@ import play.api.libs.ws.WSResponse
 
 
 abstract class FinancialDetailsControllerISpec extends ComponentSpecBase {
-
+  private val from = "from"
+  private val to = "to"
   s"GET ${controllers.routes.FinancialDetailsController.getOnlyOpenItems(testNino)}" should {
     s"return $OK" when {
       "charge details are successfully retrieved" in {
@@ -86,12 +87,14 @@ abstract class FinancialDetailsControllerISpec extends ComponentSpecBase {
       }
 
       "an unexpected status was returned when retrieving charge details" in {
-        isAuthorised(true)
-        stubGetOnlyOpenItems(testNino)(
+        stubGetChargeDetails(testNino, from, to)(
           status = SERVICE_UNAVAILABLE
         )
 
-        val res: WSResponse = IncomeTaxFinancialDetails.getOnlyOpenItems(testNino)
+        val vcChargesUrl = s"/income-tax-view-change/$testNino/financial-details/charges/from/$from/to/$to"
+        WiremockHelper.stubGet(vcChargesUrl, SERVICE_UNAVAILABLE, "")
+
+        val res: WSResponse = IncomeTaxFinancialDetails.getChargeDetails(testNino, from, to)
 
         res should have(
           httpStatus(INTERNAL_SERVER_ERROR)

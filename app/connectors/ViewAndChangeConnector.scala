@@ -30,7 +30,6 @@ class ViewAndChangeConnector @Inject()(
                                         val http: HttpClientV2,
                                         val appConfig: MicroserviceAppConfig
                                       )(implicit ec: ExecutionContext) extends Logging {
-
   private def base(nino: String): String =
     s"${appConfig.viewAndChangeBaseUrl}/income-tax-view-change/$nino/financial-details"
 

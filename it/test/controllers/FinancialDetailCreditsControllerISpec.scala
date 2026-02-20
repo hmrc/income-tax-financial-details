@@ -17,7 +17,7 @@
 package controllers
 
 import constants.BaseIntegrationTestConstants.*
-import helpers.ComponentSpecBase
+import helpers.{ComponentSpecBase, WiremockHelper}
 import helpers.servicemocks.DesChargesStub.*
 import models.credits.CreditsModel
 import play.api.http.Status.*
@@ -205,13 +205,18 @@ class FinancialDetailCreditsControllerISpec extends ComponentSpecBase {
         )
       }
 
-      "an unexpected status was returned when retrieving charge details" in {
+
+
+      "an unexpected status was returned when retrieving credit details" in {
 
         isAuthorised(true)
 
         stubGetChargeDetails(testNino, from, to)(
           status = SERVICE_UNAVAILABLE
         )
+
+        val vcCreditsUrl = s"/income-tax-view-change/$testNino/financial-details/credits/from/$from/to/$to"
+        WiremockHelper.stubGet(vcCreditsUrl, SERVICE_UNAVAILABLE, "")
 
         val res: WSResponse = IncomeTaxFinancialDetails.getCreditDetails(testNino, from, to)
 

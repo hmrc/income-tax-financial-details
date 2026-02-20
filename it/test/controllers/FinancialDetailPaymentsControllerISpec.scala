@@ -17,7 +17,7 @@
 package controllers
 
 import constants.BaseIntegrationTestConstants.*
-import helpers.ComponentSpecBase
+import helpers.{ComponentSpecBase, WiremockHelper}
 import helpers.servicemocks.DesChargesStub.stubGetChargeDetails
 import models.financialDetails.Payment
 import play.api.http.Status.*
@@ -197,6 +197,9 @@ class FinancialDetailPaymentsControllerISpec extends ComponentSpecBase {
         stubGetChargeDetails(testNino, from, to)(
           status = SERVICE_UNAVAILABLE
         )
+
+        val vcPaymentsUrl = s"/income-tax-view-change/$testNino/financial-details/payments/from/$from/to/$to"
+        WiremockHelper.stubGet(vcPaymentsUrl, SERVICE_UNAVAILABLE, "")
 
         val res: WSResponse = IncomeTaxFinancialDetails.getPaymentDetails(testNino, from, to)
 
