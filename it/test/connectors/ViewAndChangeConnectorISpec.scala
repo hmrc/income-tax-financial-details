@@ -16,16 +16,17 @@
 
 package connectors
 
-import constants.ViewAndChangeConnectorIntegrationTestConstants.{invalidResponseBody, request, responseBody, validResponseBody}
+import connectors.httpParsers.ChargeHttpParser.{UnexpectedChargeErrorResponse, UnexpectedChargeResponse}
+import constants.FinancialDetailIntegrationTestConstants.chargeJson
+import constants.ViewAndChangeConnectorIntegrationTestConstants.*
+import helpers.servicemocks.ViewAndChangeStub
 import helpers.{ComponentSpecBase, WiremockHelper}
 import models.claimToAdjustPoa.ClaimToAdjustPoaResponse.ClaimToAdjustPoaResponse
-import play.api.http.Status.{CREATED, INTERNAL_SERVER_ERROR}
-import constants.FinancialDetailIntegrationTestConstants.chargeJson
-import connectors.httpParsers.ChargeHttpParser.{UnexpectedChargeErrorResponse, UnexpectedChargeResponse}
-import helpers.servicemocks.ViewAndChangeStub
 import models.credits.CreditsModel
 import models.financialDetails.Payment
-import play.api.http.Status.{BAD_REQUEST, NOT_FOUND, OK}
+import models.hip.chargeHistory.{ChargeHistoryError, ChargeHistoryNotFound}
+import org.scalactic.Prettifier.default
+import play.api.http.Status.*
 import play.api.libs.json.{JsValue, Json}
 import utils.AChargesResponse
 
@@ -33,15 +34,14 @@ import java.time.LocalDate
 
 class ViewAndChangeConnectorISpec extends ComponentSpecBase {
 
-  private val connector: ViewAndChangeConnector =
-    app.injector.instanceOf[ViewAndChangeConnector]
+  val viewAndChangeConnector: ViewAndChangeConnector = app.injector.instanceOf[ViewAndChangeConnector]
+  val postClaimToAdjustPoaUrl = "/income-tax/calculations/POA/ClaimToAdjust"
+  val getChargeHistoryUrl = "/etmp/RESTAdapter/ITSA/TaxPayer/GetChargeHistory?idType=NINO&idValue=123&chargeReference=456"
 
   private val nino = "BB123456A"
   private val from = "from"
   private val to = "to"
   private val documentId = "123456789"
-
-  private val postClaimToAdjustPoaUrl = "/income-tax/calculations/POA/ClaimToAdjust"
 
   "ViewAndChangeConnector" when {
 
@@ -52,7 +52,7 @@ class ViewAndChangeConnectorISpec extends ComponentSpecBase {
 
         ViewAndChangeStub.stubGetCharges(nino, from, to)(OK, responseBody)
 
-        val result = connector.getChargeDetails(nino, from, to).futureValue
+        val result = viewAndChangeConnector.getChargeDetails(nino, from, to).futureValue
         result shouldBe Right(chargeJson)
       }
 
@@ -61,14 +61,14 @@ class ViewAndChangeConnectorISpec extends ComponentSpecBase {
 
         ViewAndChangeStub.stubGetCharges(nino, from, to)(BAD_REQUEST, body)
 
-        val result = connector.getChargeDetails(nino, from, to).futureValue
+        val result = viewAndChangeConnector.getChargeDetails(nino, from, to).futureValue
         result shouldBe Left(UnexpectedChargeResponse(BAD_REQUEST, body))
       }
 
       "return Left(UnexpectedChargeErrorResponse) when ViewAndChange returns 500" in {
         ViewAndChangeStub.stubGetCharges(nino, from, to)(INTERNAL_SERVER_ERROR, "error")
 
-        val result = connector.getChargeDetails(nino, from, to).futureValue
+        val result = viewAndChangeConnector.getChargeDetails(nino, from, to).futureValue
         result shouldBe Left(UnexpectedChargeErrorResponse)
       }
     }
@@ -80,7 +80,7 @@ class ViewAndChangeConnectorISpec extends ComponentSpecBase {
 
         ViewAndChangeStub.stubGetChargeByDocumentId(nino, documentId)(OK, responseBody)
 
-        val result = connector.getChargeDetailsByDocumentId(nino, documentId).futureValue
+        val result = viewAndChangeConnector.getChargeDetailsByDocumentId(nino, documentId).futureValue
         result shouldBe Right(chargeJson)
       }
 
@@ -89,14 +89,14 @@ class ViewAndChangeConnectorISpec extends ComponentSpecBase {
 
         ViewAndChangeStub.stubGetChargeByDocumentId(nino, documentId)(NOT_FOUND, body)
 
-        val result = connector.getChargeDetailsByDocumentId(nino, documentId).futureValue
+        val result = viewAndChangeConnector.getChargeDetailsByDocumentId(nino, documentId).futureValue
         result shouldBe Left(UnexpectedChargeResponse(NOT_FOUND, body))
       }
 
       "return Left(UnexpectedChargeErrorResponse) when ViewAndChange returns 500" in {
         ViewAndChangeStub.stubGetChargeByDocumentId(nino, documentId)(INTERNAL_SERVER_ERROR, "error")
 
-        val result = connector.getChargeDetailsByDocumentId(nino, documentId).futureValue
+        val result = viewAndChangeConnector.getChargeDetailsByDocumentId(nino, documentId).futureValue
         result shouldBe Left(UnexpectedChargeErrorResponse)
       }
     }
@@ -138,7 +138,7 @@ class ViewAndChangeConnectorISpec extends ComponentSpecBase {
         val expectedJson: JsValue = Json.toJson(payments)
         ViewAndChangeStub.stubGetPayments(nino, from, to)(OK, expectedJson.toString())
 
-        val result = connector.getPayments(nino, from, to).futureValue
+        val result = viewAndChangeConnector.getPayments(nino, from, to).futureValue
         result shouldBe Right(expectedJson)
       }
 
@@ -147,14 +147,14 @@ class ViewAndChangeConnectorISpec extends ComponentSpecBase {
 
         ViewAndChangeStub.stubGetPayments(nino, from, to)(BAD_REQUEST, body)
 
-        val result = connector.getPayments(nino, from, to).futureValue
+        val result = viewAndChangeConnector.getPayments(nino, from, to).futureValue
         result shouldBe Left(UnexpectedChargeResponse(BAD_REQUEST, body))
       }
 
       "return Left(UnexpectedChargeErrorResponse) when ViewAndChange returns 500" in {
         ViewAndChangeStub.stubGetPayments(nino, from, to)(INTERNAL_SERVER_ERROR, "error")
 
-        val result = connector.getPayments(nino, from, to).futureValue
+        val result = viewAndChangeConnector.getPayments(nino, from, to).futureValue
         result shouldBe Left(UnexpectedChargeErrorResponse)
       }
     }
@@ -181,7 +181,7 @@ class ViewAndChangeConnectorISpec extends ComponentSpecBase {
         val expectedJson: JsValue = Json.toJson(creditsModel)
         ViewAndChangeStub.stubGetCredits(nino, from, to)(OK, expectedJson.toString())
 
-        val result = connector.getCredits(nino, from, to).futureValue
+        val result = viewAndChangeConnector.getCredits(nino, from, to).futureValue
         result shouldBe Right(expectedJson)
       }
 
@@ -190,14 +190,14 @@ class ViewAndChangeConnectorISpec extends ComponentSpecBase {
 
         ViewAndChangeStub.stubGetCredits(nino, from, to)(BAD_REQUEST, body)
 
-        val result = connector.getCredits(nino, from, to).futureValue
+        val result = viewAndChangeConnector.getCredits(nino, from, to).futureValue
         result shouldBe Left(UnexpectedChargeResponse(BAD_REQUEST, body))
       }
 
       "return Left(UnexpectedChargeErrorResponse) when ViewAndChange returns 500" in {
         ViewAndChangeStub.stubGetCredits(nino, from, to)(INTERNAL_SERVER_ERROR, "error")
 
-        val result = connector.getCredits(nino, from, to).futureValue
+        val result = viewAndChangeConnector.getCredits(nino, from, to).futureValue
         result shouldBe Left(UnexpectedChargeErrorResponse)
       }
     }
@@ -209,7 +209,7 @@ class ViewAndChangeConnectorISpec extends ComponentSpecBase {
 
         ViewAndChangeStub.stubGetOnlyOpenItems(nino)(OK, responseBody)
 
-        val result = connector.getOnlyOpenItems(nino).futureValue
+        val result = viewAndChangeConnector.getOnlyOpenItems(nino).futureValue
         result shouldBe Right(chargeJson)
       }
 
@@ -218,14 +218,14 @@ class ViewAndChangeConnectorISpec extends ComponentSpecBase {
 
         ViewAndChangeStub.stubGetOnlyOpenItems(nino)(NOT_FOUND, body)
 
-        val result = connector.getOnlyOpenItems(nino).futureValue
+        val result = viewAndChangeConnector.getOnlyOpenItems(nino).futureValue
         result shouldBe Left(UnexpectedChargeResponse(NOT_FOUND, body))
       }
 
       "return Left(UnexpectedChargeErrorResponse) when ViewAndChange returns 500" in {
         ViewAndChangeStub.stubGetOnlyOpenItems(nino)(INTERNAL_SERVER_ERROR, "error")
 
-        val result = connector.getOnlyOpenItems(nino).futureValue
+        val result = viewAndChangeConnector.getOnlyOpenItems(nino).futureValue
         result shouldBe Left(UnexpectedChargeErrorResponse)
       }
     }
@@ -239,32 +239,132 @@ class ViewAndChangeConnectorISpec extends ComponentSpecBase {
           WiremockHelper.stubPost(
             url = postClaimToAdjustPoaUrl,
             status = CREATED,
-            responseBody = responseBody.toString()
+            responseBody = postClaimToAdjustPoaResponseBody.toString()
           )
 
           val result =
-            connector.postClaimToAdjustPoa(request).futureValue
+            viewAndChangeConnector.postClaimToAdjustPoa(postClaimToAdjustPoaRequest).futureValue
 
-          result shouldBe validResponseBody
+          result shouldBe postClaimToAdjustPoaValidResponseBody
         }
+      }
 
-        "the response cannot be parsed" should {
+      "the response cannot be parsed" should {
 
-          "return INTERNAL_SERVER_ERROR with ErrorResponse" in {
+        "return INTERNAL_SERVER_ERROR with ErrorResponse" in {
 
-            WiremockHelper.stubPost(
-              url = postClaimToAdjustPoaUrl,
-              status = CREATED,
-              responseBody = invalidResponseBody.toString()
-            )
+          WiremockHelper.stubPost(
+            url = postClaimToAdjustPoaUrl,
+            status = CREATED,
+            responseBody = postClaimToAdjustPoaInvalidResponseBody.toString()
+          )
 
-            val result =
-              connector.postClaimToAdjustPoa(request).futureValue
+          val result =
+            viewAndChangeConnector.postClaimToAdjustPoa(postClaimToAdjustPoaRequest).futureValue
 
-            result.status shouldBe INTERNAL_SERVER_ERROR
-          }
+          result.status shouldBe INTERNAL_SERVER_ERROR
         }
       }
     }
+
+    ".getChargeHistory() is called" when {
+
+      "the response is a 200 - OK" should {
+
+        "return a valid model when successfully retrieved" in {
+
+          WiremockHelper.stubGet(
+            url = getChargeHistoryUrl,
+            status = OK,
+            body = getChargeHistoryResponseBody.toString()
+          )
+
+          val result =
+            viewAndChangeConnector.getChargeHistory("123", "456").futureValue
+
+          result shouldBe Right(getChargeHistoryExpectedModel)
+        }
+      }
+    }
+
+    ".getChargeHistory() is called" when {
+
+      "the response is a 404 - NOT_FOUND" should {
+
+        "return ChargeHistoryNotFound" in {
+
+          WiremockHelper.stubGet(
+            url = getChargeHistoryUrl,
+            status = NOT_FOUND,
+            body = chargeHistoryNotFoundResponseBody.toString()
+          )
+
+          val result =
+            viewAndChangeConnector.getChargeHistory("123", "456").futureValue
+
+          result shouldBe Left(
+            ChargeHistoryNotFound(
+              status = NOT_FOUND,
+              reason = chargeHistoryNotFoundResponseBody.toString()
+            )
+          )
+        }
+      }
+    }
+
+    ".getChargeHistory() is called" when {
+
+      "the response is a 422 - UNPROCESSABLE_ENTITY" should {
+
+        "return ChargeHistoryError if the JSON cannot be parsed" in {
+
+          WiremockHelper.stubGet(
+            url = getChargeHistoryUrl,
+            status = UNPROCESSABLE_ENTITY,
+            body = chargeHistoryErrorResponseBody.toString()
+          )
+
+          val result =
+            viewAndChangeConnector.getChargeHistory("123", "456").futureValue
+
+          result shouldBe Left(
+            ChargeHistoryError(UNPROCESSABLE_ENTITY, chargeHistoryErrorResponseBody.toString())
+          )
+        }
+
+        "return ChargeHistoryNotFound if the error code matches 005 or 014" in {
+
+          WiremockHelper.stubGet(
+            url = getChargeHistoryUrl,
+            status = UNPROCESSABLE_ENTITY,
+            body = chargeHistoryErrorResponseBody.toString()
+          )
+
+          val result =
+            viewAndChangeConnector.getChargeHistory("123", "456").futureValue
+
+          result shouldBe Left(
+            ChargeHistoryError(UNPROCESSABLE_ENTITY, chargeHistoryErrorResponseBody.toString())
+          )
+        }
+
+        "return ChargeHistoryError if the JSON parses but code is not 005/014" in {
+
+          WiremockHelper.stubGet(
+            url = getChargeHistoryUrl,
+            status = UNPROCESSABLE_ENTITY,
+            body = chargeHistoryValidationError.toString()
+          )
+
+          val result =
+            viewAndChangeConnector.getChargeHistory("123", "456").futureValue
+
+          result shouldBe Left(
+            ChargeHistoryError(UNPROCESSABLE_ENTITY, chargeHistoryValidationError.toString())
+          )
+        }
+      }
+    }
+
   }
 }

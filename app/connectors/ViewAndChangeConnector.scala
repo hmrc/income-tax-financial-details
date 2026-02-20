@@ -17,28 +17,28 @@
 package connectors
 
 import config.MicroserviceAppConfig
-import connectors.httpParsers.ClaimToAdjustPoaHttpParser._
-import connectors.httpParsers.ViewAndChangeHttpParser.ViewAndChangeJsonResponse
-import connectors.httpParsers.ViewAndChangeHttpParser.given
+import connectors.hip.HipConnectorDataHelper
+import connectors.httpParsers.ClaimToAdjustPoaHttpParser.*
+import connectors.httpParsers.ViewAndChangeHttpParser.{ViewAndChangeJsonResponse, given}
 import models.claimToAdjustPoa.ClaimToAdjustPoaRequest
 import models.claimToAdjustPoa.ClaimToAdjustPoaResponse.{ClaimToAdjustPoaResponse, ErrorResponse}
+import models.hip.chargeHistory.{ChargeHistoryError, ChargeHistoryNotFound, ChargeHistoryResponseError, ChargeHistorySuccessWrapper}
+import models.hip.{GetChargeHistoryHipApi, HipResponseErrorsObject}
 import play.api.Logger
+import play.api.http.Status.{INTERNAL_SERVER_ERROR, NOT_FOUND, OK, UNPROCESSABLE_ENTITY}
+import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.libs.ws.writeableOf_JsValue
-import play.api.Logging
-import play.api.http.Status.INTERNAL_SERVER_ERROR
-import play.api.libs.json.Json
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.duration.{Duration, SECONDS}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class ViewAndChangeConnector @Inject()(
-                                        val appConfig: MicroserviceAppConfig,
-                                        val http: HttpClientV2
-                                      )(implicit ec: ExecutionContext) extends Logging {
+class ViewAndChangeConnector @Inject()( val appConfig: MicroserviceAppConfig,
+                                       val http: HttpClientV2)
+                                      ( implicit ec: ExecutionContext )extends RawResponseReads with HipConnectorDataHelper {
 
   private def base(nino: String): String =
     s"${appConfig.viewAndChangeBaseUrl}/income-tax-view-change/$nino/financial-details"
@@ -91,4 +91,70 @@ class ViewAndChangeConnector @Inject()(
         )
       }
   }
-}  
+
+  def getChargeHistoryDetailsUrl(idType: String, idValue: String, chargeReference: String): String = {
+    s"${appConfig.viewAndChangeBaseUrl}/etmp/RESTAdapter/ITSA/TaxPayer/GetChargeHistory?idType=$idType&idValue=$idValue&chargeReference=$chargeReference"
+  }
+
+  def getHeaders: Seq[(String, String)] = appConfig.getHIPHeaders(GetChargeHistoryHipApi, Some(xMessageTypeFor5705))
+
+
+  def getChargeHistory(idValue: String, chargeReference: String)
+                      (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[Either[ChargeHistoryResponseError, ChargeHistorySuccessWrapper]] = {
+
+    val url = getChargeHistoryDetailsUrl("NINO", idValue, chargeReference)
+
+    http
+      .get(url"$url")
+      .setHeader(getHeaders: _*)
+      .execute[HttpResponse]
+      .map {
+        response =>
+          response.status match {
+            case OK =>
+              logger.debug(s"RESPONSE status:${response.status}, body:${response.body}")
+              response.json.validate[ChargeHistorySuccessWrapper].fold(
+                invalid => {
+                  logger.error(s"Validation Errors: $invalid")
+                  Left(ChargeHistoryError(INTERNAL_SERVER_ERROR, "Json validation error parsing ChargeHistorySuccess model"))
+                }, {
+                  valid =>
+                    logger.info("Successfully parsed response to ChargeHistorySuccess model")
+                    Right(valid)
+                }
+              )
+            case NOT_FOUND =>
+              logger.warn(s" RESPONSE status: ${response.status}, body: ${response.body}")
+              Left(ChargeHistoryNotFound(response.status, response.body))
+            case UNPROCESSABLE_ENTITY => Left(handleUnprocessableStatusResponse(response))
+            case _ =>
+              logger.error(s"RESPONSE status: ${response.status}, body: ${response.body}")
+              Left(ChargeHistoryError(response.status, response.body))
+          }
+      } recover {
+      case ex =>
+        logger.error(s"Unexpected failed future, ${ex.getMessage}")
+        Left(ChargeHistoryError(INTERNAL_SERVER_ERROR, s"Unexpected failed future, ${ex.getMessage}"))
+    }
+  }
+
+  private def handleUnprocessableStatusResponse(unprocessableResponse: HttpResponse): ChargeHistoryResponseError = {
+    val notFoundCodes = Set("005", "014")
+    unprocessableResponse.json.validate[HipResponseErrorsObject] match {
+      case JsError(errors) =>
+        logger.error("Unable to parse response as Business Validation Error - " + errors)
+        logger.error(s"${unprocessableResponse.status} returned from HiP with body: ${unprocessableResponse.body}")
+        ChargeHistoryError(unprocessableResponse.status, unprocessableResponse.body)
+      case JsSuccess(success, _) =>
+        success match {
+          case error: HipResponseErrorsObject if notFoundCodes.contains(error.errors.code) =>
+            logger.info(s"Resource not found code identified, code:${error.errors.code}, converting to 404 response")
+            ChargeHistoryNotFound(NOT_FOUND, unprocessableResponse.body)
+          case _ =>
+            logger.error(s"${unprocessableResponse.status} returned from HiP with body: ${unprocessableResponse.body}")
+            ChargeHistoryError(unprocessableResponse.status, unprocessableResponse.body)
+        }
+    }
+  }
+
+}
