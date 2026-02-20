@@ -16,7 +16,7 @@
 
 package constants.hip
 
-import models.hip.chargeHistory.{ChargeHistory, ChargeHistoryDetails, ChargeHistorySuccess, ChargeHistorySuccessWrapper}
+import models.hip.chargeHistory.*
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.http.HttpResponse
@@ -193,6 +193,10 @@ object ChargeHistoryTestConstants {
       |""".stripMargin
   )
 
+  val serviceSuccessResponse: Either[ChargeHistoryResponseError, ChargeHistorySuccessWrapper] =
+    Right(chargeHistorySuccessWrapperModel)
+  val serviceErrorResponse: Either[ChargeHistoryResponseError, ChargeHistorySuccessWrapper] =
+    Left(ChargeHistoryError(Status.INTERNAL_SERVER_ERROR, "error"))
   val successResponse: HttpResponse = HttpResponse(Status.OK, chargeHistorySuccessWrapperJsonReads, Map.empty)
   val badJsonResponse: HttpResponse = HttpResponse(Status.INTERNAL_SERVER_ERROR, "{}")
   val notFoundResponse: HttpResponse = HttpResponse(Status.NOT_FOUND, "Error message", Map.empty)

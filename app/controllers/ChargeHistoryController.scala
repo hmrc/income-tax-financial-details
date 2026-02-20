@@ -16,11 +16,11 @@
 
 package controllers
 
-import connectors.hip.GetChargeHistoryConnector
 import controllers.predicates.AuthenticationPredicate
 import models.hip.chargeHistory.{ChargeHistoryError, ChargeHistoryNotFound, ChargeHistorySuccessWrapper}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import services.ChargeHistoryService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.{Inject, Singleton}
@@ -29,13 +29,13 @@ import scala.concurrent.ExecutionContext
 @Singleton
 class ChargeHistoryController @Inject()(authentication: AuthenticationPredicate,
                                         cc: ControllerComponents,
-                                        chargeHistoryDetailsConnector: GetChargeHistoryConnector)
+                                        chargeHistoryService: ChargeHistoryService)
                                        (implicit ec: ExecutionContext) extends BackendController(cc) {
 
 
   def getChargeHistoryDetails(nino: String, chargeReference: String): Action[AnyContent] =
     authentication.async { implicit request =>
-      chargeHistoryDetailsConnector.getChargeHistory(
+      chargeHistoryService.getChargeHistory(
         idValue = nino,
         chargeReference = chargeReference
       ) map {
