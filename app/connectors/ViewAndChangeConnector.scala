@@ -17,7 +17,8 @@
 package connectors
 
 import config.MicroserviceAppConfig
-import connectors.httpParsers.ClaimToAdjustPoaHttpParser._
+import connectors.httpParsers.ClaimToAdjustPoaHttpParser.*
+import connectors.httpParsers.PaymentAllocationsHttpParser.{PaymentAllocationsReads, PaymentAllocationsResponse}
 import models.claimToAdjustPoa.ClaimToAdjustPoaRequest
 import models.claimToAdjustPoa.ClaimToAdjustPoaResponse.{ClaimToAdjustPoaResponse, ErrorResponse}
 import play.api.Logger
@@ -26,6 +27,7 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import play.api.libs.ws.writeableOf_JsValue
+
 import javax.inject.Inject
 import scala.concurrent.duration.{Duration, SECONDS}
 import scala.concurrent.{ExecutionContext, Future}
@@ -33,7 +35,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class ViewAndChangeConnector @Inject()( val appConfig: MicroserviceAppConfig,
                                        val http: HttpClientV2)
                                       ( implicit ec: ExecutionContext ) {
-
+//ClaimToAdjustPoaConnector
   val endpoint = s"${appConfig.viewAndChangeBaseUrl}/income-tax/calculations/POA/ClaimToAdjust"
 
   def postClaimToAdjustPoa(request: ClaimToAdjustPoaRequest)
@@ -49,5 +51,24 @@ class ViewAndChangeConnector @Inject()( val appConfig: MicroserviceAppConfig,
           ClaimToAdjustPoaResponse(INTERNAL_SERVER_ERROR, Left(ErrorResponse(e.getMessage)))
       }
   }
+
+//PaymentAllocationsConnector
+  private[connectors] def paymentAllocationsUrl(nino: String): String = {
+    s"${appConfig.viewAndChangeBaseUrl}/cross-regime/payment-allocation/NINO/$nino/ITSA"
+  }
+
+  private[connectors] def queryParameters(paymentLot: String, paymentLotItem: String): Seq[(String, String)] = {
+    Seq(
+      "paymentLot" -> paymentLot,
+      "paymentLotItem" -> paymentLotItem
+    )
+  }
+
+  def getPaymentAllocations(nino: String, paymentLot: String, paymentLotItem: String)
+                           (implicit hc: HeaderCarrier): Future[PaymentAllocationsResponse] =
+    http
+      .get(url"${paymentAllocationsUrl(nino)}")
+      .transform(_.addQueryStringParameters(queryParameters(paymentLot, paymentLotItem): _*))
+      .execute[PaymentAllocationsResponse](PaymentAllocationsReads, ec)
 
 }

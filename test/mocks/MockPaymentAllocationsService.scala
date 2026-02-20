@@ -16,28 +16,30 @@
 
 package mocks
 
-import connectors.PaymentAllocationsConnector
+//import connectors.PaymentAllocationsConnector
 import connectors.httpParsers.PaymentAllocationsHttpParser.PaymentAllocationsResponse
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.{mock, reset, when}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatest.{BeforeAndAfterEach, OptionValues}
+import services.PaymentAllocationsService
 
 import scala.concurrent.Future
 
-trait MockPaymentAllocationsConnector extends AnyWordSpecLike with Matchers with OptionValues with BeforeAndAfterEach {
+trait MockPaymentAllocationsService extends AnyWordSpecLike with Matchers with OptionValues with BeforeAndAfterEach {
 
-  val mockPaymentAllocationsConnector: PaymentAllocationsConnector = mock(classOf[PaymentAllocationsConnector])
+  //val mockPaymentAllocationsConnector: PaymentAllocationsConnector = mock(classOf[PaymentAllocationsConnector])
+  val mockPaymentAllocationsService: PaymentAllocationsService = mock(classOf[PaymentAllocationsService])
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    reset(mockPaymentAllocationsConnector)
+    reset(mockPaymentAllocationsService)
   }
 
   def mockGetPaymentAllocations(nino: String, paymentLot: String, paymentLotItem: String)
                                (response: PaymentAllocationsResponse): Unit = {
-    when(mockPaymentAllocationsConnector.getPaymentAllocations(
+    when(mockPaymentAllocationsService.getPaymentAllocations(
       nino = ArgumentMatchers.eq(nino),
       paymentLot = ArgumentMatchers.eq(paymentLot),
       paymentLotItem = ArgumentMatchers.eq(paymentLotItem)

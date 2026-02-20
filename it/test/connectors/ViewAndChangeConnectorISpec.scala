@@ -63,4 +63,48 @@ class ViewAndChangeConnectorISpec extends ComponentSpecBase {
 
     }
   }
+
+  ".getPaymentAllocations() is called" when {
+
+    s"the response is a $OK" should {
+
+      "return a valid model when successfully retrieved" in {
+
+        val nino = "AA000000A"
+        val paymentLot = "paymentLot"
+        val paymentLotItem = "paymentLotItem"
+
+        WiremockHelper.stubGet(
+          url = s"/cross-regime/payment-allocation/NINO/$nino/ITSA?paymentLot=$paymentLot&paymentLotItem=$paymentLotItem",
+          status = CREATED,
+          responseBody = Json.toJson("valid response").toString()
+        )
+
+        val result =
+          connector.getPaymentAllocations(nino, paymentLot, paymentLotItem).futureValue
+
+        result shouldBe Right("valid response")
+      }
+      "the response cannot be parsed" should {
+
+        "return INTERNAL_SERVER_ERROR with ErrorResponse" in {
+
+          val nino = "AA000000A"
+          val paymentLot = "paymentLot"
+          val paymentLotItem = "paymentLotItem"
+
+          WiremockHelper.stubGet(
+            url = s"/cross-regime/payment-allocation/NINO/$nino/ITSA?paymentLot=$paymentLot&paymentLotItem=$paymentLotItem",
+            status = CREATED,
+            responseBody = Json.toJson("invalid response").toString()
+          )
+
+          val result =
+            connector.getPaymentAllocations(nino, paymentLot, paymentLotItem).futureValue
+
+          result shouldBe Left(UnexpectedPaymentAllocationsResponse(CREATED, Json.toJson("invalid response").toString()))
+        }
+      }
+    }
+  }
 }

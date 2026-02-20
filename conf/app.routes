@@ -8,8 +8,8 @@ GET        /:nino/financial-details/credits/from/:from/to/:to        controllers
 
 GET        /:nino/payment-allocations/:paymentLot/:paymentLotItem    controllers.PaymentAllocationsController.getPaymentAllocations(nino, paymentLot, paymentLotItem)
 
-GET        /out-standing-charges/:idType/:idNumber/:taxYear         controllers.OutStandingChargesController.listOutStandingCharges(idType, idNumber, taxYear)
+GET        /out-standing-charges/:idType/:idNumber/:taxYear          controllers.OutStandingChargesController.listOutStandingCharges(idType, idNumber, taxYear)
 
-POST       /submit-claim-to-adjust-poa                              controllers.ClaimToAdjustPoaController.submitClaimToAdjustPoa()
+POST       /submit-claim-to-adjust-poa                               controllers.ClaimToAdjustPoaController.submitClaimToAdjustPoa()
 
-GET         /charge-history/:nino/chargeReference/:chargeReference 	    controllers.ChargeHistoryController.getChargeHistoryDetails(nino, chargeReference)
+GET        /charge-history/:nino/chargeReference/:chargeReference 	 controllers.ChargeHistoryController.getChargeHistoryDetails(nino, chargeReference)
