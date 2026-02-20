@@ -17,6 +17,8 @@
 package connectors
 
 import config.MicroserviceAppConfig
+import connectors.httpParsers.ClaimToAdjustPoaHttpParser.*
+import connectors.httpParsers.PaymentAllocationsHttpParser.{PaymentAllocationsReads, PaymentAllocationsResponse}
 import connectors.hip.HipConnectorDataHelper
 import connectors.httpParsers.ClaimToAdjustPoaHttpParser.*
 import connectors.httpParsers.ViewAndChangeHttpParser.{ViewAndChangeJsonResponse, given}
@@ -28,9 +30,10 @@ import play.api.Logger
 import play.api.http.Status.{INTERNAL_SERVER_ERROR, NOT_FOUND, OK, UNPROCESSABLE_ENTITY}
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.libs.ws.writeableOf_JsValue
+
+
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
-
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.duration.{Duration, SECONDS}
 import scala.concurrent.{ExecutionContext, Future}
@@ -138,6 +141,25 @@ class ViewAndChangeConnector @Inject()( val appConfig: MicroserviceAppConfig,
     }
   }
 
+  private[connectors] def paymentAllocationsUrl(nino: String): String = {
+    s"${appConfig.viewAndChangeBaseUrl}/cross-regime/payment-allocation/NINO/$nino/ITSA"
+  }
+
+  private[connectors] def queryParameters(paymentLot: String, paymentLotItem: String): Seq[(String, String)] = {
+    Seq(
+      "paymentLot" -> paymentLot,
+      "paymentLotItem" -> paymentLotItem
+    )
+  }
+
+  def getPaymentAllocations(nino: String, paymentLot: String, paymentLotItem: String)
+                           (implicit hc: HeaderCarrier): Future[PaymentAllocationsResponse] =
+    http
+      .get(url"${paymentAllocationsUrl(nino)}")
+      .transform(_.addQueryStringParameters(queryParameters(paymentLot, paymentLotItem): _*))
+      .execute[PaymentAllocationsResponse](PaymentAllocationsReads, ec)
+
+}
   private def handleUnprocessableStatusResponse(unprocessableResponse: HttpResponse): ChargeHistoryResponseError = {
     val notFoundCodes = Set("005", "014")
     unprocessableResponse.json.validate[HipResponseErrorsObject] match {

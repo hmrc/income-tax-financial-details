@@ -17,13 +17,13 @@
 package constants
 
 import models.claimToAdjustPoa.ClaimToAdjustPoaApiResponse.SuccessResponse
-import models.claimToAdjustPoa.ClaimToAdjustPoaResponse.ClaimToAdjustPoaResponse
 import models.claimToAdjustPoa.{ClaimToAdjustPoaRequest, MainIncomeLower}
+import models.claimToAdjustPoa.ClaimToAdjustPoaResponse.ClaimToAdjustPoaResponse
 import models.hip.chargeHistory.{ChargeHistoryDetails, ChargeHistorySuccess, ChargeHistorySuccessWrapper}
-import play.api.http.Status.CREATED
-import play.api.libs.json.{JsNull, JsObject, Json}
-
 import java.time.LocalDateTime
+import models.paymentAllocations.{AllocationDetail, PaymentAllocations}
+import play.api.http.Status.{CREATED, OK}
+import play.api.libs.json.{JsObject, Json}
 
 object ViewAndChangeConnectorIntegrationTestConstants {
 
@@ -65,6 +65,7 @@ object ViewAndChangeConnectorIntegrationTestConstants {
       )
     )
 
+
   val postClaimToAdjustPoaRequest = ClaimToAdjustPoaRequest(
     nino = "AA1111111A",
     taxYear = "2025",
@@ -105,5 +106,50 @@ object ViewAndChangeConnectorIntegrationTestConstants {
       "message" -> "Other validation error"
     )
   )
-  
+
+
+  val paymentLot = "1234567890"
+  val paymentLotItem = "1098765432"
+
+  val paymentAllocations: PaymentAllocations = PaymentAllocations(
+    amount = Some(1000.00),
+    method = Some("Payment by Card"),
+    reference = Some("reference"),
+    transactionDate = Some(LocalDate.parse("2023-12-25")),
+    allocations = Seq(
+      AllocationDetail(
+        transactionId = Some("1"),
+        from = Some(LocalDate.parse("2023-04-06")),
+        to = Some(LocalDate.parse("2024-04-05")),
+        chargeType = Some("ITSA-POA 1"),
+        mainType = Some("SA Payment on Account 1"),
+        amount = Some(500.00),
+        clearedAmount = Some(500.00),
+        chargeReference = Some("charge-ref-1")
+      )
+    )
+  )
+
+  val paymentAllocationsResponseBody: JsObject = Json.obj(
+    "paymentDetails" -> Json.arr(
+      Json.obj(
+        "paymentAmount" -> 1000.00,
+        "paymentMethod" -> "Payment by Card",
+        "paymentReference" -> "reference",
+        "valueDate" -> "2023-12-25",
+        "sapClearingDocsDetails" -> Json.arr(
+          Json.obj(
+            "sapDocNumber" -> "1",
+            "taxPeriodStartDate" -> "2023-04-06",
+            "taxPeriodEndDate" -> "2024-04-05",
+            "chargeType" -> "ITSA-POA 1",
+            "mainType" -> "SA Payment on Account 1",
+            "amount" -> 500.00,
+            "clearedAmount" -> 500.00,
+            "chargeReference" -> "charge-ref-1"
+          )
+        )
+      )
+    )
+  )
 }

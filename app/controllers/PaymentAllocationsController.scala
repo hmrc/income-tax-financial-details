@@ -16,7 +16,7 @@
 
 package controllers
 
-import connectors.PaymentAllocationsConnector
+import services.PaymentAllocationsService
 import connectors.httpParsers.PaymentAllocationsHttpParser.NotFoundResponse
 import controllers.predicates.AuthenticationPredicate
 import play.api.libs.json.Json
@@ -29,12 +29,12 @@ import scala.concurrent.ExecutionContext
 @Singleton
 class PaymentAllocationsController @Inject()(authentication: AuthenticationPredicate,
                                              cc: ControllerComponents,
-                                             paymentAllocationsConnector: PaymentAllocationsConnector)
+                                             paymentAllocationsService: PaymentAllocationsService)
                                             (implicit ec: ExecutionContext) extends BackendController(cc) {
 
   def getPaymentAllocations(nino: String, paymentLot: String, paymentLotItem: String): Action[AnyContent] = {
     authentication.async { implicit request =>
-      paymentAllocationsConnector.getPaymentAllocations(
+      paymentAllocationsService.getPaymentAllocations(
         nino = nino,
         paymentLot = paymentLot,
         paymentLotItem = paymentLotItem
