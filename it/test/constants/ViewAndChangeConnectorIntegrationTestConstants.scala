@@ -25,6 +25,8 @@ import models.paymentAllocations.{AllocationDetail, PaymentAllocations}
 import play.api.http.Status.{CREATED, OK}
 import play.api.libs.json.{JsObject, Json}
 
+import java.time.LocalDate
+
 object ViewAndChangeConnectorIntegrationTestConstants {
 
   val getChargeHistoryResponseBody: JsObject =
