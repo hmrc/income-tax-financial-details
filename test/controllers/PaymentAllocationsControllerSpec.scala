@@ -18,15 +18,19 @@ package controllers
 
 import connectors.httpParsers.PaymentAllocationsHttpParser.{NotFoundResponse, UnexpectedResponse}
 import controllers.predicates.AuthenticationPredicate
-import mocks.{MockMicroserviceAuthConnector, MockPaymentAllocationsConnector}
+import mocks.MockMicroserviceAuthConnector
 import models.paymentAllocations.{paymentAllocationsFull, paymentAllocationsWriteJsonFull}
+import org.mockito.ArgumentMatchers
+import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.mvc.ControllerComponents
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import services.PaymentAllocationsService
 
-class PaymentAllocationsControllerSpec extends ControllerBaseSpec with MockPaymentAllocationsConnector with MockMicroserviceAuthConnector {
+import scala.concurrent.Future
+
+class PaymentAllocationsControllerSpec extends ControllerBaseSpec with MockMicroserviceAuthConnector {
 
   val controllerComponents: ControllerComponents = stubControllerComponents()
   val mockService = mock[PaymentAllocationsService]
@@ -44,7 +48,13 @@ class PaymentAllocationsControllerSpec extends ControllerBaseSpec with MockPayme
     s"return $OK with the retrieved payment allocations" when {
       "the connector returns the payment allocations" in {
         mockAuth()
-        mockGetPaymentAllocations(nino, paymentLot, paymentLotItem)(Right(paymentAllocationsFull))
+        when(
+          mockService.getPaymentAllocations(
+            ArgumentMatchers.eq(nino),
+            ArgumentMatchers.eq(paymentLot),
+            ArgumentMatchers.eq(paymentLotItem)
+          )(ArgumentMatchers.any(), ArgumentMatchers.any())
+        ).thenReturn(Future.successful(Right(paymentAllocationsFull)))
 
         val result = PaymentAllocationsController.getPaymentAllocations(nino, paymentLot, paymentLotItem)(FakeRequest())
 
@@ -53,9 +63,15 @@ class PaymentAllocationsControllerSpec extends ControllerBaseSpec with MockPayme
       }
     }
     s"return a $NOT_FOUND response" when {
-      "the connector returns a NotFoundResponse" in {
+      "the service returns a NotFoundResponse" in {
         mockAuth()
-        mockGetPaymentAllocations(nino, paymentLot, paymentLotItem)(Left(NotFoundResponse))
+        when(
+          mockService.getPaymentAllocations(
+            ArgumentMatchers.eq(nino),
+            ArgumentMatchers.eq(paymentLot),
+            ArgumentMatchers.eq(paymentLotItem)
+          )(ArgumentMatchers.any(), ArgumentMatchers.any())
+        ).thenReturn(Future.successful(Left(NotFoundResponse)))
 
         val result = PaymentAllocationsController.getPaymentAllocations(nino, paymentLot, paymentLotItem)(FakeRequest())
 
@@ -63,10 +79,17 @@ class PaymentAllocationsControllerSpec extends ControllerBaseSpec with MockPayme
         contentAsString(result) shouldBe "No payment allocations found"
       }
     }
+
     s"return $INTERNAL_SERVER_ERROR" when {
-      "the connector returns an error" in {
+      "the service returns an error" in {
         mockAuth()
-        mockGetPaymentAllocations(nino, paymentLot, paymentLotItem)(Left(UnexpectedResponse))
+        when(
+          mockService.getPaymentAllocations(
+            ArgumentMatchers.eq(nino),
+            ArgumentMatchers.eq(paymentLot),
+            ArgumentMatchers.eq(paymentLotItem)
+          )(ArgumentMatchers.any(), ArgumentMatchers.any())
+        ).thenReturn(Future.successful(Left(UnexpectedResponse)))
 
         val result = PaymentAllocationsController.getPaymentAllocations(nino, paymentLot, paymentLotItem)(FakeRequest())
 

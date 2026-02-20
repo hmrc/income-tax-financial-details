@@ -16,10 +16,11 @@
 
 package connectors
 
-import constants.ViewAndChangeConnectorIntegrationTestConstants.{invalidResponseBody, request, responseBody, validResponseBody}
+import constants.ViewAndChangeConnectorIntegrationTestConstants.{invalidResponseBody, paymentAllocations, request, responseBody, validResponseBody}
 import helpers.{ComponentSpecBase, WiremockHelper}
 import models.claimToAdjustPoa.ClaimToAdjustPoaResponse.ClaimToAdjustPoaResponse
-import play.api.http.Status.{CREATED, INTERNAL_SERVER_ERROR}
+import play.api.http.Status.{CREATED, INTERNAL_SERVER_ERROR, OK}
+import play.api.libs.json.Json
 
 class ViewAndChangeConnectorISpec extends ComponentSpecBase {
 
@@ -66,7 +67,7 @@ class ViewAndChangeConnectorISpec extends ComponentSpecBase {
 
   ".getPaymentAllocations() is called" when {
 
-    s"the response is a $OK" should {
+    s"the response is $OK" should {
 
       "return a valid model when successfully retrieved" in {
 
@@ -77,13 +78,13 @@ class ViewAndChangeConnectorISpec extends ComponentSpecBase {
         WiremockHelper.stubGet(
           url = s"/cross-regime/payment-allocation/NINO/$nino/ITSA?paymentLot=$paymentLot&paymentLotItem=$paymentLotItem",
           status = CREATED,
-          responseBody = Json.toJson("valid response").toString()
+          body = Json.toJson("valid response").toString()
         )
 
         val result =
           connector.getPaymentAllocations(nino, paymentLot, paymentLotItem).futureValue
 
-        result shouldBe Right("valid response")
+        result shouldBe Right(paymentAllocations)
       }
       "the response cannot be parsed" should {
 
@@ -96,13 +97,13 @@ class ViewAndChangeConnectorISpec extends ComponentSpecBase {
           WiremockHelper.stubGet(
             url = s"/cross-regime/payment-allocation/NINO/$nino/ITSA?paymentLot=$paymentLot&paymentLotItem=$paymentLotItem",
             status = CREATED,
-            responseBody = Json.toJson("invalid response").toString()
+            body = Json.toJson("invalid response").toString()
           )
 
           val result =
             connector.getPaymentAllocations(nino, paymentLot, paymentLotItem).futureValue
 
-          result shouldBe Left(UnexpectedPaymentAllocationsResponse(CREATED, Json.toJson("invalid response").toString()))
+          result shouldBe Left(INTERNAL_SERVER_ERROR)
         }
       }
     }
