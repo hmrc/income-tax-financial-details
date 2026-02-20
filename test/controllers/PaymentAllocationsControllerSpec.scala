@@ -18,21 +18,22 @@ package controllers
 
 import connectors.httpParsers.PaymentAllocationsHttpParser.{NotFoundResponse, UnexpectedResponse}
 import controllers.predicates.AuthenticationPredicate
-import mocks.{MockMicroserviceAuthConnector, MockPaymentAllocationsService}
+import mocks.{MockMicroserviceAuthConnector, MockPaymentAllocationsConnector}
 import models.paymentAllocations.{paymentAllocationsFull, paymentAllocationsWriteJsonFull}
+import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.mvc.ControllerComponents
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{stubControllerComponents, *}
+import play.api.test.Helpers.*
 import services.PaymentAllocationsService
 
-class PaymentAllocationsControllerSpec extends ControllerBaseSpec with MockPaymentAllocationsService with MockMicroserviceAuthConnector {
+class PaymentAllocationsControllerSpec extends ControllerBaseSpec with MockPaymentAllocationsConnector with MockMicroserviceAuthConnector {
 
   val controllerComponents: ControllerComponents = stubControllerComponents()
-
-  object PaymentAllocationsService extends PaymentAllocationsService(
+  val mockService = mock[PaymentAllocationsService]
+  object PaymentAllocationsController extends PaymentAllocationsController(
     authentication = new AuthenticationPredicate(mockMicroserviceAuthConnector, controllerComponents, microserviceAppConfig),
     cc = controllerComponents,
-    paymentAllocationsService = mockPaymentAllocationsService
+    paymentAllocationsService = mockService
   )
 
   val nino: String = "AA000000A"
@@ -45,7 +46,7 @@ class PaymentAllocationsControllerSpec extends ControllerBaseSpec with MockPayme
         mockAuth()
         mockGetPaymentAllocations(nino, paymentLot, paymentLotItem)(Right(paymentAllocationsFull))
 
-        val result = PaymentAllocationsService.getPaymentAllocations(nino, paymentLot, paymentLotItem)(FakeRequest())
+        val result = PaymentAllocationsController.getPaymentAllocations(nino, paymentLot, paymentLotItem)(FakeRequest())
 
         status(result) shouldBe OK
         contentAsJson(result) shouldBe paymentAllocationsWriteJsonFull
@@ -56,7 +57,7 @@ class PaymentAllocationsControllerSpec extends ControllerBaseSpec with MockPayme
         mockAuth()
         mockGetPaymentAllocations(nino, paymentLot, paymentLotItem)(Left(NotFoundResponse))
 
-        val result = PaymentAllocationsService.getPaymentAllocations(nino, paymentLot, paymentLotItem)(FakeRequest())
+        val result = PaymentAllocationsController.getPaymentAllocations(nino, paymentLot, paymentLotItem)(FakeRequest())
 
         status(result) shouldBe NOT_FOUND
         contentAsString(result) shouldBe "No payment allocations found"
@@ -67,7 +68,7 @@ class PaymentAllocationsControllerSpec extends ControllerBaseSpec with MockPayme
         mockAuth()
         mockGetPaymentAllocations(nino, paymentLot, paymentLotItem)(Left(UnexpectedResponse))
 
-        val result = PaymentAllocationsService.getPaymentAllocations(nino, paymentLot, paymentLotItem)(FakeRequest())
+        val result = PaymentAllocationsController.getPaymentAllocations(nino, paymentLot, paymentLotItem)(FakeRequest())
 
         status(result) shouldBe INTERNAL_SERVER_ERROR
         contentAsString(result) shouldBe "Failed to retrieve payment allocations"
