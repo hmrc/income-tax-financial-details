@@ -16,15 +16,18 @@
 
 package connectors
 
-import constants.ViewAndChangeConnectorIntegrationTestConstants.{invalidResponseBody, request, responseBody, validResponseBody}
+import constants.ViewAndChangeConnectorIntegrationTestConstants.*
 import helpers.{ComponentSpecBase, WiremockHelper}
 import models.claimToAdjustPoa.ClaimToAdjustPoaResponse.ClaimToAdjustPoaResponse
-import play.api.http.Status.{CREATED, INTERNAL_SERVER_ERROR}
+import models.hip.chargeHistory.{ChargeHistoryError, ChargeHistoryNotFound}
+import org.scalactic.Prettifier.default
+import play.api.http.Status.*
 
 class ViewAndChangeConnectorISpec extends ComponentSpecBase {
 
-  val connector: ViewAndChangeConnector = app.injector.instanceOf[ViewAndChangeConnector]
+  val viewAndChangeConnector: ViewAndChangeConnector = app.injector.instanceOf[ViewAndChangeConnector]
   val postClaimToAdjustPoaUrl = "/income-tax/calculations/POA/ClaimToAdjust"
+  val getChargeHistoryUrl = "/etmp/RESTAdapter/ITSA/TaxPayer/GetChargeHistory?idType=NINO&idValue=123&chargeReference=456"
 
   ".postClaimToAdjustPoa() is called" when {
 
@@ -35,32 +38,131 @@ class ViewAndChangeConnectorISpec extends ComponentSpecBase {
         WiremockHelper.stubPost(
           url = postClaimToAdjustPoaUrl,
           status = CREATED,
-          responseBody = responseBody.toString()
+          responseBody = postClaimToAdjustPoaResponseBody.toString()
         )
 
         val result =
-          connector.postClaimToAdjustPoa(request).futureValue
+          viewAndChangeConnector.postClaimToAdjustPoa(postClaimToAdjustPoaRequest).futureValue
 
-        result shouldBe validResponseBody
+        result shouldBe postClaimToAdjustPoaValidResponseBody
       }
+    }
 
-      "the response cannot be parsed" should {
+    "the response cannot be parsed" should {
 
-        "return INTERNAL_SERVER_ERROR with ErrorResponse" in {
+      "return INTERNAL_SERVER_ERROR with ErrorResponse" in {
 
-          WiremockHelper.stubPost(
-            url = postClaimToAdjustPoaUrl,
-            status = CREATED,
-            responseBody = invalidResponseBody.toString()
-          )
+        WiremockHelper.stubPost(
+          url = postClaimToAdjustPoaUrl,
+          status = CREATED,
+          responseBody = postClaimToAdjustPoaInvalidResponseBody.toString()
+        )
 
-          val result =
-            connector.postClaimToAdjustPoa(request).futureValue
+        val result =
+          viewAndChangeConnector.postClaimToAdjustPoa(postClaimToAdjustPoaRequest).futureValue
 
-          result.status shouldBe INTERNAL_SERVER_ERROR
-        }
+        result.status shouldBe INTERNAL_SERVER_ERROR
       }
-
     }
   }
+
+  ".getChargeHistory() is called" when {
+
+    "the response is a 200 - OK" should {
+
+      "return a valid model when successfully retrieved" in {
+
+        WiremockHelper.stubGet(
+          url = getChargeHistoryUrl,
+          status = OK,
+          body = getChargeHistoryResponseBody.toString()
+        )
+
+        val result =
+          viewAndChangeConnector.getChargeHistory("123", "456").futureValue
+
+        result shouldBe Right(getChargeHistoryExpectedModel)
+      }
+    }
+  }
+
+  ".getChargeHistory() is called" when {
+
+    "the response is a 404 - NOT_FOUND" should {
+
+      "return ChargeHistoryNotFound" in {
+
+        WiremockHelper.stubGet(
+          url = getChargeHistoryUrl,
+          status = NOT_FOUND,
+          body = chargeHistoryNotFoundResponseBody.toString()
+        )
+
+        val result =
+          viewAndChangeConnector.getChargeHistory("123", "456").futureValue
+
+        result shouldBe Left(
+          ChargeHistoryNotFound(
+            status = NOT_FOUND,
+            reason = chargeHistoryNotFoundResponseBody.toString()
+          )
+        )
+      }
+    }
+  }
+
+  ".getChargeHistory() is called" when {
+
+    "the response is a 422 - UNPROCESSABLE_ENTITY" should {
+
+      "return ChargeHistoryError if the JSON cannot be parsed" in {
+
+        WiremockHelper.stubGet(
+          url = getChargeHistoryUrl,
+          status = UNPROCESSABLE_ENTITY,
+          body = chargeHistoryErrorResponseBody.toString()
+        )
+
+        val result =
+          viewAndChangeConnector.getChargeHistory("123", "456").futureValue
+
+        result shouldBe Left(
+          ChargeHistoryError(UNPROCESSABLE_ENTITY, chargeHistoryErrorResponseBody.toString())
+        )
+      }
+
+      "return ChargeHistoryNotFound if the error code matches 005 or 014" in {
+
+        WiremockHelper.stubGet(
+          url = getChargeHistoryUrl,
+          status = UNPROCESSABLE_ENTITY,
+          body = chargeHistoryErrorResponseBody.toString()
+        )
+
+        val result =
+          viewAndChangeConnector.getChargeHistory("123", "456").futureValue
+
+        result shouldBe Left(
+          ChargeHistoryError(UNPROCESSABLE_ENTITY, chargeHistoryErrorResponseBody.toString())
+        )
+      }
+
+      "return ChargeHistoryError if the JSON parses but code is not 005/014" in {
+
+        WiremockHelper.stubGet(
+          url = getChargeHistoryUrl,
+          status = UNPROCESSABLE_ENTITY,
+          body = chargeHistoryValidationError.toString()
+        )
+
+        val result =
+          viewAndChangeConnector.getChargeHistory("123", "456").futureValue
+
+        result shouldBe Left(
+          ChargeHistoryError(UNPROCESSABLE_ENTITY, chargeHistoryValidationError.toString())
+        )
+      }
+    }
+  }
+
 }
