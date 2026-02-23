@@ -22,7 +22,7 @@ import models.claimToAdjustPoa.ClaimToAdjustPoaResponse.ClaimToAdjustPoaResponse
 import models.hip.chargeHistory.{ChargeHistoryDetails, ChargeHistorySuccess, ChargeHistorySuccessWrapper}
 import java.time.LocalDateTime
 import models.paymentAllocations.{AllocationDetail, PaymentAllocations}
-import play.api.http.Status.{CREATED, OK}
+import play.api.http.Status.CREATED
 import play.api.libs.json.{JsObject, Json}
 
 import java.time.LocalDate
@@ -128,6 +128,28 @@ object ViewAndChangeConnectorIntegrationTestConstants {
         amount = Some(500.00),
         clearedAmount = Some(500.00),
         chargeReference = Some("charge-ref-1")
+      )
+    )
+  )
+  val paymentAllocationsJson: JsObject = Json.obj(
+    "paymentDetails" -> Json.arr(
+      Json.obj(
+        "paymentAmount" -> 1000.00,
+        "paymentMethod" -> "method",
+        "valueDate" -> "2022-06-23",
+        "paymentReference" -> "reference",
+        "sapClearingDocsDetails" -> Json.arr(
+          Json.obj(
+            "sapDocNumber" -> "transactionId",
+            "taxPeriodStartDate" -> "2022-06-23",
+            "taxPeriodEndDate" -> "2022-06-23",
+            "chargeType" -> "type",
+            "mainType" -> "mainType",
+            "amount" -> 1500.00,
+            "clearedAmount" -> 500.00,
+            "chargeReference" -> "chargeReference"
+          )
+        )
       )
     )
   )

@@ -16,13 +16,16 @@
 
 package connectors
 
-<<<<<<< HEAD
-import connectors.httpParsers.ChargeHttpParser.{UnexpectedChargeErrorResponse, UnexpectedChargeResponse}
-import constants.FinancialDetailIntegrationTestConstants.chargeJson
+import constants.BaseIntegrationTestConstants.testNino
 import constants.ViewAndChangeConnectorIntegrationTestConstants.*
-import helpers.servicemocks.ViewAndChangeStub
 import helpers.{ComponentSpecBase, WiremockHelper}
 import models.claimToAdjustPoa.ClaimToAdjustPoaResponse.ClaimToAdjustPoaResponse
+import models.paymentAllocations.PaymentAllocations
+import play.api.http.Status.{BAD_REQUEST, CREATED, INTERNAL_SERVER_ERROR, OK}
+import play.api.libs.ws.WSResponse
+import connectors.httpParsers.ChargeHttpParser.{UnexpectedChargeErrorResponse, UnexpectedChargeResponse}
+import constants.FinancialDetailIntegrationTestConstants.chargeJson
+import helpers.servicemocks.ViewAndChangeStub
 import models.credits.CreditsModel
 import models.financialDetails.Payment
 import models.hip.chargeHistory.{ChargeHistoryError, ChargeHistoryNotFound}
@@ -32,18 +35,12 @@ import play.api.libs.json.{JsValue, Json}
 import utils.AChargesResponse
 
 import java.time.LocalDate
-=======
-import constants.ViewAndChangeConnectorIntegrationTestConstants.{invalidResponseBody, paymentAllocations, request, responseBody, validResponseBody}
-import helpers.{ComponentSpecBase, WiremockHelper}
-import models.claimToAdjustPoa.ClaimToAdjustPoaResponse.ClaimToAdjustPoaResponse
-import play.api.http.Status.{CREATED, INTERNAL_SERVER_ERROR, OK}
-import play.api.libs.json.Json
->>>>>>> 4ed52c7 (Error with final test in ViewAndChangeConnectorISpec.scala - need to understand what the result should be)
 
 class ViewAndChangeConnectorISpec extends ComponentSpecBase {
 
   val viewAndChangeConnector: ViewAndChangeConnector = app.injector.instanceOf[ViewAndChangeConnector]
   val postClaimToAdjustPoaUrl = "/income-tax/calculations/POA/ClaimToAdjust"
+  val getPaymentAllocationsUrl = s"/cross-regime/payment-allocation/NINO/$testNino/ITSA?paymentLot=$paymentLot&paymentLotItem=$paymentLotItem"
   val getChargeHistoryUrl = "/etmp/RESTAdapter/ITSA/TaxPayer/GetChargeHistory?idType=NINO&idValue=123&chargeReference=456"
 
   private val nino = "BB123456A"
@@ -376,43 +373,48 @@ class ViewAndChangeConnectorISpec extends ComponentSpecBase {
 }
   ".getPaymentAllocations() is called" when {
 
-    s"the response is $OK" should {
+    s"return $OK" when {
+      "payment allocations are successfully retrieved" in {
+        Given("the user is authorised")
+        isAuthorised(true)
 
-      "return a valid model when successfully retrieved" in {
-
-        val nino = "AA000000A"
-        val paymentLot = "paymentLot"
-        val paymentLotItem = "paymentLotItem"
-
+        And("the call to retrieve payment allocations is stubbed")
         WiremockHelper.stubGet(
-          url = s"/cross-regime/payment-allocation/NINO/$nino/ITSA?paymentLot=$paymentLot&paymentLotItem=$paymentLotItem",
-          status = CREATED,
-          body = Json.toJson("valid response").toString()
+          url = getPaymentAllocationsUrl,
+          status = OK,
+          body = paymentAllocationsResponseBody.toString
         )
 
-        val result =
-          connector.getPaymentAllocations(nino, paymentLot, paymentLotItem).futureValue
+        When(s"I call GET ${controllers.routes.PaymentAllocationsController.getPaymentAllocations(testNino, paymentLot, paymentLotItem)}")
+        val res: WSResponse = IncomeTaxFinancialDetails.getPaymentAllocations(testNino, paymentLot, paymentLotItem)
 
-        result shouldBe Right(paymentAllocations)
-      }
-      "the response cannot be parsed" should {
-
-        "return INTERNAL_SERVER_ERROR with ErrorResponse" in {
-
-          val nino = "AA000000A"
-          val paymentLot = "paymentLot"
-          val paymentLotItem = "paymentLotItem"
-
-          WiremockHelper.stubGet(
-            url = s"/cross-regime/payment-allocation/NINO/$nino/ITSA?paymentLot=$paymentLot&paymentLotItem=$paymentLotItem",
-            status = CREATED,
-            body = Json.toJson("invalid response").toString()
-          )
-
-          val result =
-            connector.getPaymentAllocations(nino, paymentLot, paymentLotItem).futureValue
-
-          result shouldBe Left(INTERNAL_SERVER_ERROR)
-        }
+        Then("a successful response is returned with the payment allocations")
+        res should have(
+          httpStatus(OK),
+          jsonBodyMatching(Json.toJson(paymentAllocations))
+        )
       }
     }
+    s"return $INTERNAL_SERVER_ERROR" when {
+      "an unexpected status was returned when retrieving payment allocations" in {
+        Given("the user is authorised")
+        isAuthorised(true)
+
+        And("the call to retrieve payment allocations is stubbed")
+        WiremockHelper.stubGet(
+          url = getPaymentAllocationsUrl,
+          status = BAD_REQUEST,
+          body= ""
+        )
+
+        When(s"I call GET ${controllers.routes.PaymentAllocationsController.getPaymentAllocations(testNino, paymentLot, paymentLotItem)}")
+        val res: WSResponse = IncomeTaxFinancialDetails.getPaymentAllocations(testNino, paymentLot, paymentLotItem)
+
+        Then("an internal server error response is returned")
+        res should have(
+          httpStatus(INTERNAL_SERVER_ERROR)
+        )
+      }
+    }
+  }
+}
