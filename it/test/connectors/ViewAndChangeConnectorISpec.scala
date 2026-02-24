@@ -25,14 +25,12 @@ import helpers.{ComponentSpecBase, WiremockHelper}
 import models.outStandingCharges.{OutStandingCharge, OutstandingChargesSuccessResponse}
 import play.api.http.Status.{INTERNAL_SERVER_ERROR, NOT_FOUND, OK, CREATED}
 import play.api.libs.json.{JsValue, Json}
-import constants.ViewAndChangeConnectorIntegrationTestConstants.{invalidResponseBody, request, responseBody, validResponseBody}
 import models.claimToAdjustPoa.ClaimToAdjustPoaResponse.ClaimToAdjustPoaResponse
 import models.credits.CreditsModel
 import models.financialDetails.Payment
 import models.hip.chargeHistory.{ChargeHistoryError, ChargeHistoryNotFound}
 import org.scalactic.Prettifier.default
 import play.api.http.Status.*
-import play.api.libs.json.{JsValue, Json}
 import utils.AChargesResponse
 
 import java.time.LocalDate
@@ -64,7 +62,7 @@ class ViewAndChangeConnectorISpec extends ComponentSpecBase {
 
           WiremockHelper.stubGet(url, OK, requestBody.toString())
 
-          val result = connector.listOutStandingCharges(idType, idNumber, taxYearEndDate).futureValue
+          val result = viewAndChangeConnector.listOutStandingCharges(idType, idNumber, taxYearEndDate).futureValue
 
           val expected = Right(OutstandingChargesSuccessResponse(List(OutStandingCharge("LATE", Some("2021-01-31"), 123456.78, 1234))))
 
@@ -79,7 +77,7 @@ class ViewAndChangeConnectorISpec extends ComponentSpecBase {
 
           WiremockHelper.stubGet(url, NOT_FOUND, responseError)
 
-          val result = connector.listOutStandingCharges(idType, idNumber, taxYearEndDate).futureValue
+          val result = viewAndChangeConnector.listOutStandingCharges(idType, idNumber, taxYearEndDate).futureValue
 
           val expected = Left(UnexpectedOutStandingChargeResponse(NOT_FOUND, responseError))
 
@@ -95,7 +93,7 @@ class ViewAndChangeConnectorISpec extends ComponentSpecBase {
 
           WiremockHelper.stubGet(url, INTERNAL_SERVER_ERROR, responseError)
 
-          val result = connector.listOutStandingCharges(idType, idNumber, taxYearEndDate).futureValue
+          val result = viewAndChangeConnector.listOutStandingCharges(idType, idNumber, taxYearEndDate).futureValue
 
           val expected = Left(OutStandingChargeErrorResponse)
 
