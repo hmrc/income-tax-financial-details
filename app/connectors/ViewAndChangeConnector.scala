@@ -20,6 +20,11 @@ import config.MicroserviceAppConfig
 import connectors.hip.HipConnectorDataHelper
 import connectors.httpParsers.ClaimToAdjustPoaHttpParser.*
 import connectors.httpParsers.ViewAndChangeHttpParser.{ViewAndChangeJsonResponse, given}
+import connectors.httpParsers.OutStandingChargesHttpParser.{OutStandingChargeResponse, OutStandingChargesReads}
+import play.api.Logging
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
+import uk.gov.hmrc.http.client.HttpClientV2
+import connectors.httpParsers.ClaimToAdjustPoaHttpParser._
 import models.claimToAdjustPoa.ClaimToAdjustPoaRequest
 import models.claimToAdjustPoa.ClaimToAdjustPoaResponse.{ClaimToAdjustPoaResponse, ErrorResponse}
 import models.hip.chargeHistory.{ChargeHistoryError, ChargeHistoryNotFound, ChargeHistoryResponseError, ChargeHistorySuccessWrapper}
@@ -27,9 +32,9 @@ import models.hip.{GetChargeHistoryHipApi, HipResponseErrorsObject}
 import play.api.Logger
 import play.api.http.Status.{INTERNAL_SERVER_ERROR, NOT_FOUND, OK, UNPROCESSABLE_ENTITY}
 import play.api.libs.json.{JsError, JsSuccess, Json}
+import play.api.libs.json.Json
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import play.api.libs.ws.writeableOf_JsValue
-import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.duration.{Duration, SECONDS}
@@ -39,6 +44,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class ViewAndChangeConnector @Inject()( val appConfig: MicroserviceAppConfig,
                                        val http: HttpClientV2)
                                       ( implicit ec: ExecutionContext )extends RawResponseReads with HipConnectorDataHelper {
+  def listOutStandingChargesUrl(idType: String, idNumber: String, taxYearEndDate: String): String =
+    s"${appConfig.viewAndChangeBaseUrl}/income-tax/charges/outstanding/$idType/$idNumber/$taxYearEndDate"
 
   private def base(nino: String): String =
     s"${appConfig.viewAndChangeBaseUrl}/income-tax-view-change/$nino/financial-details"
@@ -74,6 +81,17 @@ class ViewAndChangeConnector @Inject()( val appConfig: MicroserviceAppConfig,
                       (implicit hc: HeaderCarrier): Future[ViewAndChangeJsonResponse] = {
     val url = s"${base(nino)}/only-open-items"
     http.get(url"$url").execute[ViewAndChangeJsonResponse]
+  }
+
+  def listOutStandingCharges(idType: String, idNumber: String, taxYearEndDate: String)
+                            (implicit headerCarrier: HeaderCarrier): Future[OutStandingChargeResponse] = {
+
+    val url = listOutStandingChargesUrl(idType, idNumber, taxYearEndDate)
+
+
+      .get(url"$url")
+      .setHeader(appConfig.desAuthHeaders: _*)
+      .execute[OutStandingChargeResponse](OutStandingChargesReads, ec)
   }
 
   def postClaimToAdjustPoa(request: ClaimToAdjustPoaRequest)
@@ -156,5 +174,4 @@ class ViewAndChangeConnector @Inject()( val appConfig: MicroserviceAppConfig,
         }
     }
   }
-
 }

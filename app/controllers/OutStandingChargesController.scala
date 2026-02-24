@@ -16,11 +16,11 @@
 
 package controllers
 
-import connectors.OutStandingChargesConnector
 import connectors.httpParsers.OutStandingChargesHttpParser.UnexpectedOutStandingChargeResponse
 import controllers.predicates.AuthenticationPredicate
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import services.OutStandingChargesService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.{Inject, Singleton}
@@ -30,7 +30,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class OutStandingChargesController @Inject()(authentication: AuthenticationPredicate,
                                              cc: ControllerComponents,
-                                             connector: OutStandingChargesConnector)
+                                             service: OutStandingChargesService)
                                             (implicit ec: ExecutionContext) extends BackendController(cc) {
 
   def listOutStandingCharges(idType: String, idNumber: String, taxYearEndDate: String): Action[AnyContent] =
@@ -38,7 +38,7 @@ class OutStandingChargesController @Inject()(authentication: AuthenticationPredi
       if (idType.equalsIgnoreCase("UTR") && !idNumber.matches("^[0-9]{10}$")) {
         Future.successful(InternalServerError("Invalid UTR pattern"))
       } else {
-        connector.listOutStandingCharges(
+        service.listOutStandingCharges(
           idType = idType,
           idNumber = idNumber,
           taxYearEndDate = taxYearEndDate
