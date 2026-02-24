@@ -18,8 +18,9 @@ package controllers
 
 import constants.BaseIntegrationTestConstants.*
 import constants.FinancialDetailIntegrationTestConstants.*
-import helpers.ComponentSpecBase
+import helpers.{ComponentSpecBase, WiremockHelper}
 import helpers.servicemocks.DesChargesStub.*
+import helpers.servicemocks.ViewAndChangeStub
 import models.financialDetails.hip.ChargesHipResponse
 import play.api.http.Status.*
 import play.api.libs.json.{JsValue, Json}
@@ -28,10 +29,11 @@ import play.api.libs.ws.WSResponse
 
 
 abstract class FinancialDetailsControllerISpec extends ComponentSpecBase {
-
+  private val from = "from"
+  private val to = "to"
   s"GET ${controllers.routes.FinancialDetailsController.getOnlyOpenItems(testNino)}" should {
     s"return $OK" when {
-      "charge details are successfully retrieved" in {
+      "open items are successfully retrieved" in {
         isAuthorised(true)
         stubGetOnlyOpenItems(testNino)(
           status = OK,
@@ -55,7 +57,7 @@ abstract class FinancialDetailsControllerISpec extends ComponentSpecBase {
     }
 
     s"return $NOT_FOUND" when {
-      "an unexpected status with NOT_FOUND was returned when retrieving charge details" in {
+      "an unexpected status with NOT_FOUND was returned when retrieving open items" in {
         isAuthorised(true)
         val errorJson = Json.obj("code" -> "NO_DATA_FOUND", "reason" -> "The remote endpoint has indicated that no data can be found.")
         stubGetOnlyOpenItems(testNino)(
@@ -85,16 +87,39 @@ abstract class FinancialDetailsControllerISpec extends ComponentSpecBase {
         )
       }
 
-      "an unexpected status was returned when retrieving charge details" in {
-        isAuthorised(true)
-        stubGetOnlyOpenItems(testNino)(
+      "an unexpected status was returned when retrieving open items" in {
+        stubGetChargeDetails(testNino, from, to)(
           status = SERVICE_UNAVAILABLE
         )
+
+        stubGetOnlyOpenItems(testNino)(status = SERVICE_UNAVAILABLE)
+
+        val vcOnlyOpenItemsUrl = s"/income-tax-view-change/$testNino/financial-details/only-open-items"
+        WiremockHelper.stubGet(vcOnlyOpenItemsUrl, SERVICE_UNAVAILABLE, "")
 
         val res: WSResponse = IncomeTaxFinancialDetails.getOnlyOpenItems(testNino)
 
         res should have(
           httpStatus(INTERNAL_SERVER_ERROR)
+        )
+      }
+      "the call to HiP fails but ViewAndChange succeeds" in {
+        isAuthorised(true)
+
+        stubGetOnlyOpenItems(testNino)(
+          status = SERVICE_UNAVAILABLE
+        )
+
+        ViewAndChangeStub.stubGetOnlyOpenItems(testNino)(
+          status = OK,
+          body = chargeJson.toString()
+        )
+
+        val res: WSResponse = IncomeTaxFinancialDetails.getOnlyOpenItems(testNino)
+
+        res should have(
+          httpStatus(OK),
+          jsonBodyMatching(chargeJson)
         )
       }
     }
