@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,47 +20,251 @@ import constants.ViewAndChangeConnectorIntegrationTestConstants.{invalidResponse
 import helpers.{ComponentSpecBase, WiremockHelper}
 import models.claimToAdjustPoa.ClaimToAdjustPoaResponse.ClaimToAdjustPoaResponse
 import play.api.http.Status.{CREATED, INTERNAL_SERVER_ERROR}
+import constants.FinancialDetailIntegrationTestConstants.chargeJson
+import connectors.httpParsers.ChargeHttpParser.{UnexpectedChargeErrorResponse, UnexpectedChargeResponse}
+import helpers.servicemocks.ViewAndChangeStub
+import models.credits.CreditsModel
+import models.financialDetails.Payment
+import play.api.http.Status.{BAD_REQUEST, NOT_FOUND, OK}
+import play.api.libs.json.{JsValue, Json}
+import utils.AChargesResponse
+
+import java.time.LocalDate
 
 class ViewAndChangeConnectorISpec extends ComponentSpecBase {
 
-  val connector: ViewAndChangeConnector = app.injector.instanceOf[ViewAndChangeConnector]
-  val postClaimToAdjustPoaUrl = "/income-tax/calculations/POA/ClaimToAdjust"
+  private val connector: ViewAndChangeConnector =
+    app.injector.instanceOf[ViewAndChangeConnector]
 
-  ".postClaimToAdjustPoa() is called" when {
+  private val nino = "BB123456A"
+  private val from = "from"
+  private val to = "to"
+  private val documentId = "123456789"
 
-    "the response is a 200 - OK" should {
+  private val postClaimToAdjustPoaUrl = "/income-tax/calculations/POA/ClaimToAdjust"
 
-      "return a valid model when successfully retrieved" in {
+  "ViewAndChangeConnector" when {
 
-        WiremockHelper.stubPost(
-          url = postClaimToAdjustPoaUrl,
-          status = CREATED,
-          responseBody = responseBody.toString()
-        )
+    ".getChargeDetails() is called" should {
 
-        val result =
-          connector.postClaimToAdjustPoa(request).futureValue
+      "return Right(json) when ViewAndChange returns 200" in {
+        val responseBody = chargeJson.toString()
 
-        result shouldBe validResponseBody
+        ViewAndChangeStub.stubGetCharges(nino, from, to)(OK, responseBody)
+
+        val result = connector.getChargeDetails(nino, from, to).futureValue
+        result shouldBe Right(chargeJson)
       }
 
-      "the response cannot be parsed" should {
+      "return Left(UnexpectedChargeResponse) when ViewAndChange returns 400" in {
+        val body = "bad request"
 
-        "return INTERNAL_SERVER_ERROR with ErrorResponse" in {
+        ViewAndChangeStub.stubGetCharges(nino, from, to)(BAD_REQUEST, body)
+
+        val result = connector.getChargeDetails(nino, from, to).futureValue
+        result shouldBe Left(UnexpectedChargeResponse(BAD_REQUEST, body))
+      }
+
+      "return Left(UnexpectedChargeErrorResponse) when ViewAndChange returns 500" in {
+        ViewAndChangeStub.stubGetCharges(nino, from, to)(INTERNAL_SERVER_ERROR, "error")
+
+        val result = connector.getChargeDetails(nino, from, to).futureValue
+        result shouldBe Left(UnexpectedChargeErrorResponse)
+      }
+    }
+
+    ".getChargeDetailsByDocumentId() is called" should {
+
+      "return Right(json) when ViewAndChange returns 200" in {
+        val responseBody = chargeJson.toString()
+
+        ViewAndChangeStub.stubGetChargeByDocumentId(nino, documentId)(OK, responseBody)
+
+        val result = connector.getChargeDetailsByDocumentId(nino, documentId).futureValue
+        result shouldBe Right(chargeJson)
+      }
+
+      "return Left(UnexpectedChargeResponse) when ViewAndChange returns 404" in {
+        val body = Json.obj("code" -> "NO_DATA_FOUND", "reason" -> "No data found").toString()
+
+        ViewAndChangeStub.stubGetChargeByDocumentId(nino, documentId)(NOT_FOUND, body)
+
+        val result = connector.getChargeDetailsByDocumentId(nino, documentId).futureValue
+        result shouldBe Left(UnexpectedChargeResponse(NOT_FOUND, body))
+      }
+
+      "return Left(UnexpectedChargeErrorResponse) when ViewAndChange returns 500" in {
+        ViewAndChangeStub.stubGetChargeByDocumentId(nino, documentId)(INTERNAL_SERVER_ERROR, "error")
+
+        val result = connector.getChargeDetailsByDocumentId(nino, documentId).futureValue
+        result shouldBe Left(UnexpectedChargeErrorResponse)
+      }
+    }
+
+    ".getPayments() is called" should {
+
+      "return Right(json) when ViewAndChange returns 200" in {
+        val payments: List[Payment] = List(
+          Payment(
+            reference = Some("paymentRef-1"),
+            amount = BigDecimal("123.45"),
+            outstandingAmount = BigDecimal("0.00"),
+            documentDescription = Some("Payment"),
+            method = Some("CARD"),
+            lot = Some("paymentLot"),
+            lotItem = Some("paymentLotItem"),
+            dueDate = Some(LocalDate.parse("2024-06-20")),
+            documentDate = LocalDate.parse("2024-06-17"),
+            transactionId = "PAYMENT01",
+            mainType = Some("Payment"),
+            mainTransaction = Some("0060")
+          ),
+          Payment(
+            reference = None,
+            amount = BigDecimal("50.00"),
+            outstandingAmount = BigDecimal("10.00"),
+            documentDescription = Some("Payment"),
+            method = Some("BACS"),
+            lot = Some("paymentLot2"),
+            lotItem = Some("paymentLotItem2"),
+            dueDate = None,
+            documentDate = LocalDate.parse("2024-06-18"),
+            transactionId = "PAYMENT02",
+            mainType = Some("Payment"),
+            mainTransaction = Some("0060")
+          )
+        )
+
+        val expectedJson: JsValue = Json.toJson(payments)
+        ViewAndChangeStub.stubGetPayments(nino, from, to)(OK, expectedJson.toString())
+
+        val result = connector.getPayments(nino, from, to).futureValue
+        result shouldBe Right(expectedJson)
+      }
+
+      "return Left(UnexpectedChargeResponse) when ViewAndChange returns 400" in {
+        val body = "bad request"
+
+        ViewAndChangeStub.stubGetPayments(nino, from, to)(BAD_REQUEST, body)
+
+        val result = connector.getPayments(nino, from, to).futureValue
+        result shouldBe Left(UnexpectedChargeResponse(BAD_REQUEST, body))
+      }
+
+      "return Left(UnexpectedChargeErrorResponse) when ViewAndChange returns 500" in {
+        ViewAndChangeStub.stubGetPayments(nino, from, to)(INTERNAL_SERVER_ERROR, "error")
+
+        val result = connector.getPayments(nino, from, to).futureValue
+        result shouldBe Left(UnexpectedChargeErrorResponse)
+      }
+    }
+
+    ".getCredits() is called" should {
+
+      "return Right(json) when ViewAndChange returns 200" in {
+        val creditsModel: CreditsModel = CreditsModel.fromHipChargesResponse(
+          AChargesResponse()
+            .withAvailableCredit(200.0)
+            .withAllocatedFutureCredit(150.0)
+            .withTotalCredit(175.0)
+            .withUnallocatedCredit(125.0)
+            .withFirstRefundRequest(200.0)
+            .withSecondRefundRequest(100.0)
+            .withCutoverCredit("CUTOVER01", LocalDate.of(2024, 6, 20), -100.0)
+            .withBalancingChargeCredit("BALANCING01", LocalDate.of(2024, 6, 19), -200)
+            .withMfaCredit("MFA01", LocalDate.of(2024, 6, 18), -300)
+            .withPayment("PAYMENT01", LocalDate.of(2024, 6, 17), LocalDate.of(2024, 6, 16), -400)
+            .withRepaymentInterest("INTEREST01", LocalDate.of(2024, 6, 16), -500)
+            .get()
+        )
+
+        val expectedJson: JsValue = Json.toJson(creditsModel)
+        ViewAndChangeStub.stubGetCredits(nino, from, to)(OK, expectedJson.toString())
+
+        val result = connector.getCredits(nino, from, to).futureValue
+        result shouldBe Right(expectedJson)
+      }
+
+      "return Left(UnexpectedChargeResponse) when ViewAndChange returns 400" in {
+        val body = "bad request"
+
+        ViewAndChangeStub.stubGetCredits(nino, from, to)(BAD_REQUEST, body)
+
+        val result = connector.getCredits(nino, from, to).futureValue
+        result shouldBe Left(UnexpectedChargeResponse(BAD_REQUEST, body))
+      }
+
+      "return Left(UnexpectedChargeErrorResponse) when ViewAndChange returns 500" in {
+        ViewAndChangeStub.stubGetCredits(nino, from, to)(INTERNAL_SERVER_ERROR, "error")
+
+        val result = connector.getCredits(nino, from, to).futureValue
+        result shouldBe Left(UnexpectedChargeErrorResponse)
+      }
+    }
+
+    ".getOnlyOpenItems() is called" should {
+
+      "return Right(json) when ViewAndChange returns 200" in {
+        val responseBody = chargeJson.toString()
+
+        ViewAndChangeStub.stubGetOnlyOpenItems(nino)(OK, responseBody)
+
+        val result = connector.getOnlyOpenItems(nino).futureValue
+        result shouldBe Right(chargeJson)
+      }
+
+      "return Left(UnexpectedChargeResponse) when ViewAndChange returns 404" in {
+        val body = Json.obj("code" -> "NO_DATA_FOUND", "reason" -> "No data found").toString()
+
+        ViewAndChangeStub.stubGetOnlyOpenItems(nino)(NOT_FOUND, body)
+
+        val result = connector.getOnlyOpenItems(nino).futureValue
+        result shouldBe Left(UnexpectedChargeResponse(NOT_FOUND, body))
+      }
+
+      "return Left(UnexpectedChargeErrorResponse) when ViewAndChange returns 500" in {
+        ViewAndChangeStub.stubGetOnlyOpenItems(nino)(INTERNAL_SERVER_ERROR, "error")
+
+        val result = connector.getOnlyOpenItems(nino).futureValue
+        result shouldBe Left(UnexpectedChargeErrorResponse)
+      }
+    }
+
+    ".postClaimToAdjustPoa() is called" when {
+
+      "the response is a 200 - OK" should {
+
+        "return a valid model when successfully retrieved" in {
 
           WiremockHelper.stubPost(
             url = postClaimToAdjustPoaUrl,
             status = CREATED,
-            responseBody = invalidResponseBody.toString()
+            responseBody = responseBody.toString()
           )
 
           val result =
             connector.postClaimToAdjustPoa(request).futureValue
 
-          result.status shouldBe INTERNAL_SERVER_ERROR
+          result shouldBe validResponseBody
+        }
+
+        "the response cannot be parsed" should {
+
+          "return INTERNAL_SERVER_ERROR with ErrorResponse" in {
+
+            WiremockHelper.stubPost(
+              url = postClaimToAdjustPoaUrl,
+              status = CREATED,
+              responseBody = invalidResponseBody.toString()
+            )
+
+            val result =
+              connector.postClaimToAdjustPoa(request).futureValue
+
+            result.status shouldBe INTERNAL_SERVER_ERROR
+          }
         }
       }
-
     }
   }
 }
