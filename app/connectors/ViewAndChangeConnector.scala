@@ -17,23 +17,19 @@
 package connectors
 
 import config.MicroserviceAppConfig
-import connectors.hip.HipConnectorDataHelper
 import connectors.httpParsers.ClaimToAdjustPoaHttpParser.*
+import connectors.hip.HipConnectorDataHelper
 import connectors.httpParsers.ViewAndChangeHttpParser.{ViewAndChangeJsonResponse, given}
 import connectors.httpParsers.OutStandingChargesHttpParser.{OutStandingChargeResponse, OutStandingChargesReads}
-import play.api.Logging
-import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
-import uk.gov.hmrc.http.client.HttpClientV2
-import connectors.httpParsers.ClaimToAdjustPoaHttpParser._
 import models.claimToAdjustPoa.ClaimToAdjustPoaRequest
 import models.claimToAdjustPoa.ClaimToAdjustPoaResponse.{ClaimToAdjustPoaResponse, ErrorResponse}
+import play.api.Logger
 import models.hip.chargeHistory.{ChargeHistoryError, ChargeHistoryNotFound, ChargeHistoryResponseError, ChargeHistorySuccessWrapper}
 import models.hip.{GetChargeHistoryHipApi, HipResponseErrorsObject}
-import play.api.Logger
 import play.api.http.Status.{INTERNAL_SERVER_ERROR, NOT_FOUND, OK, UNPROCESSABLE_ENTITY}
 import play.api.libs.json.{JsError, JsSuccess, Json}
-import play.api.libs.json.Json
-import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 import play.api.libs.ws.writeableOf_JsValue
 
 import javax.inject.{Inject, Singleton}
@@ -85,12 +81,10 @@ class ViewAndChangeConnector @Inject()( val appConfig: MicroserviceAppConfig,
 
   def listOutStandingCharges(idType: String, idNumber: String, taxYearEndDate: String)
                             (implicit headerCarrier: HeaderCarrier): Future[OutStandingChargeResponse] = {
-
     val url = listOutStandingChargesUrl(idType, idNumber, taxYearEndDate)
 
-
+    http
       .get(url"$url")
-      .setHeader(appConfig.desAuthHeaders: _*)
       .execute[OutStandingChargeResponse](OutStandingChargesReads, ec)
   }
 
