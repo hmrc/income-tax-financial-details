@@ -141,22 +141,14 @@ class ViewAndChangeConnector @Inject()( val appConfig: MicroserviceAppConfig,
     }
   }
 
-  private[connectors] def paymentAllocationsUrl(nino: String): String = {
-    s"${appConfig.viewAndChangeBaseUrl}/cross-regime/payment-allocation/NINO/$nino/ITSA"
-  }
-
-  private[connectors] def queryParameters(paymentLot: String, paymentLotItem: String): Seq[(String, String)] = {
-    Seq(
-      "paymentLot" -> paymentLot,
-      "paymentLotItem" -> paymentLotItem
-    )
+  private[connectors] def paymentAllocationsUrl(nino: String,paymentLot: String, paymentLotItem: String): String = {
+    s"${appConfig.viewAndChangeBaseUrl}/$nino/payment-allocations/$paymentLot/$paymentLotItem"
   }
 
   def getPaymentAllocations(nino: String, paymentLot: String, paymentLotItem: String)
                            (implicit hc: HeaderCarrier): Future[PaymentAllocationsResponse] =
     http
-      .get(url"${paymentAllocationsUrl(nino)}")
-      .transform(_.addQueryStringParameters(queryParameters(paymentLot, paymentLotItem): _*))
+      .get(url"${paymentAllocationsUrl(nino,paymentLot,paymentLotItem)}")
       .execute[PaymentAllocationsResponse](PaymentAllocationsReads, ec)
 
 }
