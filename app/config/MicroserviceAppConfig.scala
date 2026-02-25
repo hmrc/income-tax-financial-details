@@ -29,7 +29,8 @@ class MicroserviceAppConfig @Inject()(servicesConfig: ServicesConfig) {
 
   private def loadConfig(key: String) = servicesConfig.getString(key)
 
-  val viewAndChangeBaseUrl: String=  servicesConfig.baseUrl("income-tax-view-change")
+  val viewAndChangeBaseUrl: String = servicesConfig.baseUrl("income-tax-view-change")
+
   val desUrl: String = loadConfig("microservice.services.des.url")
   val desEnvironment: String = loadConfig("microservice.services.des.environment")
   val desToken: String = s"Bearer ${loadConfig("microservice.services.des.authorization-token")}"
@@ -82,13 +83,7 @@ class MicroserviceAppConfig @Inject()(servicesConfig: ServicesConfig) {
             ("X-Regime-Type", "ITSA"),
             ("X-Transmitting-System", "HIP")
           )
-//        case CreateIncomeSourceHipApi =>
-//          Seq(
-//            ("X-Originating-System", "MDTPITVC"),
-//            ("X-Receipt-Date", DateUtils.nowAsUtc),
-//            ("X-Regime", "ITSA"),
-//            ("X-Transmitting-System", "HIP")
-//          )
+
         case _ => Seq.empty
       }
     }

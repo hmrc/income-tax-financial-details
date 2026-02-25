@@ -27,72 +27,80 @@ import uk.gov.hmrc.http.HeaderCarrier
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-
-class FinancialDetailService @Inject()(val hipConnector: FinancialDetailsHipConnector,
-                                       val appConfig: MicroserviceAppConfig)
-                                      (implicit ec: ExecutionContext) extends Logging {
+class FinancialDetailService @Inject()(
+                                        val hipConnector: FinancialDetailsHipConnector,
+                                        val viewAndChangeConnector: connectors.ViewAndChangeConnector,
+                                        val appConfig: MicroserviceAppConfig
+                                      )(implicit ec: ExecutionContext) extends Logging {
 
   type ChargeAsJsonResponse = Either[ChargeResponseError, JsValue]
   type PaymentsAsJsonResponse = Either[ChargeResponseError, JsValue]
 
   def getChargeDetails(nino: String, fromDate: String, toDate: String)
-                      (implicit hc: HeaderCarrier) : Future[ChargeAsJsonResponse] = {
-      hipConnector.getChargeDetails(nino, fromDate, toDate)
-        .collect{
-          case Right(charges) =>
-            Right(Json.toJson(charges))
-          case Left(err) =>
-           Left(err)
-        }
+                      (implicit hc: HeaderCarrier): Future[ChargeAsJsonResponse] = {
+    hipConnector.getChargeDetails(nino, fromDate, toDate)
+      .flatMap {
+        case Right(charges) =>
+          Future.successful(Right(Json.toJson(charges)))
+        case Left(err) =>
+          logger.warn(s"HiP getChargeDetails failed, falling back to ViewAndChange. Error: $err")
+          viewAndChangeConnector.getChargeDetails(nino, fromDate, toDate)
+
+      }
   }
 
   def getPayments(nino: String, fromDate: String, toDate: String)
-                      (implicit hc: HeaderCarrier) : Future[PaymentsAsJsonResponse] = {
+                 (implicit hc: HeaderCarrier): Future[PaymentsAsJsonResponse] = {
     logger.debug(s"Call::getPayments")
-      hipConnector.getChargeDetails(nino, fromDate, toDate)
-        .collect{
-          case Right(charges) =>
-            Right(Json.toJson(charges.payments))
-          case Left(err) =>
-            Left(err)
-        }
+    hipConnector.getChargeDetails(nino, fromDate, toDate)
+      .flatMap {
+        case Right(charges) =>
+          Future.successful(Right(Json.toJson(charges.payments)))
+        case Left(err) =>
+          logger.warn(s"HiP getPayments failed, falling back to ViewAndChange. Error: $err")
+          viewAndChangeConnector.getPayments(nino, fromDate, toDate)
+      }
   }
 
   def getPaymentAllocationDetails(nino: String, documentId: String)
                                  (implicit hc: HeaderCarrier): Future[ChargeAsJsonResponse] = {
     logger.info(s"Call::getPaymentAllocationDetails")
-      hipConnector.getPaymentAllocationDetails(nino, documentId)
-        .collect{
-          case Right(charges) =>
-            logger.info(s"Call::getPaymentAllocationDetails -> $charges")
-            Right(Json.toJson(charges))
-          case Left(err) =>
-            Left(err)
-        }
+    hipConnector.getPaymentAllocationDetails(nino, documentId)
+      .flatMap {
+        case Right(charges) =>
+          logger.info(s"Call::getPaymentAllocationDetails -> $charges")
+          Future.successful(Right(Json.toJson(charges)))
+        case Left(err) =>
+          logger.warn(s"HiP getPaymentAllocationDetails failed, falling back to ViewAndChange. Error: $err")
+          viewAndChangeConnector.getChargeDetailsByDocumentId(nino, documentId)
+      }
   }
 
   def getOnlyOpenItems(nino: String)(implicit hc: HeaderCarrier): Future[ChargeAsJsonResponse] = {
     logger.info(s"Call::getOnlyOpenItems")
-      hipConnector.getOnlyOpenItems(nino)
-        .collect{
-          case Right(charges) =>
-            Right(Json.toJson(charges))
-          case Left(err) =>
-            Left(err)
-        }
+
+    hipConnector.getOnlyOpenItems(nino).flatMap {
+      case Right(charges) =>
+        Future.successful(Right(Json.toJson(charges)))
+
+      case Left(err) =>
+        logger.warn(s"HiP getOnlyOpenItems failed, falling back to ViewAndChange. Error: $err")
+        viewAndChangeConnector.getOnlyOpenItems(nino)
+    }
   }
 
   def getCredits(nino: String, fromDate: String, toDate: String)
-                (implicit hc: HeaderCarrier) : Future[ChargeAsJsonResponse] = {
+                (implicit hc: HeaderCarrier): Future[ChargeAsJsonResponse] = {
     logger.info(s"Call::getCreditsModel")
-      hipConnector
-        .getChargeDetails(nino, fromDate, toDate)
-        .collect{
-          case Right(charges) =>
-            val creditsModel: CreditsModel = CreditsModel.fromHipChargesResponse(charges)
-            Right(Json.toJson(creditsModel))
-          case Left(err) =>
-            Left(err)
-        }
+    hipConnector
+      .getChargeDetails(nino, fromDate, toDate)
+      .flatMap {
+        case Right(charges) =>
+          val creditsModel: CreditsModel = CreditsModel.fromHipChargesResponse(charges)
+          Future.successful(Right(Json.toJson(creditsModel)))
+        case Left(err) =>
+          logger.warn(s"HiP getCredits failed, falling back to ViewAndChange. Error: $err")
+          viewAndChangeConnector.getCredits(nino, fromDate, toDate)
+      }
   }
 }
