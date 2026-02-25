@@ -17,8 +17,9 @@
 package controllers
 
 import constants.BaseIntegrationTestConstants.*
-import helpers.ComponentSpecBase
+import helpers.{ComponentSpecBase, WiremockHelper}
 import helpers.servicemocks.DesChargesStub.*
+import helpers.servicemocks.ViewAndChangeStub
 import models.credits.CreditsModel
 import play.api.http.Status.*
 import play.api.libs.json.{JsValue, Json}
@@ -177,9 +178,19 @@ class FinancialDetailCreditsControllerISpec extends ComponentSpecBase {
 
         isAuthorised(true)
 
-        val errorJson = Json.obj("code" -> "NO_DATA_FOUND", "reason" -> "The remote endpoint has indicated that no data can be found.")
+        val errorJson = Json.obj(
+          "code" -> "NO_DATA_FOUND",
+          "reason" -> "The remote endpoint has indicated that no data can be found."
+        )
+
         stubGetChargeDetails(testNino, from, to)(
-          status = NOT_FOUND, response = errorJson
+          status = NOT_FOUND,
+          response = errorJson
+        )
+
+        ViewAndChangeStub.stubGetCredits(testNino, from, to)(
+          status = NOT_FOUND,
+          body = errorJson.toString()
         )
 
         val res: WSResponse = IncomeTaxFinancialDetails.getCreditDetails(testNino, from, to)
@@ -205,7 +216,9 @@ class FinancialDetailCreditsControllerISpec extends ComponentSpecBase {
         )
       }
 
-      "an unexpected status was returned when retrieving charge details" in {
+
+
+      "an unexpected status was returned when retrieving credit details" in {
 
         isAuthorised(true)
 
@@ -213,10 +226,54 @@ class FinancialDetailCreditsControllerISpec extends ComponentSpecBase {
           status = SERVICE_UNAVAILABLE
         )
 
+        val vcCreditsUrl = s"/income-tax-view-change/$testNino/financial-details/credits/from/$from/to/$to"
+        WiremockHelper.stubGet(vcCreditsUrl, SERVICE_UNAVAILABLE, "")
+
         val res: WSResponse = IncomeTaxFinancialDetails.getCreditDetails(testNino, from, to)
 
         res should have(
           httpStatus(INTERNAL_SERVER_ERROR)
+        )
+      }
+    }
+
+    s"return $OK" when {
+      "the call to HiP fails but ViewAndChange succeeds" in {
+
+        isAuthorised(true)
+
+        stubGetChargeDetails(testNino, from, to)(
+          status = SERVICE_UNAVAILABLE
+        )
+
+        val expectedResponse = CreditsModel.fromHipChargesResponse(
+          AChargesResponse()
+            .withAvailableCredit(200.0)
+            .withAllocatedFutureCredit(150.0)
+            .withTotalCredit(175.0)
+            .withUnallocatedCredit(125.0)
+            .withFirstRefundRequest(200.0)
+            .withSecondRefundRequest(100.0)
+            .withCutoverCredit("CUTOVER01", LocalDate.of(2024, 6, 20), -100.0)
+            .withBalancingChargeCredit("BALANCING01", LocalDate.of(2024, 6, 19), -200)
+            .withMfaCredit("MFA01", LocalDate.of(2024, 6, 18), -300)
+            .withPayment("PAYMENT01", LocalDate.of(2024, 6, 17), LocalDate.of(2024, 6, 16), -400)
+            .withRepaymentInterest("INTEREST01", LocalDate.of(2024, 6, 16), -500)
+            .get()
+        )
+
+        val expectedResponseBody: JsValue = Json.toJson(expectedResponse)
+
+        ViewAndChangeStub.stubGetCredits(testNino, from, to)(
+          status = OK,
+          body = expectedResponseBody.toString()
+        )
+
+        val res: WSResponse = IncomeTaxFinancialDetails.getCreditDetails(testNino, from, to)
+
+        res should have(
+          httpStatus(OK),
+          jsonBodyMatching(expectedResponseBody)
         )
       }
     }
