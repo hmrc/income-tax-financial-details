@@ -22,8 +22,7 @@ import play.api.libs.json.{JsValue, Json}
 object DesPaymentAllocationsStub {
 
   private def url(nino: String, paymentLot: String, paymentLotItem: String): String = {
-    //s"/cross-regime/payment-allocation/NINO/$nino/ITSA?paymentLot=$paymentLot&paymentLotItem=$paymentLotItem"
-    s"/$nino/payment-allocations/$paymentLot/$paymentLotItem"
+    s"/cross-regime/payment-allocation/NINO/$nino/ITSA?paymentLot=$paymentLot&paymentLotItem=$paymentLotItem"
   }
 
   def stubGetPaymentAllocations(nino: String, paymentLot: String, paymentLotItem: String)(status: Int, response: JsValue = Json.obj()): Unit = {

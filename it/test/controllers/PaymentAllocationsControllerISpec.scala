@@ -16,7 +16,6 @@
 
 package controllers
 
-import connectors.ViewAndChangeConnector
 import constants.BaseIntegrationTestConstants.*
 import helpers.servicemocks.DesPaymentAllocationsStub.*
 import models.paymentAllocations.{AllocationDetail, PaymentAllocations}
@@ -24,6 +23,7 @@ import play.api.http.Status.*
 import play.api.libs.json.{JsObject, Json}
 import play.api.libs.ws.WSResponse
 import helpers.ComponentSpecBase
+import helpers.servicemocks.VCPaymentAllocationsStub
 
 import java.time.LocalDate
 
@@ -100,6 +100,9 @@ class PaymentAllocationsControllerISpec extends ComponentSpecBase {
 
         And("the call to retrieve payment allocations is stubbed")
         stubGetPaymentAllocations(testNino, testPaymentLot, testPaymentLotItem)(
+          status = BAD_REQUEST
+        )
+        VCPaymentAllocationsStub.stubGetPaymentAllocations(testNino, testPaymentLot, testPaymentLotItem)(
           status = BAD_REQUEST
         )
 
