@@ -17,10 +17,9 @@
 package connectors
 
 import config.MicroserviceAppConfig
-import connectors.httpParsers.ClaimToAdjustPoaHttpParser.*
-import connectors.httpParsers.PaymentAllocationsHttpParser.{PaymentAllocationsReads, PaymentAllocationsResponse}
 import connectors.hip.HipConnectorDataHelper
 import connectors.httpParsers.ClaimToAdjustPoaHttpParser.*
+import connectors.httpParsers.PaymentAllocationsHttpParser.{PaymentAllocationsReads, PaymentAllocationsResponse}
 import connectors.httpParsers.ViewAndChangeHttpParser.{ViewAndChangeJsonResponse, given}
 import models.claimToAdjustPoa.ClaimToAdjustPoaRequest
 import models.claimToAdjustPoa.ClaimToAdjustPoaResponse.{ClaimToAdjustPoaResponse, ErrorResponse}
@@ -30,10 +29,9 @@ import play.api.Logger
 import play.api.http.Status.{INTERNAL_SERVER_ERROR, NOT_FOUND, OK, UNPROCESSABLE_ENTITY}
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.libs.ws.writeableOf_JsValue
-
-
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
+
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.duration.{Duration, SECONDS}
 import scala.concurrent.{ExecutionContext, Future}
@@ -171,4 +169,3 @@ class ViewAndChangeConnector @Inject()( val appConfig: MicroserviceAppConfig,
     }
   }
 
-}
