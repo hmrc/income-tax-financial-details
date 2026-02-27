@@ -24,6 +24,8 @@ object BaseIntegrationTestConstants {
   val testNinoEnrolmentKey = "HMRC-NI"
   val testNinoEnrolmentIdentifier = "NINO"
   val testNino = "BB123456A"
+  val testPaymentLot: String = "paymentLot"
+  val testPaymentLotItem: String = "paymentLotItem"
   val testTaxYearRange = "23-24"
   val taxYearRange25to26 = "25-26"
   val taxYearRange26to27 = "26-27"

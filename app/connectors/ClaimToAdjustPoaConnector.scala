@@ -30,7 +30,6 @@ import javax.inject.Inject
 import scala.concurrent.duration.{Duration, SECONDS}
 import scala.concurrent.{ExecutionContext, Future}
 
-
 class ClaimToAdjustPoaConnector @Inject() ( val appConfig: MicroserviceAppConfig,
                                             val http: HttpClientV2)
                                           ( implicit val ec: ExecutionContext ) {
