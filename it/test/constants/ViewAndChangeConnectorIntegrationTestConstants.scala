@@ -20,10 +20,11 @@ import models.claimToAdjustPoa.ClaimToAdjustPoaApiResponse.SuccessResponse
 import models.claimToAdjustPoa.{ClaimToAdjustPoaRequest, MainIncomeLower}
 import models.claimToAdjustPoa.ClaimToAdjustPoaResponse.ClaimToAdjustPoaResponse
 import models.hip.chargeHistory.{ChargeHistoryDetails, ChargeHistorySuccess, ChargeHistorySuccessWrapper}
+
 import java.time.LocalDateTime
 import models.paymentAllocations.{AllocationDetail, PaymentAllocations}
 import play.api.http.Status.CREATED
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.{JsNull, JsObject, Json}
 
 import java.time.LocalDate
 

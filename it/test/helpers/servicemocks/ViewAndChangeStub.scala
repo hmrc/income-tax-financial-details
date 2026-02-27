@@ -17,8 +17,6 @@
 package helpers.servicemocks
 
 import helpers.WiremockHelper
-import play.api.http.Status
-import play.api.libs.json.JsValue
 
 object ViewAndChangeStub {
 
