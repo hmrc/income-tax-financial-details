@@ -8,13 +8,13 @@ import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
 val appName = "income-tax-financial-details"
 
-val bootstrapPlayVersion = "10.5.0"
+val bootstrapPlayVersion = "10.6.0"
 val mockitoVersion = "5.21.0"
 val wiremockVersion = "3.8.0"
 val scalaMockVersion = "7.5.3"
 val jsoupVersion = "1.21.1"
 val currentScalaVersion = "3.3.6"
-val mongoVersion = "2.3.0"
+val mongoVersion = "2.12.0"
 
 val compile: Seq[ModuleID] = Seq(
   PlayImport.ws,

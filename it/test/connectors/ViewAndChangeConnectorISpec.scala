@@ -40,12 +40,9 @@ class ViewAndChangeConnectorISpec extends ComponentSpecBase {
 
   val viewAndChangeConnector: ViewAndChangeConnector = app.injector.instanceOf[ViewAndChangeConnector]
   val postClaimToAdjustPoaUrl = "/income-tax/calculations/POA/ClaimToAdjust"
-<<<<<<< HEAD
-  val getPaymentAllocationsUrl = s"/cross-regime/payment-allocation/NINO/$testNino/ITSA?paymentLot=$paymentLot&paymentLotItem=$paymentLotItem"
   val getChargeHistoryUrl = "/etmp/RESTAdapter/ITSA/TaxPayer/GetChargeHistory?idType=NINO&idValue=123&chargeReference=456"
-=======
   val getPaymentAllocationsUrl = s"/$testNino/payment-allocations/$paymentLot/$paymentLotItem"
->>>>>>> b778340 (addressed comments)
+
 
   private val nino = "BB123456A"
   private val from = "from"

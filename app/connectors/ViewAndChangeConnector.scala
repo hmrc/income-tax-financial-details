@@ -149,8 +149,7 @@ class ViewAndChangeConnector @Inject()( val appConfig: MicroserviceAppConfig,
       .get(url"${paymentAllocationsUrl(nino,paymentLot,paymentLotItem)}")
       .execute[PaymentAllocationsResponse](PaymentAllocationsReads, ec)
 
-}
-  private def handleUnprocessableStatusResponse(unprocessableResponse: HttpResponse): ChargeHistoryResponseError = {
+   def handleUnprocessableStatusResponse(unprocessableResponse: HttpResponse): ChargeHistoryResponseError = {
     val notFoundCodes = Set("005", "014")
     unprocessableResponse.json.validate[HipResponseErrorsObject] match {
       case JsError(errors) =>
@@ -168,4 +167,6 @@ class ViewAndChangeConnector @Inject()( val appConfig: MicroserviceAppConfig,
         }
     }
   }
+}
+
 
