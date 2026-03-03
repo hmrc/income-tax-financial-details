@@ -16,31 +16,31 @@
 
 package mocks
 
-import connectors.OutStandingChargesConnector
 import connectors.httpParsers.OutStandingChargesHttpParser.OutStandingChargeResponse
 import org.mockito.ArgumentMatchers
-import org.mockito.Mockito._
+import org.mockito.Mockito.*
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatest.{BeforeAndAfterEach, OptionValues}
+import services.OutStandingChargesService
 
 import scala.concurrent.Future
 
-trait MockOutStandingChargesConnector extends AnyWordSpecLike with Matchers with OptionValues with BeforeAndAfterEach {
+trait MockOutStandingChargesService extends AnyWordSpecLike with Matchers with OptionValues with BeforeAndAfterEach {
 
-  val mockOutStandingChargesConnector: OutStandingChargesConnector = mock(classOf[OutStandingChargesConnector])
+  val mockOutStandingChargesService: OutStandingChargesService = mock(classOf[OutStandingChargesService])
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    reset(mockOutStandingChargesConnector)
+    reset(mockOutStandingChargesService)
   }
 
   def mockListOutStandingCharges(idType: String, idNumber: String, taxYearEndDate: String)
                                 (response: OutStandingChargeResponse): Unit = {
-    when(mockOutStandingChargesConnector.listOutStandingCharges(
+    when(mockOutStandingChargesService.listOutStandingCharges(
       idType = ArgumentMatchers.eq(idType),
       idNumber = ArgumentMatchers.eq(idNumber),
       taxYearEndDate = ArgumentMatchers.eq(taxYearEndDate)
-    )(ArgumentMatchers.any())) thenReturn Future.successful(response)
+    )(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(response)
   }
 }

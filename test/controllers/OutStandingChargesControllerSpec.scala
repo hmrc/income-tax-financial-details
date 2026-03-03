@@ -16,23 +16,23 @@
 
 package controllers
 
-import constants.OutStandingChargesConstant._
+import constants.OutStandingChargesConstant.*
 import connectors.httpParsers.OutStandingChargesHttpParser.UnexpectedOutStandingChargeResponse
 import controllers.predicates.AuthenticationPredicate
-import mocks.{MockMicroserviceAuthConnector, MockOutStandingChargesConnector}
+import mocks.{MockMicroserviceAuthConnector, MockOutStandingChargesService}
 import models.outStandingCharges.OutstandingChargesSuccessResponse
 import play.api.mvc.ControllerComponents
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 
-class OutStandingChargesControllerSpec extends ControllerBaseSpec with MockOutStandingChargesConnector with MockMicroserviceAuthConnector {
+class OutStandingChargesControllerSpec extends ControllerBaseSpec with MockOutStandingChargesService with MockMicroserviceAuthConnector {
 
   val controllerComponents: ControllerComponents = stubControllerComponents()
 
   object OutStandingChargesController extends OutStandingChargesController(
     authentication = new AuthenticationPredicate(mockMicroserviceAuthConnector, controllerComponents, microserviceAppConfig),
     cc = controllerComponents,
-    connector = mockOutStandingChargesConnector
+    service = mockOutStandingChargesService
   )
 
   val idType: String = "utr"
