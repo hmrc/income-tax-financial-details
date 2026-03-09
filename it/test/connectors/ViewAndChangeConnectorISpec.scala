@@ -16,28 +16,30 @@
 
 package connectors
 
-import constants.BaseIntegrationTestConstants.testNino
-import constants.ViewAndChangeConnectorIntegrationTestConstants.*
-import helpers.servicemocks.ViewAndChangeStub
-import connectors.httpParsers.OutStandingChargesHttpParser.{OutStandingChargeErrorResponse, UnexpectedOutStandingChargeResponse}
-import helpers.{ComponentSpecBase, WiremockHelper}
-import models.outStandingCharges.{OutStandingCharge, OutstandingChargesSuccessResponse}
-import play.api.http.Status.{INTERNAL_SERVER_ERROR, NOT_FOUND, OK, CREATED}
-import play.api.libs.json.{JsValue, Json}
-import models.claimToAdjustPoa.ClaimToAdjustPoaResponse.ClaimToAdjustPoaResponse
-import models.paymentAllocations.PaymentAllocations
-import play.api.http.Status.{BAD_REQUEST, CREATED, INTERNAL_SERVER_ERROR, OK}
-import play.api.libs.ws.WSResponse
 import connectors.httpParsers.ChargeHttpParser.{UnexpectedChargeErrorResponse, UnexpectedChargeResponse}
+import connectors.httpParsers.OutStandingChargesHttpParser.{OutStandingChargeErrorResponse, UnexpectedOutStandingChargeResponse}
+
+import constants.BaseIntegrationTestConstants.testNino
 import constants.FinancialDetailIntegrationTestConstants.chargeJson
+import constants.ViewAndChangeConnectorIntegrationTestConstants.*
+
+import helpers.{ComponentSpecBase, WiremockHelper}
 import helpers.servicemocks.ViewAndChangeStub
+
+import models.claimToAdjustPoa.ClaimToAdjustPoaResponse.ClaimToAdjustPoaResponse
 import models.credits.CreditsModel
 import models.financialDetails.Payment
 import models.hip.chargeHistory.{ChargeHistoryError, ChargeHistoryNotFound}
-import org.scalactic.Prettifier.default
-import play.api.http.Status.*
-import utils.AChargesResponse
+import models.outStandingCharges.{OutStandingCharge, OutstandingChargesSuccessResponse}
+import models.paymentAllocations.PaymentAllocations
 
+import org.scalactic.Prettifier.default
+
+import play.api.libs.json.{JsValue, Json}
+import play.api.http.Status.*
+import play.api.libs.ws.WSResponse
+
+import utils.AChargesResponse
 import java.time.LocalDate
 
 class ViewAndChangeConnectorISpec extends ComponentSpecBase {
