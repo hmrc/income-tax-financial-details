@@ -18,6 +18,7 @@ package connectors
 
 import config.MicroserviceAppConfig
 import connectors.httpParsers.ClaimToAdjustPoaHttpParser.*
+import connectors.httpParsers.PaymentAllocationsHttpParser.{PaymentAllocationsReads, PaymentAllocationsResponse}
 import connectors.hip.HipConnectorDataHelper
 import connectors.httpParsers.ViewAndChangeHttpParser.{ViewAndChangeJsonResponse, given}
 import connectors.httpParsers.OutStandingChargesHttpParser.{OutStandingChargeResponse, OutStandingChargesReads}
@@ -150,7 +151,17 @@ class ViewAndChangeConnector @Inject()( val appConfig: MicroserviceAppConfig,
     }
   }
 
-  private def handleUnprocessableStatusResponse(unprocessableResponse: HttpResponse): ChargeHistoryResponseError = {
+  private[connectors] def paymentAllocationsUrl(nino: String,paymentLot: String, paymentLotItem: String): String = {
+    s"${appConfig.viewAndChangeBaseUrl}/$nino/payment-allocations/$paymentLot/$paymentLotItem"
+  }
+
+  def getPaymentAllocations(nino: String, paymentLot: String, paymentLotItem: String)
+                           (implicit hc: HeaderCarrier): Future[PaymentAllocationsResponse] =
+    http
+      .get(url"${paymentAllocationsUrl(nino,paymentLot,paymentLotItem)}")
+      .execute[PaymentAllocationsResponse](PaymentAllocationsReads, ec)
+
+   def handleUnprocessableStatusResponse(unprocessableResponse: HttpResponse): ChargeHistoryResponseError = {
     val notFoundCodes = Set("005", "014")
     unprocessableResponse.json.validate[HipResponseErrorsObject] match {
       case JsError(errors) =>
