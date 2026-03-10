@@ -18,28 +18,22 @@ package connectors
 
 import connectors.httpParsers.ChargeHttpParser.{UnexpectedChargeErrorResponse, UnexpectedChargeResponse}
 import connectors.httpParsers.OutStandingChargesHttpParser.{OutStandingChargeErrorResponse, UnexpectedOutStandingChargeResponse}
-
 import constants.BaseIntegrationTestConstants.testNino
 import constants.FinancialDetailIntegrationTestConstants.chargeJson
 import constants.ViewAndChangeConnectorIntegrationTestConstants.*
-
 import helpers.{ComponentSpecBase, WiremockHelper}
-import helpers.servicemocks.ViewAndChangeStub
-
+import helpers.servicemocks.{VCPaymentAllocationsStub, ViewAndChangeStub}
 import models.claimToAdjustPoa.ClaimToAdjustPoaResponse.ClaimToAdjustPoaResponse
 import models.credits.CreditsModel
 import models.financialDetails.Payment
 import models.hip.chargeHistory.{ChargeHistoryError, ChargeHistoryNotFound}
 import models.outStandingCharges.{OutStandingCharge, OutstandingChargesSuccessResponse}
 import models.paymentAllocations.PaymentAllocations
-
 import org.scalactic.Prettifier.default
-
 import play.api.libs.json.{JsValue, Json}
 import play.api.http.Status.*
-import play.api.libs.ws.WSResponse
-
 import utils.AChargesResponse
+
 import java.time.LocalDate
 
 class ViewAndChangeConnectorISpec extends ComponentSpecBase {
@@ -447,45 +441,38 @@ class ViewAndChangeConnectorISpec extends ComponentSpecBase {
 
     s"return $OK" when {
       "payment allocations are successfully retrieved" in {
-        Given("the user is authorised")
-        isAuthorised(true)
-
-        And("the call to retrieve payment allocations is stubbed")
-        WiremockHelper.stubGet(
-          url = getPaymentAllocationsUrl,
+        VCPaymentAllocationsStub.stubGetPaymentAllocations(testNino, paymentLot, paymentLotItem)(
           status = OK,
-          body = paymentAllocationsResponseBody.toString
+          response = paymentAllocationsResponseBody
         )
 
-        When(s"I call GET ${controllers.routes.PaymentAllocationsController.getPaymentAllocations(testNino, paymentLot, paymentLotItem)}")
-        val res: WSResponse = IncomeTaxFinancialDetails.getPaymentAllocations(testNino, paymentLot, paymentLotItem)
+        val result = viewAndChangeConnector.getPaymentAllocations(testNino, paymentLot, paymentLotItem).futureValue
 
-        Then("a successful response is returned with the payment allocations")
-        res should have(
-          httpStatus(OK),
-          jsonBodyMatching(Json.toJson(paymentAllocations))
-        )
+        result shouldBe Right(paymentAllocations)
       }
     }
-    s"return $INTERNAL_SERVER_ERROR" when {
+
+    s"return $NOT_FOUND" when {
+      "no payment allocations are found" in {
+        VCPaymentAllocationsStub.stubGetPaymentAllocations(testNino, paymentLot, paymentLotItem)(
+          status = NOT_FOUND
+        )
+
+        val result = viewAndChangeConnector.getPaymentAllocations(testNino, paymentLot, paymentLotItem).futureValue
+
+        result shouldBe Left(connectors.httpParsers.PaymentAllocationsHttpParser.NotFoundResponse)
+      }
+    }
+
+    s"return an error" when {
       "an unexpected status was returned when retrieving payment allocations" in {
-        Given("the user is authorised")
-        isAuthorised(true)
-
-        And("the call to retrieve payment allocations is stubbed")
-        WiremockHelper.stubGet(
-          url = getPaymentAllocationsUrl,
-          status = BAD_REQUEST,
-          body= ""
+        VCPaymentAllocationsStub.stubGetPaymentAllocations(testNino, paymentLot, paymentLotItem)(
+          status = BAD_REQUEST
         )
 
-        When(s"I call GET ${controllers.routes.PaymentAllocationsController.getPaymentAllocations(testNino, paymentLot, paymentLotItem)}")
-        val res: WSResponse = IncomeTaxFinancialDetails.getPaymentAllocations(testNino, paymentLot, paymentLotItem)
+        val result = viewAndChangeConnector.getPaymentAllocations(testNino, paymentLot, paymentLotItem).futureValue
 
-        Then("an internal server error response is returned")
-        res should have(
-          httpStatus(INTERNAL_SERVER_ERROR)
-        )
+        result shouldBe Left(connectors.httpParsers.PaymentAllocationsHttpParser.UnexpectedResponse)
       }
     }
   }
