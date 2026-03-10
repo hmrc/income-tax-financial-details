@@ -18,15 +18,20 @@ package connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import connectors.httpParsers.ChargeHttpParser.{UnexpectedChargeErrorResponse, UnexpectedChargeResponse}
+import connectors.httpParsers.PaymentAllocationsHttpParser.{NotFoundResponse, UnexpectedResponse}
+import models.paymentAllocations.{AllocationDetail, PaymentAllocations}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
+import play.api.http.Status._
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.test.WireMockSupport
+
+import java.time.LocalDate
 
 class ViewAndChangeConnectorSpec
   extends AnyWordSpec
@@ -54,7 +59,7 @@ class ViewAndChangeConnectorSpec
 
   private def okJsonResponse(body: JsObject) =
     aResponse()
-      .withStatus(200)
+      .withStatus(OK)
       .withHeader("Content-Type", "application/json")
       .withBody(Json.stringify(body))
 
@@ -78,20 +83,20 @@ class ViewAndChangeConnectorSpec
       result mustBe Right(body)
     }
 
-    "return Left(UnexpectedChargeResponse) when ViewAndChange returns 400" in {
+    "return Left(UnexpectedChargeResponse) when ViewAndChange returns BAD_REQUEST" in {
       stubFor(
         get(urlEqualTo(s"/income-tax-view-change/$nino/financial-details/only-open-items"))
-          .willReturn(jsonErrorResponse(400, "bad request"))
+          .willReturn(jsonErrorResponse(BAD_REQUEST, "bad request"))
       )
 
       val result = connector.getOnlyOpenItems(nino).futureValue
-      result mustBe Left(UnexpectedChargeResponse(400, "bad request"))
+      result mustBe Left(UnexpectedChargeResponse(BAD_REQUEST, "bad request"))
     }
 
-    "return Left(UnexpectedChargeErrorResponse) when ViewAndChange returns 500" in {
+    "return Left(UnexpectedChargeErrorResponse) when ViewAndChange returns INTERNAL_SERVER_ERROR" in {
       stubFor(
         get(urlEqualTo(s"/income-tax-view-change/$nino/financial-details/only-open-items"))
-          .willReturn(jsonErrorResponse(500, "server error"))
+          .willReturn(jsonErrorResponse(INTERNAL_SERVER_ERROR, "server error"))
       )
 
       val result = connector.getOnlyOpenItems(nino).futureValue
@@ -113,20 +118,20 @@ class ViewAndChangeConnectorSpec
       result mustBe Right(body)
     }
 
-    "return Left(UnexpectedChargeResponse) when ViewAndChange returns 400" in {
+    "return Left(UnexpectedChargeResponse) when ViewAndChange returns BAD_REQUEST" in {
       stubFor(
         get(urlEqualTo(s"/income-tax-view-change/$nino/financial-details/charges/from/$fromDate/to/$toDate"))
-          .willReturn(jsonErrorResponse(400, "bad request"))
+          .willReturn(jsonErrorResponse(BAD_REQUEST, "bad request"))
       )
 
       val result = connector.getChargeDetails(nino, fromDate, toDate).futureValue
-      result mustBe Left(UnexpectedChargeResponse(400, "bad request"))
+      result mustBe Left(UnexpectedChargeResponse(BAD_REQUEST, "bad request"))
     }
 
-    "return Left(UnexpectedChargeErrorResponse) when ViewAndChange returns 500" in {
+    "return Left(UnexpectedChargeErrorResponse) when ViewAndChange returns INTERNAL_SERVER_ERROR" in {
       stubFor(
         get(urlEqualTo(s"/income-tax-view-change/$nino/financial-details/charges/from/$fromDate/to/$toDate"))
-          .willReturn(jsonErrorResponse(500, "server error"))
+          .willReturn(jsonErrorResponse(INTERNAL_SERVER_ERROR, "server error"))
       )
 
       val result = connector.getChargeDetails(nino, fromDate, toDate).futureValue
@@ -148,20 +153,20 @@ class ViewAndChangeConnectorSpec
       result mustBe Right(body)
     }
 
-    "return Left(UnexpectedChargeResponse) when ViewAndChange returns 400" in {
+    "return Left(UnexpectedChargeResponse) when ViewAndChange returns BAD_REQUEST" in {
       stubFor(
         get(urlEqualTo(s"/income-tax-view-change/$nino/financial-details/payments/from/$fromDate/to/$toDate"))
-          .willReturn(jsonErrorResponse(400, "bad request"))
+          .willReturn(jsonErrorResponse(BAD_REQUEST, "bad request"))
       )
 
       val result = connector.getPayments(nino, fromDate, toDate).futureValue
-      result mustBe Left(UnexpectedChargeResponse(400, "bad request"))
+      result mustBe Left(UnexpectedChargeResponse(BAD_REQUEST, "bad request"))
     }
 
-    "return Left(UnexpectedChargeErrorResponse) when ViewAndChange returns 500" in {
+    "return Left(UnexpectedChargeErrorResponse) when ViewAndChange returns INTERNAL_SERVER_ERROR" in {
       stubFor(
         get(urlEqualTo(s"/income-tax-view-change/$nino/financial-details/payments/from/$fromDate/to/$toDate"))
-          .willReturn(jsonErrorResponse(500, "server error"))
+          .willReturn(jsonErrorResponse(INTERNAL_SERVER_ERROR, "server error"))
       )
 
       val result = connector.getPayments(nino, fromDate, toDate).futureValue
@@ -183,20 +188,20 @@ class ViewAndChangeConnectorSpec
       result mustBe Right(body)
     }
 
-    "return Left(UnexpectedChargeResponse) when ViewAndChange returns 400" in {
+    "return Left(UnexpectedChargeResponse) when ViewAndChange returns BAD_REQUEST" in {
       stubFor(
         get(urlEqualTo(s"/income-tax-view-change/$nino/financial-details/charges/documentId/$documentId"))
-          .willReturn(jsonErrorResponse(400, "bad request"))
+          .willReturn(jsonErrorResponse(BAD_REQUEST, "bad request"))
       )
 
       val result = connector.getChargeDetailsByDocumentId(nino, documentId).futureValue
-      result mustBe Left(UnexpectedChargeResponse(400, "bad request"))
+      result mustBe Left(UnexpectedChargeResponse(BAD_REQUEST, "bad request"))
     }
 
-    "return Left(UnexpectedChargeErrorResponse) when ViewAndChange returns 500" in {
+    "return Left(UnexpectedChargeErrorResponse) when ViewAndChange returns INTERNAL_SERVER_ERROR" in {
       stubFor(
         get(urlEqualTo(s"/income-tax-view-change/$nino/financial-details/charges/documentId/$documentId"))
-          .willReturn(jsonErrorResponse(500, "server error"))
+          .willReturn(jsonErrorResponse(INTERNAL_SERVER_ERROR, "server error"))
       )
 
       val result = connector.getChargeDetailsByDocumentId(nino, documentId).futureValue
@@ -218,24 +223,104 @@ class ViewAndChangeConnectorSpec
       result mustBe Right(body)
     }
 
-    "return Left(UnexpectedChargeResponse) when ViewAndChange returns 400" in {
+    "return Left(UnexpectedChargeResponse) when ViewAndChange returns BAD_REQUEST" in {
       stubFor(
         get(urlEqualTo(s"/income-tax-view-change/$nino/financial-details/credits/from/$fromDate/to/$toDate"))
-          .willReturn(jsonErrorResponse(400, "bad request"))
+          .willReturn(jsonErrorResponse(BAD_REQUEST, "bad request"))
       )
 
       val result = connector.getCredits(nino, fromDate, toDate).futureValue
-      result mustBe Left(UnexpectedChargeResponse(400, "bad request"))
+      result mustBe Left(UnexpectedChargeResponse(BAD_REQUEST, "bad request"))
     }
 
-    "return Left(UnexpectedChargeErrorResponse) when ViewAndChange returns 500" in {
+    "return Left(UnexpectedChargeErrorResponse) when ViewAndChange returns INTERNAL_SERVER_ERROR" in {
       stubFor(
         get(urlEqualTo(s"/income-tax-view-change/$nino/financial-details/credits/from/$fromDate/to/$toDate"))
-          .willReturn(jsonErrorResponse(500, "server error"))
+          .willReturn(jsonErrorResponse(INTERNAL_SERVER_ERROR, "server error"))
       )
 
       val result = connector.getCredits(nino, fromDate, toDate).futureValue
       result mustBe Left(UnexpectedChargeErrorResponse)
     }
   }
+
+  "getPaymentAllocations" should {
+
+    val paymentLot = "12345"
+    val paymentLotItem = "67890"
+    val url = s"/$nino/payment-allocations/$paymentLot/$paymentLotItem"
+
+    "return Right(PaymentAllocations) when the backend returns 200" in {
+      val paymentAllocations = PaymentAllocations(
+        amount = Some(100.0),
+        method = Some("method"),
+        reference = Some("reference"),
+        transactionDate = Some(LocalDate.parse("2023-12-25")),
+        allocations = Seq(
+          AllocationDetail(
+            transactionId = Some("transactionId"),
+            from = Some(LocalDate.parse("2023-01-01")),
+            to = Some(LocalDate.parse("2023-12-31")),
+            chargeType = Some("type"),
+            mainType = Some("mainType"),
+            amount = Some(BigDecimal(100.0)),
+            clearedAmount = Some(BigDecimal(100.0)),
+            chargeReference = Some("chargeReference")
+          )
+        )
+      )
+
+      val body = Json.obj(
+        "paymentDetails" -> Json.arr(
+          Json.obj(
+            "paymentAmount"    -> 100.0,
+            "paymentMethod"    -> "method",
+            "paymentReference" -> "reference",
+            "valueDate"        -> "2023-12-25",
+            "sapClearingDocsDetails" -> Json.arr(
+              Json.obj(
+                "sapDocNumber"       -> "transactionId",
+                "taxPeriodStartDate" -> "2023-01-01",
+                "taxPeriodEndDate"   -> "2023-12-31",
+                "chargeType"         -> "type",
+                "mainType"           -> "mainType",
+                "amount"             -> 100.0,
+                "clearedAmount"      -> 100.0,
+                "chargeReference"    -> "chargeReference"
+              )
+            )
+          )
+        )
+      )
+
+      stubFor(
+        get(urlEqualTo(url))
+          .willReturn(okJsonResponse(body))
+      )
+
+      val result = connector.getPaymentAllocations(nino, paymentLot, paymentLotItem).futureValue
+      result mustBe Right(paymentAllocations)
+    }
+
+    "return Left(NotFoundResponse) when the backend returns 404" in {
+      stubFor(
+        get(urlEqualTo(url))
+          .willReturn(jsonErrorResponse(NOT_FOUND, "not found"))
+      )
+
+      val result = connector.getPaymentAllocations(nino, paymentLot, paymentLotItem).futureValue
+      result mustBe Left(NotFoundResponse)
+    }
+
+    "return Left(UnexpectedResponse) when the backend returns an error status" in {
+      stubFor(
+        get(urlEqualTo(url))
+          .willReturn(jsonErrorResponse(INTERNAL_SERVER_ERROR, "server error"))
+      )
+
+      val result = connector.getPaymentAllocations(nino, paymentLot, paymentLotItem).futureValue
+      result mustBe Left(UnexpectedResponse)
+    }
+  }
+  
 }
