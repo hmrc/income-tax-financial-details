@@ -17,19 +17,20 @@
 package connectors
 
 import connectors.httpParsers.ChargeHttpParser.{UnexpectedChargeErrorResponse, UnexpectedChargeResponse}
+import connectors.httpParsers.OutStandingChargesHttpParser.{OutStandingChargeErrorResponse, UnexpectedOutStandingChargeResponse}
+import constants.BaseIntegrationTestConstants.testNino
 import constants.FinancialDetailIntegrationTestConstants.chargeJson
 import constants.ViewAndChangeConnectorIntegrationTestConstants.*
-import helpers.servicemocks.ViewAndChangeStub
-import connectors.httpParsers.OutStandingChargesHttpParser.{OutStandingChargeErrorResponse, UnexpectedOutStandingChargeResponse}
 import helpers.{ComponentSpecBase, WiremockHelper}
-import models.outStandingCharges.{OutStandingCharge, OutstandingChargesSuccessResponse}
-import play.api.http.Status.{INTERNAL_SERVER_ERROR, NOT_FOUND, OK, CREATED}
-import play.api.libs.json.{JsValue, Json}
+import helpers.servicemocks.{VCPaymentAllocationsStub, ViewAndChangeStub}
 import models.claimToAdjustPoa.ClaimToAdjustPoaResponse.ClaimToAdjustPoaResponse
 import models.credits.CreditsModel
 import models.financialDetails.Payment
 import models.hip.chargeHistory.{ChargeHistoryError, ChargeHistoryNotFound}
+import models.outStandingCharges.{OutStandingCharge, OutstandingChargesSuccessResponse}
+import models.paymentAllocations.PaymentAllocations
 import org.scalactic.Prettifier.default
+import play.api.libs.json.{JsValue, Json}
 import play.api.http.Status.*
 import utils.AChargesResponse
 
@@ -105,6 +106,8 @@ class ViewAndChangeConnectorISpec extends ComponentSpecBase {
 
   val postClaimToAdjustPoaUrl = "/income-tax/calculations/POA/ClaimToAdjust"
   val getChargeHistoryUrl = "/etmp/RESTAdapter/ITSA/TaxPayer/GetChargeHistory?idType=NINO&idValue=123&chargeReference=456"
+  val getPaymentAllocationsUrl = s"/$testNino/payment-allocations/$paymentLot/$paymentLotItem"
+
 
   private val nino = "BB123456A"
   private val from = "from"
@@ -431,6 +434,45 @@ class ViewAndChangeConnectorISpec extends ComponentSpecBase {
             ChargeHistoryError(UNPROCESSABLE_ENTITY, chargeHistoryValidationError.toString())
           )
         }
+      }
+    }
+}
+  ".getPaymentAllocations() is called" when {
+
+    s"return $OK" when {
+      "payment allocations are successfully retrieved" in {
+        VCPaymentAllocationsStub.stubGetPaymentAllocations(testNino, paymentLot, paymentLotItem)(
+          status = OK,
+          response = paymentAllocationsResponseBody
+        )
+
+        val result = viewAndChangeConnector.getPaymentAllocations(testNino, paymentLot, paymentLotItem).futureValue
+
+        result shouldBe Right(paymentAllocations)
+      }
+    }
+
+    s"return $NOT_FOUND" when {
+      "no payment allocations are found" in {
+        VCPaymentAllocationsStub.stubGetPaymentAllocations(testNino, paymentLot, paymentLotItem)(
+          status = NOT_FOUND
+        )
+
+        val result = viewAndChangeConnector.getPaymentAllocations(testNino, paymentLot, paymentLotItem).futureValue
+
+        result shouldBe Left(connectors.httpParsers.PaymentAllocationsHttpParser.NotFoundResponse)
+      }
+    }
+
+    s"return an error" when {
+      "an unexpected status was returned when retrieving payment allocations" in {
+        VCPaymentAllocationsStub.stubGetPaymentAllocations(testNino, paymentLot, paymentLotItem)(
+          status = BAD_REQUEST
+        )
+
+        val result = viewAndChangeConnector.getPaymentAllocations(testNino, paymentLot, paymentLotItem).futureValue
+
+        result shouldBe Left(connectors.httpParsers.PaymentAllocationsHttpParser.UnexpectedResponse)
       }
     }
   }

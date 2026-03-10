@@ -16,20 +16,18 @@
 
 package controllers
 
-import constants.BaseIntegrationTestConstants._
-import helpers.servicemocks.DesPaymentAllocationsStub._
+import constants.BaseIntegrationTestConstants.*
+import helpers.servicemocks.DesPaymentAllocationsStub.*
 import models.paymentAllocations.{AllocationDetail, PaymentAllocations}
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.libs.json.{JsObject, Json}
 import play.api.libs.ws.WSResponse
 import helpers.ComponentSpecBase
+import helpers.servicemocks.VCPaymentAllocationsStub
 
 import java.time.LocalDate
 
 class PaymentAllocationsControllerISpec extends ComponentSpecBase {
-
-  val paymentLot: String = "paymentLot"
-  val paymentLotItem: String = "paymentLotItem"
 
   val paymentAllocations: PaymentAllocations = PaymentAllocations(
     amount = Some(1000.00),
@@ -73,20 +71,20 @@ class PaymentAllocationsControllerISpec extends ComponentSpecBase {
     )
   )
 
-  s"GET ${controllers.routes.PaymentAllocationsController.getPaymentAllocations(testNino, paymentLot, paymentLotItem)}" should {
+  s"GET ${controllers.routes.PaymentAllocationsController.getPaymentAllocations(testNino, testPaymentLot, testPaymentLotItem)}" should {
     s"return $OK" when {
       "payment allocations are successfully retrieved" in {
         Given("the user is authorised")
         isAuthorised(true)
 
         And("the call to retrieve payment allocations is stubbed")
-        stubGetPaymentAllocations(testNino, paymentLot, paymentLotItem)(
+        stubGetPaymentAllocations(testNino, testPaymentLot, testPaymentLotItem)(
           status = OK,
           response = paymentAllocationsJson
         )
 
-        When(s"I call GET ${controllers.routes.PaymentAllocationsController.getPaymentAllocations(testNino, paymentLot, paymentLotItem)}")
-        val res: WSResponse = IncomeTaxFinancialDetails.getPaymentAllocations(testNino, paymentLot, paymentLotItem)
+        When(s"I call GET ${controllers.routes.PaymentAllocationsController.getPaymentAllocations(testNino, testPaymentLot, testPaymentLotItem)}")
+        val res: WSResponse = IncomeTaxFinancialDetails.getPaymentAllocations(testNino, testPaymentLot, testPaymentLotItem)
 
         Then("a successful response is returned with the payment allocations")
         res should have(
@@ -101,12 +99,15 @@ class PaymentAllocationsControllerISpec extends ComponentSpecBase {
         isAuthorised(true)
 
         And("the call to retrieve payment allocations is stubbed")
-        stubGetPaymentAllocations(testNino, paymentLot, paymentLotItem)(
+        stubGetPaymentAllocations(testNino, testPaymentLot, testPaymentLotItem)(
+          status = BAD_REQUEST
+        )
+        VCPaymentAllocationsStub.stubGetPaymentAllocations(testNino, testPaymentLot, testPaymentLotItem)(
           status = BAD_REQUEST
         )
 
-        When(s"I call GET ${controllers.routes.PaymentAllocationsController.getPaymentAllocations(testNino, paymentLot, paymentLotItem)}")
-        val res: WSResponse = IncomeTaxFinancialDetails.getPaymentAllocations(testNino, paymentLot, paymentLotItem)
+        When(s"I call GET ${controllers.routes.PaymentAllocationsController.getPaymentAllocations(testNino, testPaymentLot, testPaymentLotItem)}")
+        val res: WSResponse = IncomeTaxFinancialDetails.getPaymentAllocations(testNino, testPaymentLot, testPaymentLotItem)
 
         Then("an internal server error response is returned")
         res should have(
