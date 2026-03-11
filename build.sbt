@@ -8,11 +8,11 @@ import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
 val appName = "income-tax-financial-details"
 
-val bootstrapPlayVersion = "10.6.0"
-val mockitoVersion = "5.21.0"
+val bootstrapPlayVersion = "10.7.0"
+val mockitoVersion = "5.22.0"
 val wiremockVersion = "3.8.0"
-val scalaMockVersion = "7.5.3"
-val jsoupVersion = "1.21.1"
+val scalaMockVersion = "7.5.5"
+val jsoupVersion = "1.22.1"
 val currentScalaVersion = "3.3.6"
 val mongoVersion = "2.12.0"
 
@@ -28,7 +28,7 @@ def test(scope: String = "test"): Seq[ModuleID] = Seq(
   "uk.gov.hmrc" %% "bootstrap-test-play-30" % bootstrapPlayVersion % scope,
   "org.mockito" % "mockito-core" % mockitoVersion % scope,
   "com.github.tomakehurst" % "wiremock" % wiremockVersion % scope,
-  "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.17.1",
+  "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.21.1",
   "org.scalatest"       %% "scalatest"              % "3.2.19" % scope,
   "uk.gov.hmrc.mongo" %% "hmrc-mongo-test-play-30" % mongoVersion % Test,
   caffeine
