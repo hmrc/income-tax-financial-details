@@ -27,9 +27,5 @@ class MicroserviceAuthConnector @Inject()(val http: HttpClientV2,
                                           val servicesConfig: ServicesConfig) extends PlayAuthConnector {
   override val serviceUrl: String = servicesConfig.baseUrl("auth")
 
-  //Remove check for style as this is required to implement the PlayAuthConnector trait which requires the method name httpClientV2
-  // scalastyle:off method.name
   override def httpClientV2: HttpClientV2 = http
-  // scalastyle:on method.name
-
 }
