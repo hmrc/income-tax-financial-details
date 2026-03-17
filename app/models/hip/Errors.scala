@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,22 +76,19 @@ enum ErrorResponse(val status: Int, val jsonError: JsValue):
     Json.toJson(CustomResponse("Unexpected json response"))
   )
 
-  case UnexpectedResponse
-    extends ErrorResponse(
-      INTERNAL_SERVER_ERROR,
-      Json.toJson(CustomResponse("Unexpected response"))
-    )
+  case UnexpectedResponse extends ErrorResponse(
+    INTERNAL_SERVER_ERROR,
+    Json.toJson(CustomResponse("Unexpected response"))
+  )
 
-  case BadGatewayResponse
-    extends ErrorResponse(
-      BAD_GATEWAY,
-      Json.toJson(CustomResponse("BAD_GATEWAY response"))
-    )
+  case BadGatewayResponse extends ErrorResponse(
+    BAD_GATEWAY,
+    Json.toJson(CustomResponse("BAD_GATEWAY response"))
+  )
 
-  case UnprocessableData(response: String)
-    extends ErrorResponse(
-      UNPROCESSABLE_ENTITY,
-      Json.toJson(response))
+  case UnprocessableData(response: String) extends ErrorResponse(
+    UNPROCESSABLE_ENTITY,
+    Json.toJson(response))
 
-  case GenericError(s: Int, response: JsValue)
-    extends ErrorResponse(s, response)
+
+  case GenericError(s: Int, response: JsValue) extends ErrorResponse(s, response)

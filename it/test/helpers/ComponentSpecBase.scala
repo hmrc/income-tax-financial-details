@@ -121,6 +121,14 @@ trait ComponentSpecBase extends TestSuite with CustomMatchers
       get(s"/$nino/financial-details/payments/from/$from/to/$to")
     }
 
+    def getRepaymentHistoryById(nino: String, repaymentId: String): WSResponse = {
+      get(s"/repayments/$nino/repaymentId/$repaymentId")
+    }
+
+    def getAllRepaymentHistory(nino: String): WSResponse = {
+      get(s"/repayments/$nino")
+    }
+
     def postClaimToAdjustPoa(body: JsValue): WSResponse = {
       buildClient(s"/submit-claim-to-adjust-poa").post(body).futureValue
     }
