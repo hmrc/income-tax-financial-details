@@ -84,8 +84,6 @@ object RepaymentViewerDetail {
 }
 
 case class RepaymentItem(
-                          //creditItems: Option[Seq[CreditItem]],
-                          //paymentItems: Option[Seq[PaymentItem]],
                           creditReasons: Option[Seq[CreditReason]],
                           repaymentSupplementItem: Option[Seq[RepaymentSupplementItem]]
                         )
@@ -97,35 +95,6 @@ object RepaymentItem {
   }
 }
 
-//case class CreditItem(
-//                       creditReference: String,
-//                       creditChargeName: String,
-//                       amount: BigDecimal,
-//                       creationDate: LocalDate,
-//                       taxYear: String
-//                     )
-//
-//object CreditItem {
-//  given Format[CreditItem] with {
-//    def reads(json: JsValue): JsResult[CreditItem] = Json.reads[CreditItem].reads(json)
-//    def writes(o: CreditItem): JsValue = Json.writes[CreditItem].writes(o)
-//  }
-//}
-
-//case class PaymentItem(
-//                        paymentReference: String,
-//                        amount: BigDecimal,
-//                        paymentSource: String,
-//                        edp: LocalDate
-//                      )
-//
-//object PaymentItem {
-//  given Format[PaymentItem] with {
-//    def reads(json: JsValue): JsResult[PaymentItem] = Json.reads[PaymentItem].reads(json)
-//    def writes(o: PaymentItem): JsValue = Json.writes[PaymentItem].writes(o)
-//  }
-//}
-//
 case class CreditReason(
                          creditReference: Option[String],
                          creditReason: String,
