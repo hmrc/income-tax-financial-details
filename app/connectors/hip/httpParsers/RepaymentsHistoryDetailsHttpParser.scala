@@ -16,9 +16,8 @@
 
 package connectors.hip.httpParsers
 
-//import connectors.hip.httpParsers.CalculationListLegacyHttpParser.handleErrorResponse
+
 import connectors.hip.httpParsers.errorResponses.ErrorResponseHttpParsers
-//import connectors.httpParsers.RepaymentHistoryHttpParser.logger
 import models.hip.repayments.SuccessfulRepaymentResponse
 import play.api.http.Status.*
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ class RepaymentHistoryController @Inject()(authentication: AuthenticationPredica
 //          case Left(_) =>
 //            InternalServerError("Failed to retrieve repayment history by date range")
 //        }
-//      } else 
+//      } else
       {
         hipRepaymentHistoryDetailsConnector.getRepaymentHistoryDetailsList(nino) map {
           case Right(repaymentHistory) => Ok(Json.toJson(repaymentHistory))
@@ -75,7 +75,7 @@ class RepaymentHistoryController @Inject()(authentication: AuthenticationPredica
 //          case Left(_) =>
 //            InternalServerError("Failed to retrieve repayment history by ID")
 //        }
-//      } else 
+//      } else
       {
           hipRepaymentHistoryDetailsConnector.getRepaymentHistoryDetails(nino, repaymentId).map {
             case Right(repaymentHistory) => Ok(Json.toJson(repaymentHistory))
