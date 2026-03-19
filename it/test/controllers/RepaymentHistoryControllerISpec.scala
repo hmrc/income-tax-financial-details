@@ -18,6 +18,7 @@ package controllers
 
 import helpers.ComponentSpecBase
 import helpers.servicemocks.DesChargesStub.{stubAllRepaymentHistory, stubRepaymentHistoryById}
+import helpers.servicemocks.VCRepaymentHistoryStub.{stubVCAllRepaymentHistory, stubVCRepaymentHistoryById}
 import models.hip.repayments.*
 import play.api.http.Status.{INTERNAL_SERVER_ERROR, NOT_FOUND, OK, SERVICE_UNAVAILABLE}
 import play.api.libs.json.{JsValue, Json}
@@ -138,15 +139,18 @@ class RepaymentHistoryControllerISpec extends ComponentSpecBase {
         isAuthorised(true)
 
         val errorJson = Json.arr(
-          Json.obj("errorCode" -> "NO_DATA_FOUND", "errorDescription" -> "The remote endpoint has indicated that no data can be found.")
+          Json.obj("code" -> "NO_DATA_FOUND", "reason" -> "The remote endpoint has indicated that no data can be found.")
         )
         stubRepaymentHistoryById(nino, repaymentId)(
           status = NOT_FOUND, response = errorJson
         )
+        stubVCRepaymentHistoryById(nino, repaymentId)(
+          status = NOT_FOUND, response = Json.obj("failures" -> errorJson)
+        )
         val res: WSResponse = IncomeTaxFinancialDetails.getRepaymentHistoryById(nino, repaymentId)
         res should have(
           httpStatus(NOT_FOUND),
-          bodyMatching(errorJson.toString())
+          bodyMatching(Json.obj("message" -> "Unexpected Unauthorized or Not found error").toString())
         )
       }
     }
@@ -157,6 +161,9 @@ class RepaymentHistoryControllerISpec extends ComponentSpecBase {
         isAuthorised(true)
 
         stubRepaymentHistoryById(nino, repaymentId)(
+          status = SERVICE_UNAVAILABLE
+        )
+        stubVCRepaymentHistoryById(nino, repaymentId)(
           status = SERVICE_UNAVAILABLE
         )
 
@@ -239,6 +246,9 @@ class RepaymentHistoryControllerISpec extends ComponentSpecBase {
         stubAllRepaymentHistory(nino)(
           status = SERVICE_UNAVAILABLE
         )
+        stubVCAllRepaymentHistory(nino)(
+          status = SERVICE_UNAVAILABLE
+        )
 
         val res: WSResponse = IncomeTaxFinancialDetails.getAllRepaymentHistory(nino)
 
@@ -254,15 +264,19 @@ class RepaymentHistoryControllerISpec extends ComponentSpecBase {
         isAuthorised(true)
 
         val errorJson = Json.arr(
-          Json.obj("errorCode" -> "NO_DATA_FOUND", "errorDescription" -> "The remote endpoint has indicated that no data can be found.")
+          Json.obj("code" -> "NO_DATA_FOUND", "reason" -> "The remote endpoint has indicated that no data can be found.")
         )
-        stubRepaymentHistoryById(nino, repaymentId)(
+        stubAllRepaymentHistory(nino)(
           status = NOT_FOUND, response = errorJson
         )
-        val res: WSResponse = IncomeTaxFinancialDetails.getRepaymentHistoryById(nino, repaymentId)
+        stubVCAllRepaymentHistory(nino)(
+          status = NOT_FOUND, response = Json.obj("failures" -> errorJson)
+        )
+        val res: WSResponse = IncomeTaxFinancialDetails.getAllRepaymentHistory(nino)
+
         res should have(
           httpStatus(NOT_FOUND),
-          bodyMatching(errorJson.toString())
+          bodyMatching(Json.obj("message" -> "Unexpected Unauthorized or Not found error").toString())
         )
       }
     }

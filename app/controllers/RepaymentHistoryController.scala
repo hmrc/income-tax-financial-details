@@ -16,12 +16,9 @@
 
 package controllers
 
-//import config.MicroserviceAppConfig
-//import connectors.RepaymentHistoryDetailsConnector
-import connectors.hip.HipRepaymentHistoryDetailsConnector
-//import connectors.httpParsers.RepaymentHistoryHttpParser.UnexpectedRepaymentHistoryResponse
+
+import services.RepaymentHistoryDetailsService
 import controllers.predicates.AuthenticationPredicate
-//import models.hip.GetRepaymentHistoryDetails
 import play.api.libs.json.Json
 import play.api.mvc.*
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -32,25 +29,15 @@ import scala.concurrent.ExecutionContext
 @Singleton
 class RepaymentHistoryController @Inject()(authentication: AuthenticationPredicate,
                                            cc: ControllerComponents,
-                                           hipRepaymentHistoryDetailsConnector: HipRepaymentHistoryDetailsConnector
+                                           repaymentHistoryDetailsService: RepaymentHistoryDetailsService
                                           )
                                           (implicit ec: ExecutionContext) extends BackendController(cc) {
 
 
   def getAllRepaymentHistory(nino: String): Action[AnyContent] = {
     authentication.async { implicit request =>
-//      if (!appConfig.hipFeatureSwitchEnabled(GetRepaymentHistoryDetails)) {
-//        repaymentHistoryDetailsConnector.getAllRepaymentHistoryDetails(
-//          nino = nino
-//        ) map {
-//          case Right(repaymentHistory) => Ok(Json.toJson(repaymentHistory))
-//          case Left(error: UnexpectedRepaymentHistoryResponse) if error.code >= 400 && error.code < 500 => Status(error.code)(error.response)
-//          case Left(_) =>
-//            InternalServerError("Failed to retrieve repayment history by date range")
-//        }
-//      } else
       {
-        hipRepaymentHistoryDetailsConnector.getRepaymentHistoryDetailsList(nino) map {
+        repaymentHistoryDetailsService.getRepaymentHistoryDetailsList(nino) map {
           case Right(repaymentHistory) => Ok(Json.toJson(repaymentHistory))
           case Left(error) =>
             if (error.status >= 400 && error.status < 500 ){
@@ -65,19 +52,8 @@ class RepaymentHistoryController @Inject()(authentication: AuthenticationPredica
 
   def getRepaymentHistoryById(nino: String, repaymentId: String): Action[AnyContent] =
     authentication.async { implicit request =>
-//      if (!appConfig.hipFeatureSwitchEnabled(GetRepaymentHistoryDetails)) {
-//        repaymentHistoryDetailsConnector.getRepaymentHistoryDetailsById(
-//          nino = nino,
-//          repaymentId = repaymentId
-//        ) map {
-//          case Right(repaymentHistory) => Ok(Json.toJson(repaymentHistory))
-//          case Left(error: UnexpectedRepaymentHistoryResponse) if error.code >= 400 && error.code < 500 => Status(error.code)(error.response)
-//          case Left(_) =>
-//            InternalServerError("Failed to retrieve repayment history by ID")
-//        }
-//      } else
       {
-          hipRepaymentHistoryDetailsConnector.getRepaymentHistoryDetails(nino, repaymentId).map {
+        repaymentHistoryDetailsService.getRepaymentHistoryDetails(nino, repaymentId).map {
             case Right(repaymentHistory) => Ok(Json.toJson(repaymentHistory))
             case Left(error) =>
               if (error.status >= 400 && error.status < 500 ){
