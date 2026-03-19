@@ -13,3 +13,6 @@ GET        /out-standing-charges/:idType/:idNumber/:taxYear          controllers
 POST       /submit-claim-to-adjust-poa                               controllers.ClaimToAdjustPoaController.submitClaimToAdjustPoa()
 
 GET        /charge-history/:nino/chargeReference/:chargeReference 	 controllers.ChargeHistoryController.getChargeHistoryDetails(nino, chargeReference)
+
+GET         /repayments/:nino/repaymentId/:repaymentId               controllers.RepaymentHistoryController.getRepaymentHistoryById(nino, repaymentId)
+GET         /repayments/:nino                                        controllers.RepaymentHistoryController.getAllRepaymentHistory(nino)

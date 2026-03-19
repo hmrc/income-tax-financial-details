@@ -14,19 +14,12 @@
  * limitations under the License.
  */
 
-package connectors
+package models.repaymentHistory
 
-import uk.gov.hmrc.auth.core.PlayAuthConnector
-import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import play.api.libs.json.{Json, OFormat}
 
-import javax.inject.{Inject, Singleton}
+case class RepaymentHistorySuccessResponse(repaymentsViewerDetails: List[RepaymentHistory])
 
-@Singleton
-class MicroserviceAuthConnector @Inject()(val http: HttpClientV2,
-                                          val servicesConfig: ServicesConfig) extends PlayAuthConnector {
-  override val serviceUrl: String = servicesConfig.baseUrl("auth")
-  
-  override def httpClientV2: HttpClientV2 = http
-
+object RepaymentHistorySuccessResponse {
+  implicit val format: OFormat[RepaymentHistorySuccessResponse] = Json.format[RepaymentHistorySuccessResponse]
 }
