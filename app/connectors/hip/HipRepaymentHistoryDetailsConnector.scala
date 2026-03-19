@@ -60,5 +60,5 @@ class HipRepaymentHistoryDetailsConnector @Inject()(val http: HttpClientV2, val 
       .setHeader(getHeaders: _*)
       .execute[HttpGetResult[SuccessfulRepaymentResponse]]
   }
-  }
+}
 
