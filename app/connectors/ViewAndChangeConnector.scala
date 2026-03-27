@@ -27,7 +27,7 @@ import models.claimToAdjustPoa.ClaimToAdjustPoaRequest
 import models.claimToAdjustPoa.ClaimToAdjustPoaResponse.{ClaimToAdjustPoaResponse, ErrorResponse}
 import models.hip.chargeHistory.{ChargeHistoryError, ChargeHistoryNotFound, ChargeHistoryResponseError, ChargeHistorySuccessWrapper}
 import models.hip.repayments.SuccessfulRepaymentResponse
-import models.hip.{GetChargeHistoryHipApi, GetRepaymentHistoryDetails, HipResponseErrorsObject}
+import models.hip.{GetChargeHistoryHipApi, HipResponseErrorsObject}
 import play.api.{Logger, Logging}
 import play.api.http.Status.{INTERNAL_SERVER_ERROR, NOT_FOUND, OK, UNPROCESSABLE_ENTITY}
 import play.api.libs.ws.writeableOf_JsValue
@@ -183,32 +183,32 @@ class ViewAndChangeConnector @Inject()( val appConfig: MicroserviceAppConfig,
     }
   }
   //RepaymentHistoryDetails
-  private def getRepaymentHeaders: Seq[(String, String)] = appConfig.getHIPHeaders(GetRepaymentHistoryDetails)
+  //private def getRepaymentHeaders: Seq[(String, String)] = appConfig.getHIPHeaders(GetRepaymentHistoryDetails)
   
   private def getRepaymentUrl(idValue: String, repaymentRequestNumber: Option[String]): String = {
     repaymentRequestNumber match {
-      case Some(value) => s"${appConfig.viewAndChangeBaseUrl}/etmp/RESTAdapter/ITSA/RepaymentsViewer/$idValue?repaymentRequestNumber=$value"
-      case None => s"${appConfig.viewAndChangeBaseUrl}/etmp/RESTAdapter/ITSA/RepaymentsViewer/$idValue"
+      case Some(value) => s"${appConfig.viewAndChangeBaseUrl}/repayments/$idValue/repaymentId/$value"
+      case None => s"${appConfig.viewAndChangeBaseUrl}/repayments/$idValue"
     }
   }
   
   def getRepaymentHistoryDetailsList(idValue: String)
                                     (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[HttpGetResult[SuccessfulRepaymentResponse]] = {
     val url = getRepaymentUrl(idValue, None)
-    logger.debug(s"Calling GET $url \nHeaders: $getRepaymentHeaders")
+    //logger.debug(s"Calling GET $url \nHeaders: $getRepaymentHeaders")
     http
       .get(url"$url")
-      .setHeader(getHeaders: _*)
+      //.setHeader(getHeaders: _*)
       .execute[HttpGetResult[SuccessfulRepaymentResponse]]
   }
 
   def getRepaymentHistoryDetails(idValue: String, repaymentRequestNumber: String)
                                 (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[HttpGetResult[SuccessfulRepaymentResponse]] = { 
     val url = getRepaymentUrl(idValue, Some(repaymentRequestNumber))
-    logger.debug(s"Calling GET $url \nHeaders: $getRepaymentHeaders")
+    //logger.debug(s"Calling GET $url \nHeaders: $getRepaymentHeaders")
     http
       .get(url"$url")
-      .setHeader(getHeaders: _*)
+      //.setHeader(getHeaders: _*)
       .execute[HttpGetResult[SuccessfulRepaymentResponse]]
   }
 }
