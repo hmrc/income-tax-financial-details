@@ -18,6 +18,7 @@ package connectors.httpParsers
 
 import connectors.hip.httpParsers.errorResponses.ErrorResponseHttpParsers
 import connectors.httpParsers.ChargeHttpParser.{ChargeResponseError, UnexpectedChargeErrorResponse, UnexpectedChargeResponse}
+import models.hip.ErrorResponse.GenericError
 import models.hip.repayments.SuccessfulRepaymentResponse
 import play.api.Logging
 import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, OK}
@@ -37,7 +38,7 @@ object ViewAndChangeHttpParser extends ErrorResponseHttpParsers with Logging {
           Right(response.json.as[SuccessfulRepaymentResponse])
         case status =>
           logger.error(s"Call to RepaymentsHistory failed with status: $status and response body: ${response.body}")
-          handleErrorResponse(response)
+          Left(GenericError(status, response.json))
       }
   }
   
