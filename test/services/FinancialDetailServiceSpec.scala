@@ -20,10 +20,12 @@ import config.MicroserviceAppConfig
 import connectors.hip.FinancialDetailsHipConnector
 import connectors.ViewAndChangeConnector
 import connectors.hip.httpParsers.ChargeHipHttpParser.ChargeHipResponse
+import connectors.httpParsers.ChargeHttpParser.UnexpectedChargeErrorResponse
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.{mock, when}
 import org.mockito.stubbing.OngoingStubbing
 import play.api.libs.json.Json
+import models.credits.CreditsModel
 import utils.{FinancialDetailsHipDataHelper, TestSupport}
 import scala.concurrent.Future
 
@@ -57,6 +59,15 @@ class FinancialDetailServiceSpec  extends TestSupport with FinancialDetailsHipDa
     ).thenReturn(Future.successful(response))
   }
 
+  def setupMockGetOnlyOpenItems(nino: String)
+                               (response: ChargeHipResponse): OngoingStubbing[Future[ChargeHipResponse]] = {
+    when(
+      mockFinancialDetailsHipConnector.getOnlyOpenItems(
+        ArgumentMatchers.eq(nino)
+      )(ArgumentMatchers.any(), ArgumentMatchers.any())
+    ).thenReturn(Future.successful(response))
+  }
+
   "Call getChargeDetails" should {
     "return success response with Json" when {
       "provided with the correct params" in {
@@ -64,6 +75,16 @@ class FinancialDetailServiceSpec  extends TestSupport with FinancialDetailsHipDa
         val expected = ServiceUnderTest.getChargeDetails(testNino, testFromDate, testToDate).futureValue
         expected shouldBe successResponse.map(Json.toJson(_))
       }
+    }
+    "fallback to VC when HiP fails" in {
+      val vcPayload = Right(Json.obj("source" -> "vc", "charges" -> Json.arr()))
+      setupMockGetPayment(testNino, testFromDate, testToDate)(Left(UnexpectedChargeErrorResponse))
+      when(
+        mockViewAndChangeConnector.getChargeDetails(
+          ArgumentMatchers.eq(testNino), ArgumentMatchers.eq(testFromDate), ArgumentMatchers.eq(testToDate)
+        )(ArgumentMatchers.any())
+      ).thenReturn(Future.successful(vcPayload))
+      ServiceUnderTest.getChargeDetails(testNino, testFromDate, testToDate).futureValue shouldBe vcPayload
     }
   }
 
@@ -76,6 +97,16 @@ class FinancialDetailServiceSpec  extends TestSupport with FinancialDetailsHipDa
         expected shouldBe successResponse.map(x => Json.toJson(x.payments))
       }
     }
+    "fallback to VC when HiP fails" in {
+      val vcPayload = Right(Json.obj("source" -> "vc", "payments" -> Json.arr()))
+      setupMockGetPayment(testNino, testFromDate, testToDate)(Left(UnexpectedChargeErrorResponse))
+      when(
+        mockViewAndChangeConnector.getPayments(
+          ArgumentMatchers.eq(testNino), ArgumentMatchers.eq(testFromDate), ArgumentMatchers.eq(testToDate)
+        )(ArgumentMatchers.any())
+      ).thenReturn(Future.successful(vcPayload))
+      ServiceUnderTest.getPayments(testNino, testFromDate, testToDate).futureValue shouldBe vcPayload
+    }
   }
 
   "Call getPaymentAllocationDetails" should {
@@ -85,6 +116,49 @@ class FinancialDetailServiceSpec  extends TestSupport with FinancialDetailsHipDa
         val expected = ServiceUnderTest.getPaymentAllocationDetails(testNino, testDocumentId).futureValue
         expected shouldBe successResponse.map(Json.toJson(_))
       }
+    }
+    "fallback to VC when HiP fails" in {
+      val vcPayload = Right(Json.obj("source" -> "vc", "documentId" -> testDocumentId))
+      setUpMockPaymentAllocationDetails(testNino, testDocumentId)(Left(UnexpectedChargeErrorResponse))
+      when(
+        mockViewAndChangeConnector.getChargeDetailsByDocumentId(
+          ArgumentMatchers.eq(testNino), ArgumentMatchers.eq(testDocumentId)
+        )(ArgumentMatchers.any())
+      ).thenReturn(Future.successful(vcPayload))
+      ServiceUnderTest.getPaymentAllocationDetails(testNino, testDocumentId).futureValue shouldBe vcPayload
+    }
+  }
+
+  "Call getOnlyOpenItems" should {
+    "return HiP success mapped to Json" in {
+      setupMockGetOnlyOpenItems(testNino)(successResponse)
+      ServiceUnderTest.getOnlyOpenItems(testNino).futureValue shouldBe successResponse.map(Json.toJson(_))
+    }
+    "fallback to VC when HiP fails" in {
+      val vcPayload = Right(Json.obj("source" -> "vc", "onlyOpenItems" -> Json.arr()))
+      setupMockGetOnlyOpenItems(testNino)(Left(UnexpectedChargeErrorResponse))
+      when(
+        mockViewAndChangeConnector.getOnlyOpenItems(ArgumentMatchers.eq(testNino))(ArgumentMatchers.any())
+      ).thenReturn(Future.successful(vcPayload))
+      ServiceUnderTest.getOnlyOpenItems(testNino).futureValue shouldBe vcPayload
+    }
+  }
+
+  "Call getCredits" should {
+    "return credits transformed from HiP success" in {
+      setupMockGetPayment(testNino, testFromDate, testToDate)(successResponse)
+      ServiceUnderTest.getCredits(testNino, testFromDate, testToDate).futureValue shouldBe
+        Right(Json.toJson(CreditsModel.fromHipChargesResponse(chargeHipDef)))
+    }
+    "fallback to VC when HiP fails" in {
+      val vcPayload = Right(Json.obj("source" -> "vc", "credits" -> Json.arr()))
+      setupMockGetPayment(testNino, testFromDate, testToDate)(Left(UnexpectedChargeErrorResponse))
+      when(
+        mockViewAndChangeConnector.getCredits(
+          ArgumentMatchers.eq(testNino), ArgumentMatchers.eq(testFromDate), ArgumentMatchers.eq(testToDate)
+        )(ArgumentMatchers.any())
+      ).thenReturn(Future.successful(vcPayload))
+      ServiceUnderTest.getCredits(testNino, testFromDate, testToDate).futureValue shouldBe vcPayload
     }
   }
 
