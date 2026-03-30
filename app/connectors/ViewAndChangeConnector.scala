@@ -17,21 +17,24 @@
 package connectors
 
 import config.MicroserviceAppConfig
+import connectors.hip.HipConnectorDataHelper
+import connectors.hip.httpParsers.ChargeHipHttpParser.HttpGetResult
 import connectors.httpParsers.ClaimToAdjustPoaHttpParser.*
 import connectors.httpParsers.PaymentAllocationsHttpParser.{PaymentAllocationsReads, PaymentAllocationsResponse}
-import connectors.hip.HipConnectorDataHelper
 import connectors.httpParsers.ViewAndChangeHttpParser.{ViewAndChangeJsonResponse, given}
 import connectors.httpParsers.OutStandingChargesHttpParser.{OutStandingChargeResponse, OutStandingChargesReads}
 import models.claimToAdjustPoa.ClaimToAdjustPoaRequest
 import models.claimToAdjustPoa.ClaimToAdjustPoaResponse.{ClaimToAdjustPoaResponse, ErrorResponse}
-import play.api.Logger
 import models.hip.chargeHistory.{ChargeHistoryError, ChargeHistoryNotFound, ChargeHistoryResponseError, ChargeHistorySuccessWrapper}
+import models.hip.repayments.SuccessfulRepaymentResponse
 import models.hip.{GetChargeHistoryHipApi, HipResponseErrorsObject}
+import play.api.{Logger, Logging}
 import play.api.http.Status.{INTERNAL_SERVER_ERROR, NOT_FOUND, OK, UNPROCESSABLE_ENTITY}
+import play.api.libs.ws.writeableOf_JsValue
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
-import play.api.libs.ws.writeableOf_JsValue
+import uk.gov.hmrc.http.HttpReads.Implicits.*
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.duration.{Duration, SECONDS}
@@ -40,7 +43,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class ViewAndChangeConnector @Inject()( val appConfig: MicroserviceAppConfig,
                                        val http: HttpClientV2)
-                                      ( implicit ec: ExecutionContext )extends RawResponseReads with HipConnectorDataHelper {
+                                      ( implicit ec: ExecutionContext )extends Logging with HipConnectorDataHelper {
   def listOutStandingChargesUrl(idType: String, idNumber: String, taxYearEndDate: String): String =
     s"${appConfig.viewAndChangeBaseUrl}/income-tax/charges/outstanding/$idType/$idNumber/$taxYearEndDate"
 
@@ -178,5 +181,34 @@ class ViewAndChangeConnector @Inject()( val appConfig: MicroserviceAppConfig,
             ChargeHistoryError(unprocessableResponse.status, unprocessableResponse.body)
         }
     }
+  }
+  //RepaymentHistoryDetails
+  //private def getRepaymentHeaders: Seq[(String, String)] = appConfig.getHIPHeaders(GetRepaymentHistoryDetails)
+  
+  private def getRepaymentUrl(idValue: String, repaymentRequestNumber: Option[String]): String = {
+    repaymentRequestNumber match {
+      case Some(value) => s"${appConfig.viewAndChangeBaseUrl}/income-tax-financial-details/repayments/$idValue/repaymentId/$value"
+      case None => s"${appConfig.viewAndChangeBaseUrl}/income-tax-financial-details/repayments/$idValue"
+    }
+  }
+  
+  def getRepaymentHistoryDetailsList(idValue: String)
+                                    (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[HttpGetResult[SuccessfulRepaymentResponse]] = {
+    val url = getRepaymentUrl(idValue, None)
+    //logger.debug(s"Calling GET $url \nHeaders: $getRepaymentHeaders")
+    http
+      .get(url"$url")
+      //.setHeader(getHeaders: _*)
+      .execute[HttpGetResult[SuccessfulRepaymentResponse]]
+  }
+
+  def getRepaymentHistoryDetails(idValue: String, repaymentRequestNumber: String)
+                                (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[HttpGetResult[SuccessfulRepaymentResponse]] = { 
+    val url = getRepaymentUrl(idValue, Some(repaymentRequestNumber))
+    //logger.debug(s"Calling GET $url \nHeaders: $getRepaymentHeaders")
+    http
+      .get(url"$url")
+      //.setHeader(getHeaders: _*)
+      .execute[HttpGetResult[SuccessfulRepaymentResponse]]
   }
 }

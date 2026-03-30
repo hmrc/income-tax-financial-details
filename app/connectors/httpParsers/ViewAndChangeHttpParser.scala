@@ -16,16 +16,32 @@
 
 package connectors.httpParsers
 
+import connectors.hip.httpParsers.errorResponses.ErrorResponseHttpParsers
 import connectors.httpParsers.ChargeHttpParser.{ChargeResponseError, UnexpectedChargeErrorResponse, UnexpectedChargeResponse}
+import models.hip.ErrorResponse.GenericError
+import models.hip.repayments.SuccessfulRepaymentResponse
 import play.api.Logging
 import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, OK}
 import play.api.libs.json.{JsError, JsSuccess, JsValue}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
-object ViewAndChangeHttpParser extends Logging {
+object ViewAndChangeHttpParser extends ErrorResponseHttpParsers with Logging {
 
   type ViewAndChangeJsonResponse = Either[ChargeResponseError, JsValue]
 
+  given RepaymentsHistoryDetailsReads: HttpReads[HttpGetResult[SuccessfulRepaymentResponse]] with {
+
+    override def read(method: String, url: String, response: HttpResponse): HttpGetResult[SuccessfulRepaymentResponse] =
+      response.status match {
+        case OK =>
+          logger.info("successfully parsed response to List[RepaymentHistory]")
+          Right(response.json.as[SuccessfulRepaymentResponse])
+        case status =>
+          logger.error(s"Call to RepaymentsHistory failed with status: $status and response body: ${response.body}")
+          Left(GenericError(status, response.json))
+      }
+  }
+  
   implicit object ViewAndChangeReads extends HttpReads[ViewAndChangeJsonResponse] {
     override def read(method: String, url: String, response: HttpResponse): ViewAndChangeJsonResponse = {
       response.status match {
