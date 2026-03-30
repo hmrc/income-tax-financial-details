@@ -150,7 +150,7 @@ class RepaymentHistoryControllerISpec extends ComponentSpecBase {
         val res: WSResponse = IncomeTaxFinancialDetails.getRepaymentHistoryById(nino, repaymentId)
         res should have(
           httpStatus(NOT_FOUND),
-          bodyMatching(Json.obj("message" -> "Unexpected Unauthorized or Not found error").toString())
+          bodyMatching(Json.obj("failures" -> errorJson).toString())
         )
       }
     }
@@ -276,7 +276,7 @@ class RepaymentHistoryControllerISpec extends ComponentSpecBase {
 
         res should have(
           httpStatus(NOT_FOUND),
-          bodyMatching(Json.obj("message" -> "Unexpected Unauthorized or Not found error").toString())
+          bodyMatching(Json.obj("failures" -> errorJson).toString())
         )
       }
     }
