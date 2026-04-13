@@ -38,8 +38,6 @@ object HipRepaymentHistoryDetailsIntegrationTestConstants {
         creationDate = Some(LocalDate.parse("2021-07-21")),
         estimatedRepaymentDate = Some(LocalDate.parse("2021-07-23")),
         repaymentItems = Some(Seq(models.hip.repayments.RepaymentItem(
-//          creditItems = None,
-//          paymentItems = None,
           creditReasons = Some(Seq(CreditReason(
             creditReference = Some("002420002231000"),
             creditReason = "Credit",
@@ -80,8 +78,6 @@ object HipRepaymentHistoryDetailsIntegrationTestConstants {
         creationDate = Some(LocalDate.parse("2020-12-03")),
         estimatedRepaymentDate = Some(LocalDate.parse("2020-12-05")),
         repaymentItems = Some(Seq(models.hip.repayments.RepaymentItem(
-//          creditItems = None,
-//          paymentItems = None,
           creditReasons = Some(Seq(CreditReason(
             creditReference = None,
             creditReason = "Credit",

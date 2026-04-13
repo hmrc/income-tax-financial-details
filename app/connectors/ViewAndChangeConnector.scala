@@ -183,8 +183,6 @@ class ViewAndChangeConnector @Inject()( val appConfig: MicroserviceAppConfig,
     }
   }
   //RepaymentHistoryDetails
-  //private def getRepaymentHeaders: Seq[(String, String)] = appConfig.getHIPHeaders(GetRepaymentHistoryDetails)
-  
   private def getRepaymentUrl(idValue: String, repaymentRequestNumber: Option[String]): String = {
     repaymentRequestNumber match {
       case Some(value) => s"${appConfig.viewAndChangeBaseUrl}/income-tax-view-change/repayments/$idValue/repaymentId/$value"
@@ -195,20 +193,16 @@ class ViewAndChangeConnector @Inject()( val appConfig: MicroserviceAppConfig,
   def getRepaymentHistoryDetailsList(idValue: String)
                                     (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[HttpGetResult[SuccessfulRepaymentResponse]] = {
     val url = getRepaymentUrl(idValue, None)
-    //logger.debug(s"Calling GET $url \nHeaders: $getRepaymentHeaders")
     http
       .get(url"$url")
-      //.setHeader(getHeaders: _*)
       .execute[HttpGetResult[SuccessfulRepaymentResponse]]
   }
 
   def getRepaymentHistoryDetails(idValue: String, repaymentRequestNumber: String)
                                 (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[HttpGetResult[SuccessfulRepaymentResponse]] = { 
     val url = getRepaymentUrl(idValue, Some(repaymentRequestNumber))
-    //logger.debug(s"Calling GET $url \nHeaders: $getRepaymentHeaders")
     http
       .get(url"$url")
-      //.setHeader(getHeaders: _*)
       .execute[HttpGetResult[SuccessfulRepaymentResponse]]
   }
 }

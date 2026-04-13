@@ -24,7 +24,6 @@ import play.api.Logging
 import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, OK}
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
-
 import scala.util.Try
 
 object ViewAndChangeHttpParser extends ErrorResponseHttpParsers with Logging {

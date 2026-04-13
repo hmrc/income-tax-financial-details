@@ -33,7 +33,7 @@ object SuccessfulRepaymentResponse {
         (__ \ "etmp_Response_Details").format[ResponseDetails]
       )(SuccessfulRepaymentResponse.apply, res => (res.transactionHeader, res.responseDetails))
 
-    // Fallback for legacy format where repaymentsViewerDetails is at root level
+    // Fallback for legacy format
     private val legacyReads: Reads[SuccessfulRepaymentResponse] =
       (__ \ "repaymentsViewerDetails").read[Seq[RepaymentViewerDetail]].map { details =>
         SuccessfulRepaymentResponse(
