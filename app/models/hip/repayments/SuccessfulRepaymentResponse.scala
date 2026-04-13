@@ -33,7 +33,18 @@ object SuccessfulRepaymentResponse {
         (__ \ "etmp_Response_Details").format[ResponseDetails]
       )(SuccessfulRepaymentResponse.apply, res => (res.transactionHeader, res.responseDetails))
 
-    def reads(json: JsValue): JsResult[SuccessfulRepaymentResponse] = baseFormat.reads(json)
+    // Fallback for legacy format where repaymentsViewerDetails is at root level
+    private val legacyReads: Reads[SuccessfulRepaymentResponse] =
+      (__ \ "repaymentsViewerDetails").read[Seq[RepaymentViewerDetail]].map { details =>
+        SuccessfulRepaymentResponse(
+          transactionHeader = TransactionHeader("OK", LocalDateTime.now()),
+          responseDetails = ResponseDetails(details)
+        )
+      }
+
+    def reads(json: JsValue): JsResult[SuccessfulRepaymentResponse] =
+      baseFormat.reads(json).orElse(legacyReads.reads(json))
+
     def writes(o: SuccessfulRepaymentResponse): JsValue = baseFormat.writes(o)
   }
 }
@@ -90,7 +101,14 @@ case class RepaymentItem(
 
 object RepaymentItem {
   given Format[RepaymentItem] with {
-    def reads(json: JsValue): JsResult[RepaymentItem] = Json.reads[RepaymentItem].reads(json)
+    def reads(json: JsValue): JsResult[RepaymentItem] = {
+      val creditReasonsReads: Reads[Option[Seq[CreditReason]]] =
+        (__ \ "creditReasons").readNullable[Seq[CreditReason]]
+          .orElse((__ \ "creditReason").readNullable[Seq[CreditReason]])
+      (creditReasonsReads and
+        (__ \ "repaymentSupplementItem").readNullable[Seq[RepaymentSupplementItem]]
+      )(RepaymentItem.apply _).reads(json)
+    }
     def writes(o: RepaymentItem): JsValue = Json.writes[RepaymentItem].writes(o)
   }
 }

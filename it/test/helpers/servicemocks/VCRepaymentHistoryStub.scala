@@ -22,11 +22,11 @@ import play.api.libs.json.{JsValue, Json}
 object VCRepaymentHistoryStub {
 
   private def repaymentHistoryByIdUrl(nino: String, repaymentId: String): String = {
-    s"/income-tax-financial-details/repayments/$nino/repaymentId/$repaymentId"
+    s"/income-tax-view-change/repayments/$nino/repaymentId/$repaymentId"
   }
 
   private def allRepaymentHistoryUrl(nino: String): String = {
-    s"/income-tax-financial-details/repayments/$nino"
+    s"/income-tax-view-change/repayments/$nino"
   }
 
   def stubVCRepaymentHistoryById(nino: String, repaymentId: String)(status: Int, response: JsValue = Json.obj()): Unit = {

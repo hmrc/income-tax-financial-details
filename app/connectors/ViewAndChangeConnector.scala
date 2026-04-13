@@ -187,8 +187,8 @@ class ViewAndChangeConnector @Inject()( val appConfig: MicroserviceAppConfig,
   
   private def getRepaymentUrl(idValue: String, repaymentRequestNumber: Option[String]): String = {
     repaymentRequestNumber match {
-      case Some(value) => s"${appConfig.viewAndChangeBaseUrl}/income-tax-financial-details/repayments/$idValue/repaymentId/$value"
-      case None => s"${appConfig.viewAndChangeBaseUrl}/income-tax-financial-details/repayments/$idValue"
+      case Some(value) => s"${appConfig.viewAndChangeBaseUrl}/income-tax-view-change/repayments/$idValue/repaymentId/$value"
+      case None => s"${appConfig.viewAndChangeBaseUrl}/income-tax-view-change/repayments/$idValue"
     }
   }
   
