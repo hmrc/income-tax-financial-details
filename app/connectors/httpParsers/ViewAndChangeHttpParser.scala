@@ -22,8 +22,9 @@ import models.hip.ErrorResponse.GenericError
 import models.hip.repayments.SuccessfulRepaymentResponse
 import play.api.Logging
 import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, OK}
-import play.api.libs.json.{JsError, JsSuccess, JsValue}
+import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
+import scala.util.Try
 
 object ViewAndChangeHttpParser extends ErrorResponseHttpParsers with Logging {
 
@@ -38,7 +39,8 @@ object ViewAndChangeHttpParser extends ErrorResponseHttpParsers with Logging {
           Right(response.json.as[SuccessfulRepaymentResponse])
         case status =>
           logger.error(s"Call to RepaymentsHistory failed with status: $status and response body: ${response.body}")
-          Left(GenericError(status, response.json))
+          val jsonBody = Try(response.json).getOrElse(Json.obj("error" -> response.body))
+          Left(GenericError(status, jsonBody))
       }
   }
   
