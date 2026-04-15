@@ -41,11 +41,9 @@ class RepaymentHistoryController @Inject()(authentication: AuthenticationPredica
   def getAllRepaymentHistory(nino: String): Action[AnyContent] = {
     authentication.async { implicit request =>
       if (!appConfig.hipFeatureSwitchEnabled(GetRepaymentHistoryDetails)) {
-        println("HERE!!!!!!!!")
         repaymentHistoryDetailsService.getIFRepaymentHistoryDetailsList(nino).map {
           case Right(repaymentHistory) => Ok(Json.toJson(repaymentHistory))
           case Left(error: UnexpectedRepaymentHistoryResponse) if error.code >= 400 && error.code < 500 =>
-            println("&&&&&&&HHHHH")
             Status(error.code)(error.response)
           case Left(_) =>
             InternalServerError("Failed to retrieve repayment history by date range")
