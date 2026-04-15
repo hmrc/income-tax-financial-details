@@ -16,9 +16,10 @@
 
 package services
 
-import connectors.ViewAndChangeConnector
+import connectors.{RepaymentHistoryDetailsConnector, ViewAndChangeConnector}
 import connectors.hip.HipRepaymentHistoryDetailsConnector
 import connectors.hip.httpParsers.ChargeHipHttpParser.HttpGetResult
+import connectors.httpParsers.RepaymentHistoryHttpParser.RepaymentHistoryResponse
 import models.hip.repayments.SuccessfulRepaymentResponse
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -27,6 +28,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class RepaymentHistoryDetailsService @Inject()(hipRepaymentHistoryDetailsConnector: HipRepaymentHistoryDetailsConnector,
+                                               repaymentHistoryDetailsConnector: RepaymentHistoryDetailsConnector,
                                                viewAndChangeConnector: ViewAndChangeConnector) {
 
   def getRepaymentHistoryDetailsList(idValue: String)
@@ -39,6 +41,17 @@ class RepaymentHistoryDetailsService @Inject()(hipRepaymentHistoryDetailsConnect
     }
   }
 
+  //ToDo remove when migration to HIP is completed
+  def getIFRepaymentHistoryDetailsList(idValue: String)
+                                    (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[RepaymentHistoryResponse] = {
+    repaymentHistoryDetailsConnector.getAllRepaymentHistoryDetails(idValue).flatMap {
+      case right@Right(_) =>
+        Future.successful(right)
+      case Left(_) =>
+        viewAndChangeConnector.getIFRepaymentHistoryDetailsList(idValue)
+    }
+  }
+
   def getRepaymentHistoryDetails(idValue: String, repaymentRequestNumber: String)
                                 (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpGetResult[SuccessfulRepaymentResponse]] = {
     hipRepaymentHistoryDetailsConnector.getRepaymentHistoryDetails(idValue, repaymentRequestNumber).flatMap {
@@ -46,6 +59,17 @@ class RepaymentHistoryDetailsService @Inject()(hipRepaymentHistoryDetailsConnect
         Future.successful(right)
       case Left(_) =>
         viewAndChangeConnector.getRepaymentHistoryDetails(idValue, repaymentRequestNumber)
+    }
+  }
+
+  //ToDo remove when migration to HIP is completed
+  def getIFRepaymentHistoryDetails(idValue: String, repaymentRequestNumber: String)
+                                (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[RepaymentHistoryResponse] = {
+    repaymentHistoryDetailsConnector.getRepaymentHistoryDetailsById(idValue, repaymentRequestNumber).flatMap {
+      case right@Right(_) =>
+        Future.successful(right)
+      case Left(_) =>
+        viewAndChangeConnector.getIFRepaymentHistoryDetails(idValue, repaymentRequestNumber)
     }
   }
 }

@@ -17,7 +17,7 @@
 package helpers
 
 import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
-import models.hip.{GetCalcListTYSHipApi, GetFinancialDetailsHipApi, GetLegacyCalcListHipApi}
+import models.hip.{GetCalcListTYSHipApi, GetFinancialDetailsHipApi, GetLegacyCalcListHipApi, GetRepaymentHistoryDetails}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, TestSuite}
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
@@ -52,9 +52,7 @@ trait ComponentSpecBase extends TestSuite with CustomMatchers
     "microservice.services.hip.port" -> mockPort,
     "microservice.services.income-tax-view-change.host" -> mockHost,
     "microservice.services.income-tax-view-change.port" -> mockPort,
-    s"microservice.services.hip.${GetLegacyCalcListHipApi()}.feature-switch" -> "false",
-    s"microservice.services.hip.${GetFinancialDetailsHipApi()}.feature-switch" -> "false",
-    s"microservice.services.hip.${GetCalcListTYSHipApi()}.feature-switch" -> "false",
+    s"microservice.services.hip.${GetRepaymentHistoryDetails()}.feature-switch" -> "true",
     "microservice.services.income-tax-view-change.host" -> mockHost,
     "microservice.services.income-tax-view-change.port" -> mockPort
   )
