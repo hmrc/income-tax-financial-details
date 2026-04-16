@@ -23,6 +23,7 @@ import connectors.httpParsers.ClaimToAdjustPoaHttpParser.*
 import connectors.httpParsers.PaymentAllocationsHttpParser.{PaymentAllocationsReads, PaymentAllocationsResponse}
 import connectors.httpParsers.ViewAndChangeHttpParser.{ViewAndChangeJsonResponse, given}
 import connectors.httpParsers.OutStandingChargesHttpParser.{OutStandingChargeResponse, OutStandingChargesReads}
+import connectors.httpParsers.RepaymentHistoryHttpParser.RepaymentHistoryResponse
 import models.claimToAdjustPoa.ClaimToAdjustPoaRequest
 import models.claimToAdjustPoa.ClaimToAdjustPoaResponse.{ClaimToAdjustPoaResponse, ErrorResponse}
 import models.hip.chargeHistory.{ChargeHistoryError, ChargeHistoryNotFound, ChargeHistoryResponseError, ChargeHistorySuccessWrapper}
@@ -188,6 +189,24 @@ class ViewAndChangeConnector @Inject()( val appConfig: MicroserviceAppConfig,
       case Some(value) => s"${appConfig.viewAndChangeBaseUrl}/income-tax-view-change/repayments/$idValue/repaymentId/$value"
       case None => s"${appConfig.viewAndChangeBaseUrl}/income-tax-view-change/repayments/$idValue"
     }
+  }
+
+  //ToDo remove when migration to HIP is completed
+  def getIFRepaymentHistoryDetailsList(idValue: String)
+                                    (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[RepaymentHistoryResponse] = {
+    val url = getRepaymentUrl(idValue, None)
+    http
+      .get(url"$url")
+      .execute[RepaymentHistoryResponse]
+  }
+
+  //ToDo remove when migration to HIP is completed
+  def getIFRepaymentHistoryDetails(idValue: String, repaymentRequestNumber: String)
+                                (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[RepaymentHistoryResponse] = {
+    val url = getRepaymentUrl(idValue, Some(repaymentRequestNumber))
+    http
+      .get(url"$url")
+      .execute[RepaymentHistoryResponse]
   }
   
   def getRepaymentHistoryDetailsList(idValue: String)
