@@ -50,7 +50,7 @@ class GetChargeHistoryConnector @Inject()(val http: HttpClientV2,
         response =>
           response.status match {
             case OK =>
-              logger.debug(s"RESPONSE status:${response.status}, body:${response.body}")
+              logger.debug(s"RESPONSE status:${response.status}") // TODO - MIPR-2637: Inform V&C team about no longer logging the response body
               response.json.validate[ChargeHistorySuccessWrapper].fold(
                 invalid => {
                   logger.error(s"Validation Errors: $invalid")

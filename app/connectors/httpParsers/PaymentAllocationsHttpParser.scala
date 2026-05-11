@@ -36,11 +36,11 @@ object PaymentAllocationsHttpParser extends Logging {
     override def read(method: String, url: String, response: HttpResponse): PaymentAllocationsResponse = {
       response.status match {
         case OK =>
-          logger.debug("got OK PaymentAllocations response: " + response.json)
+          logger.debug("got OK PaymentAllocations response") // TODO - MIPR-2637: Inform V&C team about no longer logging the response body
           response.json.validate[PaymentDetails] match {
             case JsSuccess(result, _) => result.paymentDetails.headOption match {
               case Some(paymentAllocations) =>
-                logger.info("successfully parsed response to PaymentAllocations: " + result)
+                logger.info("successfully parsed response to PaymentAllocations") // TODO - MIPR-2637: Inform V&C team about no longer logging the response body
                 Right(paymentAllocations)
               case None =>
                 logger.error("could not parse response")
