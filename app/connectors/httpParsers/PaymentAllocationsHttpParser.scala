@@ -47,7 +47,7 @@ object PaymentAllocationsHttpParser extends Logging {
                 Left(UnexpectedResponse)
             }
             case JsError(errors) =>
-              logger.error(s"Json validation error. Reasons: ${errors}")
+              logger.error(s"Json validation error. Reasons: $errors")
               Left(UnexpectedResponse)
           }
         case NOT_FOUND =>
