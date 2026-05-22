@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,14 @@
 
 package controllers
 
-import connectors.httpParsers.ChargeHttpParser.UnexpectedChargeResponse
 import constants.FinancialDataTestConstants.{chargesResponseNoCodingDetails2, creditChargesResponse}
+import connectors.httpParsers.ChargeHttpParser.UnexpectedChargeResponse
 import controllers.predicates.AuthenticationPredicate
 import mocks.{MockFinancialDetailsConnector, MockMicroserviceAuthConnector}
 import play.api.libs.json.{JsArray, Json}
 import play.api.mvc.ControllerComponents
 import play.api.test.FakeRequest
-import play.api.test.Helpers.*
+import play.api.test.Helpers._
 
 import java.time.LocalDate
 
@@ -31,6 +31,7 @@ class FinancialDetailPaymentsControllerSpec extends ControllerBaseSpec with Mock
 
   val paymentJson: JsArray = Json.arr(
     Json.obj(
+      "taxYear" -> 2018,
       "reference" -> "paymentReference",
       "amount" -> 300,
       "outstandingAmount" -> 0,
@@ -47,6 +48,7 @@ class FinancialDetailPaymentsControllerSpec extends ControllerBaseSpec with Mock
 
   val paymentJsonCredit: JsArray = Json.arr(
     Json.obj(
+      "taxYear" -> 2018,
       "reference" -> "paymentReference",
       "amount" -> -1000,
       "outstandingAmount" -> 0,
