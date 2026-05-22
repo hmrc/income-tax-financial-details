@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package connectors.httpParsers
 import connectors.hip.httpParsers.ChargeHipHttpParser.{ChargeHipReads, ChargeHipResponse}
 import connectors.httpParsers.ChargeHttpParser.{UnexpectedChargeErrorResponse, UnexpectedChargeResponse}
 import constants.FinancialDataTestConstants.{testChargeHipResponse, validHipChargesJson}
-import play.api.http.Status.*
+import play.api.http.Status._
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HttpResponse
 import utils.TestSupport
@@ -41,14 +41,14 @@ class ChargeHipHttpParserSpec extends TestSupport {
 
       def jsonBodyETMPError(errorCode: String): String = Json.parse(
         s"""
-          |{
-          | "errors" : {
-          |   "code": "$errorCode",
-          |   "text" : "error code message",
-          |   "processingDate" : "fakeTimestamp"
-          | }
-          |}
-          |""".stripMargin).toString()
+           |{
+           | "errors" : {
+           |   "code": "$errorCode",
+           |   "text" : "error code message",
+           |   "processingDate" : "fakeTimestamp"
+           | }
+           |}
+           |""".stripMargin).toString()
 
       val jsonBodySAPError: String = Json.parse(
         """
@@ -105,8 +105,16 @@ class ChargeHipHttpParserSpec extends TestSupport {
 
         actualResponse shouldBe expectedResponse
       }
-      "a non 200 or 4xx status is returned" in {
+      "a non 200 or 4xx status is returned which is a 500" in {
         val httpResponse: HttpResponse = HttpResponse(INTERNAL_SERVER_ERROR, body = "{}")
+
+        val expectedResult: ChargeHipResponse = Left(UnexpectedChargeErrorResponse)
+        val actualResult: ChargeHipResponse = ChargeHipReads.read("", "", httpResponse)
+
+        actualResult shouldBe expectedResult
+      }
+      "a non 200 or 4xx status is returned which is a 502" in {
+        val httpResponse: HttpResponse = HttpResponse(BAD_GATEWAY, body = "{}")
 
         val expectedResult: ChargeHipResponse = Left(UnexpectedChargeErrorResponse)
         val actualResult: ChargeHipResponse = ChargeHipReads.read("", "", httpResponse)

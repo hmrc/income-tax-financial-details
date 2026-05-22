@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import connectors.hip.httpParsers.errorResponses.ErrorResponseHttpParsers
 import connectors.httpParsers.ChargeHttpParser.{ChargeResponseError, UnexpectedChargeErrorResponse, UnexpectedChargeResponse}
 import models.financialDetails.hip.ChargesHipResponse
 import models.hip.HipResponseErrorsObject
-import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND, UNPROCESSABLE_ENTITY}
+import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, NETWORK_AUTHENTICATION_REQUIRED, NOT_FOUND, UNPROCESSABLE_ENTITY}
 
 object ChargeHipHttpParser extends ErrorResponseHttpParsers {
 
@@ -34,7 +34,7 @@ object ChargeHipHttpParser extends ErrorResponseHttpParsers {
     override def read(method: String, url: String, response: HttpResponse): ChargeHipResponse = {
       response.status match {
         case OK =>
-          logger.info(s"got OK HipChargesResponse") // TODO: Inform V&C team about no longer logging the response body
+          logger.info(s"HipChargesResponse:::actual response ${response.body}")
           response.json.validate[ChargesHipResponse] match {
             case JsError(errors) =>
               logger.error("Unable to parse response into HipChargesResponse - " + errors)
@@ -49,6 +49,9 @@ object ChargeHipHttpParser extends ErrorResponseHttpParsers {
         case status if status >= BAD_REQUEST && status < INTERNAL_SERVER_ERROR =>
           logger.error(s"$status returned from HiP with body: ${response.body}")
           Left(UnexpectedChargeResponse(status, response.body))
+        case status if status >= INTERNAL_SERVER_ERROR && status <= NETWORK_AUTHENTICATION_REQUIRED =>
+          logger.warn(s"$status returned from HiP with body: ${response.body}")
+          Left(UnexpectedChargeErrorResponse)
         case status =>
           logger.info(s"Unexpected Response from Hip with status: $status")
           Left(UnexpectedChargeErrorResponse)

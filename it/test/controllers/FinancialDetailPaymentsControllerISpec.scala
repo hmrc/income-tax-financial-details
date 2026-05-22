@@ -33,6 +33,7 @@ class FinancialDetailPaymentsControllerISpec extends ComponentSpecBase {
   val to: String = "to"
 
   val payments1: Payment = Payment(
+    taxYear = 2018,
     reference = Some("paymentReference"),
     amount = BigDecimal("-1000.00"),
     outstandingAmount = BigDecimal("100"),
@@ -48,6 +49,7 @@ class FinancialDetailPaymentsControllerISpec extends ComponentSpecBase {
   )
 
   val payments2: Payment = Payment(
+    taxYear = 2018,
     reference = Some("paymentReference2"),
     amount = BigDecimal("-1000.00"),
     outstandingAmount = BigDecimal("100"),
@@ -69,88 +71,88 @@ class FinancialDetailPaymentsControllerISpec extends ComponentSpecBase {
         "idNumber" -> "BB123456A",
         "regimeType" -> "ITSA"
       ),
-    "balanceDetails" -> Json.obj(
-      "balanceDueWithin30days" -> 100.00,
-      "balanceNotDuein30Days" -> 0,
-      "overDueAmount" -> 200.00,
-      "totalBalance" -> 300.00
-    ),
+      "balanceDetails" -> Json.obj(
+        "balanceDueWithin30days" -> 100.00,
+        "balanceNotDuein30Days" -> 0,
+        "overDueAmount" -> 200.00,
+        "totalBalance" -> 300.00
+      ),
       "codingDetails" -> Json.arr(
         Json.obj(
           "totalLiabilityAmount" -> 2300.00,
           "taxYearReturn" -> "2020"
         )
       ),
-    "documentDetails" -> Json.arr(
-      Json.obj(
-        "taxYear" -> "2018",
-        "documentID" -> "id",
-        "documentDescription" -> "documentDescription",
-        "documentText" -> "documentText",
-        "totalAmount" -> -1000.00,
-        "documentOutstandingAmount" -> 100.00,
-        "documentDate" -> "2018-03-29",
-        "effectiveDateOfPayment" -> LocalDate.parse("2018-03-29")
-      ),
-      Json.obj(
-        "taxYear" -> "2019",
-        "documentID" -> "id2",
-        "documentDescription" -> "documentDescription2",
-        "documentText" -> "documentText2",
-        "totalAmount" -> -1000.00,
-        "documentOutstandingAmount" -> 100.00,
-        "documentDate" -> "2018-03-29",
-        "effectiveDateOfPayment" -> LocalDate.parse("2018-03-29")
-      )
-    ),
-    "financialDetailsItem" -> Json.arr(
-      Json.obj(
-        "taxYear" -> "2018",
-        "documentID" -> "id",
-        "documentDate" -> "2022-06-23",
-        "documentDescription" -> "type",
-        "originalAmount" -> -1000.00,
-        "totalAmount" -> -1000.00,
-        "originalAmount" -> -1000.00,
-        "outstandingAmount" -> 0.00,
-        "items" -> Json.arr(
-          Json.obj(
-            "subItem" -> "1",
-            "amount" -> -1000.00,
-            "clearingDate" -> "2022-06-23",
-            "clearingReason" -> "clearingReason",
-            "outgoingPaymentMethod" -> "outgoingPaymentMethod",
-            "paymentReference" -> "paymentReference",
-            "paymentAmount" -> -1000.00,
-            "dueDate" -> "2022-06-23",
-            "paymentMethod" -> "paymentMethod"
-          )
+      "documentDetails" -> Json.arr(
+        Json.obj(
+          "taxYear" -> "2018",
+          "documentID" -> "id",
+          "documentDescription" -> "documentDescription",
+          "documentText" -> "documentText",
+          "totalAmount" -> -1000.00,
+          "documentOutstandingAmount" -> 100.00,
+          "documentDate" -> "2018-03-29",
+          "effectiveDateOfPayment" -> LocalDate.parse("2018-03-29")
+        ),
+        Json.obj(
+          "taxYear" -> "2018",
+          "documentID" -> "id2",
+          "documentDescription" -> "documentDescription2",
+          "documentText" -> "documentText2",
+          "totalAmount" -> -1000.00,
+          "documentOutstandingAmount" -> 100.00,
+          "documentDate" -> "2018-03-29",
+          "effectiveDateOfPayment" -> LocalDate.parse("2018-03-29")
         )
       ),
-      Json.obj(
-        "taxYear" -> "2019",
-        "documentID" -> "id2",
-        "documentDate" -> "2022-06-23",
-        "documentDescription" -> "type2",
-        "totalAmount" -> -1000.00,
-        "originalAmount" -> -1000.00,
-        "outstandingAmount" -> 0.00,
-        "items" -> Json.arr(
-          Json.obj(
-            "subItem" -> "2",
-            "amount" -> -1000.00,
-            "clearingDate" -> "2022-06-23",
-            "clearingReason" -> "clearingReason2",
-            "outgoingPaymentMethod" -> "outgoingPaymentMethod2",
-            "paymentReference" -> "paymentReference2",
-            "paymentAmount" -> -1000.00,
-            "dueDate" -> "2022-06-23",
-            "paymentMethod" -> "paymentMethod2"
+      "financialDetailsItem" -> Json.arr(
+        Json.obj(
+          "taxYear" -> "2018",
+          "documentID" -> "id",
+          "documentDate" -> "2022-06-23",
+          "documentDescription" -> "type",
+          "originalAmount" -> -1000.00,
+          "totalAmount" -> -1000.00,
+          "originalAmount" -> -1000.00,
+          "outstandingAmount" -> 0.00,
+          "items" -> Json.arr(
+            Json.obj(
+              "subItem" -> "1",
+              "amount" -> -1000.00,
+              "clearingDate" -> "2022-06-23",
+              "clearingReason" -> "clearingReason",
+              "outgoingPaymentMethod" -> "outgoingPaymentMethod",
+              "paymentReference" -> "paymentReference",
+              "paymentAmount" -> -1000.00,
+              "dueDate" -> "2022-06-23",
+              "paymentMethod" -> "paymentMethod"
+            )
+          )
+        ),
+        Json.obj(
+          "taxYear" -> "2019",
+          "documentID" -> "id2",
+          "documentDate" -> "2022-06-23",
+          "documentDescription" -> "type2",
+          "totalAmount" -> -1000.00,
+          "originalAmount" -> -1000.00,
+          "outstandingAmount" -> 0.00,
+          "items" -> Json.arr(
+            Json.obj(
+              "subItem" -> "2",
+              "amount" -> -1000.00,
+              "clearingDate" -> "2022-06-23",
+              "clearingReason" -> "clearingReason2",
+              "outgoingPaymentMethod" -> "outgoingPaymentMethod2",
+              "paymentReference" -> "paymentReference2",
+              "paymentAmount" -> -1000.00,
+              "dueDate" -> "2022-06-23",
+              "paymentMethod" -> "paymentMethod2"
+            )
           )
         )
       )
     )
-  )
   )
 
   s"GET ${controllers.routes.FinancialDetailPaymentsController.getPaymentDetails(testNino, from, to)}" should {

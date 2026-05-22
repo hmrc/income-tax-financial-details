@@ -177,6 +177,7 @@ class ViewAndChangeConnectorISpec extends ComponentSpecBase {
       "return Right(json) when ViewAndChange returns 200" in {
         val payments: List[Payment] = List(
           Payment(
+            taxYear = 2018,
             reference = Some("paymentRef-1"),
             amount = BigDecimal("123.45"),
             outstandingAmount = BigDecimal("0.00"),
@@ -191,6 +192,7 @@ class ViewAndChangeConnectorISpec extends ComponentSpecBase {
             mainTransaction = Some("0060")
           ),
           Payment(
+            taxYear = 2018,
             reference = None,
             amount = BigDecimal("50.00"),
             outstandingAmount = BigDecimal("10.00"),
