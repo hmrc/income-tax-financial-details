@@ -16,18 +16,18 @@
 
 package helpers
 
+import helpers.servicemocks.AuthStub
+import models.hip.GetRepaymentHistoryDetails
 import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
-import models.hip.{GetCalcListTYSHipApi, GetFinancialDetailsHipApi, GetLegacyCalcListHipApi, GetRepaymentHistoryDetails}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, TestSuite}
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.JsValue
+import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 import play.api.libs.ws.WSResponse
 import play.api.{Application, Environment, Mode}
-import helpers.servicemocks.AuthStub
 import uk.gov.hmrc.http.{HeaderCarrier, SessionId}
-import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 
 import scala.concurrent.ExecutionContext
 
