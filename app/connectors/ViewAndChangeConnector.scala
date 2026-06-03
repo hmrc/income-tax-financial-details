@@ -26,9 +26,9 @@ import connectors.httpParsers.OutStandingChargesHttpParser.{OutStandingChargeRes
 import connectors.httpParsers.RepaymentHistoryHttpParser.RepaymentHistoryResponse
 import models.claimToAdjustPoa.ClaimToAdjustPoaRequest
 import models.claimToAdjustPoa.ClaimToAdjustPoaResponse.{ClaimToAdjustPoaResponse, ErrorResponse}
+import models.hip.HipResponseErrorsObject
 import models.hip.chargeHistory.{ChargeHistoryError, ChargeHistoryNotFound, ChargeHistoryResponseError, ChargeHistorySuccessWrapper}
 import models.hip.repayments.SuccessfulRepaymentResponse
-import models.hip.{GetChargeHistoryHipApi, HipResponseErrorsObject}
 import play.api.{Logger, Logging}
 import play.api.http.Status.{INTERNAL_SERVER_ERROR, NOT_FOUND, OK, UNPROCESSABLE_ENTITY}
 import play.api.libs.ws.writeableOf_JsValue
@@ -112,9 +112,7 @@ class ViewAndChangeConnector @Inject()( val appConfig: MicroserviceAppConfig,
   def getChargeHistoryDetailsUrl(idType: String, idValue: String, chargeReference: String): String = {
     s"${appConfig.viewAndChangeBaseUrl}/etmp/RESTAdapter/ITSA/TaxPayer/GetChargeHistory?idType=$idType&idValue=$idValue&chargeReference=$chargeReference"
   }
-
-  def getHeaders: Seq[(String, String)] = appConfig.getHIPHeaders(GetChargeHistoryHipApi, Some(xMessageTypeFor5705))
-
+  
 
   def getChargeHistory(idValue: String, chargeReference: String)
                       (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[Either[ChargeHistoryResponseError, ChargeHistorySuccessWrapper]] = {
@@ -123,7 +121,6 @@ class ViewAndChangeConnector @Inject()( val appConfig: MicroserviceAppConfig,
 
     http
       .get(url"$url")
-      .setHeader(getHeaders: _*)
       .execute[HttpResponse]
       .map {
         response =>
