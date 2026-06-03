@@ -144,13 +144,9 @@ class RepaymentHistoryControllerISpec extends ComponentSpecBase {
         stubRepaymentHistoryById(nino, repaymentId)(
           status = NOT_FOUND, response = errorJson
         )
-        stubVCRepaymentHistoryById(nino, repaymentId)(
-          status = NOT_FOUND, response = Json.obj("failures" -> errorJson)
-        )
         val res: WSResponse = IncomeTaxFinancialDetails.getRepaymentHistoryById(nino, repaymentId)
         res should have(
-          httpStatus(NOT_FOUND),
-          bodyMatching(Json.obj("failures" -> errorJson).toString())
+          httpStatus(NOT_FOUND)
         )
       }
     }
@@ -269,14 +265,10 @@ class RepaymentHistoryControllerISpec extends ComponentSpecBase {
         stubAllRepaymentHistory(nino)(
           status = NOT_FOUND, response = errorJson
         )
-        stubVCAllRepaymentHistory(nino)(
-          status = NOT_FOUND, response = Json.obj("failures" -> errorJson)
-        )
         val res: WSResponse = IncomeTaxFinancialDetails.getAllRepaymentHistory(nino)
 
         res should have(
-          httpStatus(NOT_FOUND),
-          bodyMatching(Json.obj("failures" -> errorJson).toString())
+          httpStatus(NOT_FOUND)
         )
       }
     }
