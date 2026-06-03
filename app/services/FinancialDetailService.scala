@@ -18,8 +18,9 @@ package services
 
 import config.MicroserviceAppConfig
 import connectors.hip.FinancialDetailsHipConnector
-import connectors.httpParsers.ChargeHttpParser.ChargeResponseError
+import connectors.httpParsers.ChargeHttpParser.{ChargeResponseError, UnexpectedChargeResponse}
 import models.credits.CreditsModel
+import play.api.http.Status.NOT_FOUND
 import play.api.Logging
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -42,6 +43,8 @@ class FinancialDetailService @Inject()(
       .flatMap {
         case Right(charges) =>
           Future.successful(Right(Json.toJson(charges)))
+        case Left(err: UnexpectedChargeResponse) if err.code == NOT_FOUND =>
+          Future.successful(Left(err))
         case Left(err) =>
           logger.warn(s"HiP getChargeDetails failed, falling back to ViewAndChange. Error: $err")
           viewAndChangeConnector.getChargeDetails(nino, fromDate, toDate)
@@ -56,6 +59,8 @@ class FinancialDetailService @Inject()(
       .flatMap {
         case Right(charges) =>
           Future.successful(Right(Json.toJson(charges.payments)))
+        case Left(err: UnexpectedChargeResponse) if err.code == NOT_FOUND =>
+          Future.successful(Left(err))
         case Left(err) =>
           logger.warn(s"HiP getPayments failed, falling back to ViewAndChange. Error: $err")
           viewAndChangeConnector.getPayments(nino, fromDate, toDate)
@@ -70,6 +75,9 @@ class FinancialDetailService @Inject()(
         case Right(charges) =>
           logger.info(s"Call::getPaymentAllocationDetails -> $charges")
           Future.successful(Right(Json.toJson(charges)))
+        case Left(err: UnexpectedChargeResponse) if err.code == NOT_FOUND =>
+          logger.info(s"Call::getPaymentAllocationDetails -> ${err.response}")
+          Future.successful(Left(err))
         case Left(err) =>
           logger.warn(s"HiP getPaymentAllocationDetails failed, falling back to ViewAndChange. Error: $err")
           viewAndChangeConnector.getChargeDetailsByDocumentId(nino, documentId)
@@ -82,7 +90,8 @@ class FinancialDetailService @Inject()(
     hipConnector.getOnlyOpenItems(nino).flatMap {
       case Right(charges) =>
         Future.successful(Right(Json.toJson(charges)))
-
+      case Left(err: UnexpectedChargeResponse) if err.code == NOT_FOUND =>
+        Future.successful(Left(err))
       case Left(err) =>
         logger.warn(s"HiP getOnlyOpenItems failed, falling back to ViewAndChange. Error: $err")
         viewAndChangeConnector.getOnlyOpenItems(nino)
@@ -98,6 +107,8 @@ class FinancialDetailService @Inject()(
         case Right(charges) =>
           val creditsModel: CreditsModel = CreditsModel.fromHipChargesResponse(charges)
           Future.successful(Right(Json.toJson(creditsModel)))
+        case Left(err: UnexpectedChargeResponse) if err.code == NOT_FOUND =>
+          Future.successful(Left(err))
         case Left(err) =>
           logger.warn(s"HiP getCredits failed, falling back to ViewAndChange. Error: $err")
           viewAndChangeConnector.getCredits(nino, fromDate, toDate)

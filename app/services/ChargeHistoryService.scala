@@ -19,7 +19,8 @@ package services
 import com.google.inject.Inject
 import connectors.ViewAndChangeConnector
 import connectors.hip.GetChargeHistoryConnector
-import models.hip.chargeHistory.{ChargeHistoryResponseError, ChargeHistorySuccessWrapper}
+import models.hip.chargeHistory.{ChargeHistoryNotFound, ChargeHistoryResponseError, ChargeHistorySuccessWrapper}
+import play.api.http.Status.NOT_FOUND
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -34,6 +35,9 @@ class ChargeHistoryService @Inject()(getChargeHistoryConnector: GetChargeHistory
 
       case right@Right(_) =>
         Future.successful(right)
+
+      case Left(error: ChargeHistoryNotFound) if error.status == NOT_FOUND =>
+        Future.successful(Left(error))
 
       case Left(_) =>
         viewAndChangeConnector.getChargeHistory(idValue, chargeReference)

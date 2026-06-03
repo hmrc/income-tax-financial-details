@@ -17,7 +17,7 @@
 package services
 
 import connectors.{PaymentAllocationsConnector, ViewAndChangeConnector}
-import connectors.httpParsers.PaymentAllocationsHttpParser.PaymentAllocationsResponse
+import connectors.httpParsers.PaymentAllocationsHttpParser.{PaymentAllocationsResponse, NotFoundResponse}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.Inject
@@ -33,6 +33,8 @@ case class PaymentAllocationsService @Inject()(paymentAllocationsConnector: Paym
     paymentAllocationsConnector.getPaymentAllocations(nino, paymentLot, paymentLotItem).flatMap {
       case response @ Right(_) =>
         Future.successful(response)
+      case Left(NotFoundResponse) =>
+        Future.successful(Left(NotFoundResponse))
       case Left(_) =>
         viewAndChangeConnector.getPaymentAllocations(nino, paymentLot, paymentLotItem)
     }
