@@ -19,8 +19,9 @@ package services
 import connectors.{RepaymentHistoryDetailsConnector, ViewAndChangeConnector}
 import connectors.hip.HipRepaymentHistoryDetailsConnector
 import connectors.hip.httpParsers.ChargeHipHttpParser.HttpGetResult
-import connectors.httpParsers.RepaymentHistoryHttpParser.RepaymentHistoryResponse
+import connectors.httpParsers.RepaymentHistoryHttpParser.{RepaymentHistoryError, RepaymentHistoryResponse, UnexpectedRepaymentHistoryResponse}
 import models.hip.repayments.SuccessfulRepaymentResponse
+import play.api.http.Status.NOT_FOUND
 import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.{Inject, Singleton}
@@ -36,6 +37,8 @@ class RepaymentHistoryDetailsService @Inject()(hipRepaymentHistoryDetailsConnect
     hipRepaymentHistoryDetailsConnector.getRepaymentHistoryDetailsList(idValue).flatMap {
       case right@Right(_) =>
         Future.successful(right)
+      case Left(error) if error.status == NOT_FOUND =>
+        Future.successful(Left(error))
       case Left(_) =>
         viewAndChangeConnector.getRepaymentHistoryDetailsList(idValue)
     }
@@ -47,6 +50,8 @@ class RepaymentHistoryDetailsService @Inject()(hipRepaymentHistoryDetailsConnect
     repaymentHistoryDetailsConnector.getAllRepaymentHistoryDetails(idValue).flatMap {
       case right@Right(_) =>
         Future.successful(right)
+      case Left(error: UnexpectedRepaymentHistoryResponse) if error.code == NOT_FOUND =>
+        Future.successful(Left(error))
       case Left(_) =>
         viewAndChangeConnector.getIFRepaymentHistoryDetailsList(idValue)
     }
@@ -57,6 +62,8 @@ class RepaymentHistoryDetailsService @Inject()(hipRepaymentHistoryDetailsConnect
     hipRepaymentHistoryDetailsConnector.getRepaymentHistoryDetails(idValue, repaymentRequestNumber).flatMap {
       case right@Right(_) =>
         Future.successful(right)
+      case Left(error) if error.status == NOT_FOUND =>
+        Future.successful(Left(error))
       case Left(_) =>
         viewAndChangeConnector.getRepaymentHistoryDetails(idValue, repaymentRequestNumber)
     }
@@ -68,6 +75,8 @@ class RepaymentHistoryDetailsService @Inject()(hipRepaymentHistoryDetailsConnect
     repaymentHistoryDetailsConnector.getRepaymentHistoryDetailsById(idValue, repaymentRequestNumber).flatMap {
       case right@Right(_) =>
         Future.successful(right)
+      case Left(error: UnexpectedRepaymentHistoryResponse) if error.code == NOT_FOUND =>
+        Future.successful(Left(error))
       case Left(_) =>
         viewAndChangeConnector.getIFRepaymentHistoryDetails(idValue, repaymentRequestNumber)
     }

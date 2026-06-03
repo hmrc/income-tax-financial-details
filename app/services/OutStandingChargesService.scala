@@ -16,8 +16,9 @@
 
 package services
 
-import connectors.httpParsers.OutStandingChargesHttpParser.OutStandingChargeResponse
+import connectors.httpParsers.OutStandingChargesHttpParser.{OutStandingChargeResponse, UnexpectedOutStandingChargeResponse}
 import connectors.{OutStandingChargesConnector, ViewAndChangeConnector}
+import play.api.http.Status.NOT_FOUND
 import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.Inject
@@ -29,8 +30,12 @@ class OutStandingChargesService @Inject()(outstandingChargesConnector: OutStandi
   def listOutStandingCharges(idType: String, idNumber: String, taxYearEndDate: String)
                             (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[OutStandingChargeResponse] = {
     outstandingChargesConnector.listOutStandingCharges(idType, idNumber, taxYearEndDate).flatMap{
-      case Right(success) => Future.successful(Right(success))
-      case _ => viewAndChangeConnector.listOutStandingCharges(idType, idNumber, taxYearEndDate)
+      case Right(success) =>
+        Future.successful(Right(success))
+      case Left(error: UnexpectedOutStandingChargeResponse) if error.code == NOT_FOUND =>
+        Future.successful(Left(error))
+      case _ =>
+        viewAndChangeConnector.listOutStandingCharges(idType, idNumber, taxYearEndDate)
     }
   }
 

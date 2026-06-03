@@ -19,7 +19,7 @@ package services
 import connectors.{ClaimToAdjustPoaConnector, ViewAndChangeConnector}
 import models.claimToAdjustPoa.ClaimToAdjustPoaRequest
 import models.claimToAdjustPoa.ClaimToAdjustPoaResponse.ClaimToAdjustPoaResponse
-import play.api.http.Status.CREATED
+import play.api.http.Status.{CREATED, NOT_FOUND}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.Inject
@@ -33,7 +33,7 @@ case class ClaimToAdjustPoaService @Inject()(claimToAdjustPoaConnector: ClaimToA
   : Future[ClaimToAdjustPoaResponse] = {
 
     claimToAdjustPoaConnector.postClaimToAdjustPoa(request).flatMap {
-      case r if r.status != CREATED =>
+      case r if (r.status != CREATED) && (r.status != NOT_FOUND) =>
         viewAndChangeConnector.postClaimToAdjustPoa(request)
 
       case r =>
