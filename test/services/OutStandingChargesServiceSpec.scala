@@ -17,7 +17,7 @@
 package services
 
 import connectors.httpParsers.OutStandingChargesHttpParser.{OutStandingChargeResponse, UnexpectedOutStandingChargeResponse}
-import connectors.{OutStandingChargesConnector, ViewAndChangeConnector}
+import connectors.OutStandingChargesConnector
 import constants.OutStandingChargesConstant.{outStandingChargeModelOne, outStandingChargeModelTwo}
 import models.outStandingCharges.OutstandingChargesSuccessResponse
 import org.mockito.ArgumentMatchers
@@ -33,11 +33,9 @@ class OutStandingChargesServiceSpec extends TestSupport {
 
   trait Setup {
     val OutStandingChargesConnector: OutStandingChargesConnector = mock(classOf[OutStandingChargesConnector])
-    val ViewAndChangeConnector: ViewAndChangeConnector = mock(classOf[ViewAndChangeConnector])
 
     val service = new OutStandingChargesService(
-      OutStandingChargesConnector,
-      ViewAndChangeConnector
+      OutStandingChargesConnector
     )
   }
 
@@ -58,30 +56,16 @@ class OutStandingChargesServiceSpec extends TestSupport {
         await(result) shouldBe Right(OutstandingChargesSuccessResponse(List(outStandingChargeModelOne, outStandingChargeModelTwo)))
       }
     }
-    "the call to des returns NOT_FOUND" should {
-      "return the NOT_FOUND response" in new Setup {
-        val errorJson = """{"code":"NO_DATA_FOUND","reason":"The remote endpoint has indicated that no data can be found."}"""
-        
-        when(OutStandingChargesConnector.listOutStandingCharges(matches(idType), matches(idNumber), matches(taxYearEndDate))(any()))
-          .thenReturn(Future.successful(Left(UnexpectedOutStandingChargeResponse(NOT_FOUND, errorJson))))
-
-        val result: Future[OutStandingChargeResponse] = service.listOutStandingCharges(idType, idNumber, taxYearEndDate)(hc, ec)
-
-        await(result) shouldBe Left(UnexpectedOutStandingChargeResponse(NOT_FOUND, errorJson))
-      }
-    }
     "the call to des fails" should {
-      "call the viewAndChangeConnector" in new Setup {
+      "return the error response" in new Setup {
         val errorJson = """{"code":"INTERNAL_SERVER_ERROR","reason":"There was an issue."}"""
 
         when(OutStandingChargesConnector.listOutStandingCharges(matches(idType), matches(idNumber), matches(taxYearEndDate))(any()))
           .thenReturn(Future.successful(Left(UnexpectedOutStandingChargeResponse(INTERNAL_SERVER_ERROR, errorJson))))
-        when(ViewAndChangeConnector.listOutStandingCharges(matches(idType), matches(idNumber), matches(taxYearEndDate))(any()))
-          .thenReturn(Future.successful(Right(OutstandingChargesSuccessResponse(List(outStandingChargeModelOne, outStandingChargeModelTwo)))))
 
         val result: Future[OutStandingChargeResponse] = service.listOutStandingCharges(idType, idNumber, taxYearEndDate)(hc, ec)
 
-        await(result) shouldBe Right(OutstandingChargesSuccessResponse(List(outStandingChargeModelOne, outStandingChargeModelTwo)))
+        await(result) shouldBe Left(UnexpectedOutStandingChargeResponse(INTERNAL_SERVER_ERROR, errorJson))
       }
     }
   }

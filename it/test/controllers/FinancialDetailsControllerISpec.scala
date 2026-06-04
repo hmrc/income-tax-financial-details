@@ -18,9 +18,8 @@ package controllers
 
 import constants.BaseIntegrationTestConstants.*
 import constants.FinancialDetailIntegrationTestConstants.*
-import helpers.{ComponentSpecBase, WiremockHelper}
+import helpers.ComponentSpecBase
 import helpers.servicemocks.DesChargesStub.*
-import helpers.servicemocks.ViewAndChangeStub
 import models.financialDetails.hip.ChargesHipResponse
 import play.api.http.Status.*
 import play.api.libs.json.{JsValue, Json}
@@ -94,35 +93,12 @@ abstract class FinancialDetailsControllerISpec extends ComponentSpecBase {
 
         stubGetOnlyOpenItems(testNino)(status = SERVICE_UNAVAILABLE)
 
-        val vcOnlyOpenItemsUrl = s"/income-tax-view-change/$testNino/financial-details/only-open-items"
-        WiremockHelper.stubGet(vcOnlyOpenItemsUrl, SERVICE_UNAVAILABLE, "")
-
         val res: WSResponse = IncomeTaxFinancialDetails.getOnlyOpenItems(testNino)
 
         res should have(
           httpStatus(INTERNAL_SERVER_ERROR)
         )
       }
-      "the call to HiP fails but ViewAndChange succeeds" in {
-        isAuthorised(true)
-
-        stubGetOnlyOpenItems(testNino)(
-          status = SERVICE_UNAVAILABLE
-        )
-
-        ViewAndChangeStub.stubGetOnlyOpenItems(testNino)(
-          status = OK,
-          body = chargeJson.toString()
-        )
-
-        val res: WSResponse = IncomeTaxFinancialDetails.getOnlyOpenItems(testNino)
-
-        res should have(
-          httpStatus(OK),
-          jsonBodyMatching(chargeJson)
-        )
-      }
     }
   }
-
 }

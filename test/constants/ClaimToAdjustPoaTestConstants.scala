@@ -46,10 +46,4 @@ object ClaimToAdjustPoaTestConstants {
       Right(SuccessResponse("2024-01-31T09:27:17Z"))
     )
 
-  val claimToAdjustPoaViewAndChangeResult: ClaimToAdjustPoaResponse =
-    ClaimToAdjustPoaResponse(
-      status = Status.OK,
-      Right(SuccessResponse("2024-01-31T09:27:17Z"))
-    )
-
 }

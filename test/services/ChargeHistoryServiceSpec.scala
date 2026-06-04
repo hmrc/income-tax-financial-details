@@ -16,7 +16,6 @@
 
 package services
 
-import connectors.ViewAndChangeConnector
 import connectors.hip.GetChargeHistoryConnector
 import constants.hip.ChargeHistoryTestConstants.{serviceErrorResponse, serviceSuccessResponse}
 import models.hip.chargeHistory.{ChargeHistoryResponseError, ChargeHistorySuccessWrapper}
@@ -31,11 +30,9 @@ class ChargeHistoryServiceSpec extends TestSupport {
 
   trait Setup {
     val getChargeHistoryConnector: GetChargeHistoryConnector = mock(classOf[GetChargeHistoryConnector])
-    val viewAndChangeConnector: ViewAndChangeConnector = mock(classOf[ViewAndChangeConnector])
 
     val service = new ChargeHistoryService(
-      getChargeHistoryConnector,
-      viewAndChangeConnector
+      getChargeHistoryConnector
     )
   }
 
@@ -54,19 +51,15 @@ class ChargeHistoryServiceSpec extends TestSupport {
 
   "getChargeHistory" when {
     s"the call is unsuccessful" should {
-      s"call the view and change connector and return its response" in new Setup {
+      s"return the error response" in new Setup {
         when(
           getChargeHistoryConnector.getChargeHistory(any(), any())(any(), any())
         ).thenReturn(Future.successful(serviceErrorResponse))
 
-        when(
-          viewAndChangeConnector.getChargeHistory(any(), any())(any(), any())
-        ).thenReturn(Future.successful(serviceSuccessResponse))
-
         val result: Future[Either[ChargeHistoryResponseError, ChargeHistorySuccessWrapper]] =
           service.getChargeHistory("123", "456")(hc, ec)
 
-        await(result) shouldBe serviceSuccessResponse
+        await(result) shouldBe serviceErrorResponse
       }
     }
   }

@@ -16,28 +16,21 @@
 
 package services
 
-import connectors.ViewAndChangeConnector
 import connectors.httpParsers.RepaymentHistoryHttpParser.UnexpectedRepaymentHistoryResponse
 import mocks.{MockHIPRepaymentHistoryDetailsConnector, MockRepaymentHistoryDetailsConnector}
 import models.hip.ErrorResponse.UnexpectedResponse
 import models.hip.repayments.*
-import org.mockito.ArgumentMatchers
-import org.mockito.Mockito.{mock, when}
 import utils.TestSupport
 
 import java.time.LocalDate
-import scala.concurrent.Future
 
 class RepaymentHistoryDetailServiceSpec extends TestSupport
   with MockRepaymentHistoryDetailsConnector
   with MockHIPRepaymentHistoryDetailsConnector {
 
-  val mockViewAndChangeConnector = mock(classOf[ViewAndChangeConnector])
-
   val service = new RepaymentHistoryDetailsService(
     mockHipRepaymentHistoryDetailsConnector,
-    mockRepaymentHistoryDetailsConnector,
-    mockViewAndChangeConnector
+    mockRepaymentHistoryDetailsConnector
   )
 
   lazy val defaultHIPRepaymentHistoryResp = SuccessfulRepaymentResponse(
@@ -89,15 +82,10 @@ class RepaymentHistoryDetailServiceSpec extends TestSupport
         expected shouldBe Right(defaultHIPRepaymentHistoryResp)
       }
     }
-    "fallback to VC when HiP fails" in {
+    "return the error response when the call to IF fails" in {
       getRepaymentHistoryDetailsList("testNino")(Left(UnexpectedResponse))
-      when(
-        mockViewAndChangeConnector.getRepaymentHistoryDetailsList(
-          ArgumentMatchers.eq("testNino")
-        )(ArgumentMatchers.any(), ArgumentMatchers.any())
-      ).thenReturn(Future.successful(Right(defaultHIPRepaymentHistoryResp)))
       val expected = service.getRepaymentHistoryDetailsList("testNino").futureValue
-      expected shouldBe Right(defaultHIPRepaymentHistoryResp)
+      expected shouldBe Left(UnexpectedResponse)
     }
   }
 
@@ -109,16 +97,10 @@ class RepaymentHistoryDetailServiceSpec extends TestSupport
         expected shouldBe Right(defaultHIPRepaymentHistoryResp)
       }
     }
-    "fallback to VC when HiP fails" in {
+    "return the error response when the call to IF fails" in {
       getRepaymentHistoryDetails("testNino", "testDocumentId")(Left(UnexpectedResponse))
-
-      when(
-        mockViewAndChangeConnector.getRepaymentHistoryDetails(
-          ArgumentMatchers.eq("testNino"), ArgumentMatchers.eq("testDocumentId")
-        )(ArgumentMatchers.any(), ArgumentMatchers.any())
-      ).thenReturn(Future.successful(Right(defaultHIPRepaymentHistoryResp)))
       val expected = service.getRepaymentHistoryDetails("testNino", "testDocumentId").futureValue
-      expected shouldBe Right(defaultHIPRepaymentHistoryResp)
+      expected shouldBe Left(UnexpectedResponse)
     }
   }
 
@@ -131,35 +113,24 @@ class RepaymentHistoryDetailServiceSpec extends TestSupport
         expected shouldBe Right(defaultRepaymentHistoryResp)
       }
     }
-    "fallback to VC when IF fails" in {
+    "return the error response when the call to IF fails" in {
       getAllRepaymentHistoryDetails("testNino")(Left(UnexpectedRepaymentHistoryResponse(500, "error")))
-      when(
-        mockViewAndChangeConnector.getIFRepaymentHistoryDetailsList(
-          ArgumentMatchers.eq("testNino")
-        )(ArgumentMatchers.any(), ArgumentMatchers.any())
-      ).thenReturn(Future.successful(Right(defaultRepaymentHistoryResp)))
       val expected = service.getIFRepaymentHistoryDetailsList("testNino").futureValue
-      expected shouldBe Right(defaultRepaymentHistoryResp)
+      expected shouldBe Left(UnexpectedRepaymentHistoryResponse(500, "error"))
     }
   }
 
   "getIFRepaymentHistoryDetails" should {
-    "return HiP success mapped to Json" in {
+    "return IF success mapped to Json" in {
       getRepaymentHistoryDetailsById("testNino", "testDocumentId")(Right(defaultRepaymentHistoryResp))
       val expected = service.getIFRepaymentHistoryDetails("testNino", "testDocumentId").futureValue
       expected shouldBe Right(defaultRepaymentHistoryResp)
     }
 
-    "fallback to VC when IF fails" in {
+    "return the error response when the call to IF fails" in {
       getRepaymentHistoryDetailsById("testNino", "testDocumentId")(Left(UnexpectedRepaymentHistoryResponse(500, "error")))
-      when(
-        mockViewAndChangeConnector.getIFRepaymentHistoryDetails(
-          ArgumentMatchers.eq("testNino"),
-          ArgumentMatchers.eq("testDocumentId")
-        )(ArgumentMatchers.any(), ArgumentMatchers.any())
-      ).thenReturn(Future.successful(Right(defaultRepaymentHistoryResp)))
       val expected = service.getIFRepaymentHistoryDetails("testNino", "testDocumentId").futureValue
-      expected shouldBe Right(defaultRepaymentHistoryResp)
+      expected shouldBe Left(UnexpectedRepaymentHistoryResponse(500, "error"))
     }
   }
 

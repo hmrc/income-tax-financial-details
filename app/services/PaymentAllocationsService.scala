@@ -16,27 +16,19 @@
 
 package services
 
-import connectors.{PaymentAllocationsConnector, ViewAndChangeConnector}
-import connectors.httpParsers.PaymentAllocationsHttpParser.{PaymentAllocationsResponse, NotFoundResponse}
+import connectors.PaymentAllocationsConnector
+import connectors.httpParsers.PaymentAllocationsHttpParser.PaymentAllocationsResponse
 import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-case class PaymentAllocationsService @Inject()(paymentAllocationsConnector: PaymentAllocationsConnector,
-                                               viewAndChangeConnector: ViewAndChangeConnector) {
+case class PaymentAllocationsService @Inject()(paymentAllocationsConnector: PaymentAllocationsConnector) {
 
   def getPaymentAllocations(nino: String, paymentLot: String, paymentLotItem: String)
                            (implicit hc: HeaderCarrier, ec: ExecutionContext)
   : Future[PaymentAllocationsResponse] = {
 
-    paymentAllocationsConnector.getPaymentAllocations(nino, paymentLot, paymentLotItem).flatMap {
-      case response @ Right(_) =>
-        Future.successful(response)
-      case Left(NotFoundResponse) =>
-        Future.successful(Left(NotFoundResponse))
-      case Left(_) =>
-        viewAndChangeConnector.getPaymentAllocations(nino, paymentLot, paymentLotItem)
-    }
+    paymentAllocationsConnector.getPaymentAllocations(nino, paymentLot, paymentLotItem)
   }
 }
