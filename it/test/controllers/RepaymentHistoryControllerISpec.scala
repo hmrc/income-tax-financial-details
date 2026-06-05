@@ -18,7 +18,6 @@ package controllers
 
 import helpers.ComponentSpecBase
 import helpers.servicemocks.DesChargesStub.{stubAllRepaymentHistory, stubRepaymentHistoryById}
-import helpers.servicemocks.VCRepaymentHistoryStub.{stubVCAllRepaymentHistory, stubVCRepaymentHistoryById}
 import models.hip.repayments.*
 import play.api.http.Status.{INTERNAL_SERVER_ERROR, NOT_FOUND, OK, SERVICE_UNAVAILABLE}
 import play.api.libs.json.{JsValue, Json}
@@ -159,9 +158,6 @@ class RepaymentHistoryControllerISpec extends ComponentSpecBase {
         stubRepaymentHistoryById(nino, repaymentId)(
           status = SERVICE_UNAVAILABLE
         )
-        stubVCRepaymentHistoryById(nino, repaymentId)(
-          status = SERVICE_UNAVAILABLE
-        )
 
         val res: WSResponse = IncomeTaxFinancialDetails.getRepaymentHistoryById(nino, repaymentId)
 
@@ -240,9 +236,6 @@ class RepaymentHistoryControllerISpec extends ComponentSpecBase {
         isAuthorised(true)
 
         stubAllRepaymentHistory(nino)(
-          status = SERVICE_UNAVAILABLE
-        )
-        stubVCAllRepaymentHistory(nino)(
           status = SERVICE_UNAVAILABLE
         )
 

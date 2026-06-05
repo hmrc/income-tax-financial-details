@@ -16,29 +16,21 @@
 
 package services
 
-import connectors.{ClaimToAdjustPoaConnector, ViewAndChangeConnector}
+import connectors.ClaimToAdjustPoaConnector
 import models.claimToAdjustPoa.ClaimToAdjustPoaRequest
 import models.claimToAdjustPoa.ClaimToAdjustPoaResponse.ClaimToAdjustPoaResponse
-import play.api.http.Status.{CREATED, NOT_FOUND}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-case class ClaimToAdjustPoaService @Inject()(claimToAdjustPoaConnector: ClaimToAdjustPoaConnector,
-                                             viewAndChangeConnector: ViewAndChangeConnector) {
+case class ClaimToAdjustPoaService @Inject()(claimToAdjustPoaConnector: ClaimToAdjustPoaConnector) {
 
   def postClaimToAdjustPoa(request: ClaimToAdjustPoaRequest)
                           (implicit hc: HeaderCarrier, ec: ExecutionContext)
   : Future[ClaimToAdjustPoaResponse] = {
 
-    claimToAdjustPoaConnector.postClaimToAdjustPoa(request).flatMap {
-      case r if (r.status != CREATED) && (r.status != NOT_FOUND) =>
-        viewAndChangeConnector.postClaimToAdjustPoa(request)
-
-      case r =>
-        Future.successful(r)
-    }
+    claimToAdjustPoaConnector.postClaimToAdjustPoa(request)
   }
 
 }

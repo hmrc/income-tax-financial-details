@@ -17,9 +17,8 @@
 package controllers
 
 import constants.BaseIntegrationTestConstants.*
-import helpers.{ComponentSpecBase, WiremockHelper}
+import helpers.ComponentSpecBase
 import helpers.servicemocks.DesChargesStub.stubGetChargeDetails
-import helpers.servicemocks.ViewAndChangeStub
 import models.financialDetails.Payment
 import play.api.http.Status.*
 import play.api.libs.json.{JsObject, Json}
@@ -188,11 +187,6 @@ class FinancialDetailPaymentsControllerISpec extends ComponentSpecBase {
           response = errorJson
         )
 
-        ViewAndChangeStub.stubGetPayments(testNino, from, to)(
-          status = NOT_FOUND,
-          body = errorJson.toString()
-        )
-
         val res: WSResponse = IncomeTaxFinancialDetails.getPaymentDetails(testNino, from, to)
 
         res should have(
@@ -211,34 +205,12 @@ class FinancialDetailPaymentsControllerISpec extends ComponentSpecBase {
           status = SERVICE_UNAVAILABLE
         )
 
-        val vcPaymentsUrl = s"/income-tax-view-change/$testNino/financial-details/payments/from/$from/to/$to"
-        WiremockHelper.stubGet(vcPaymentsUrl, SERVICE_UNAVAILABLE, "")
-
         val res: WSResponse = IncomeTaxFinancialDetails.getPaymentDetails(testNino, from, to)
 
         res should have(
           httpStatus(INTERNAL_SERVER_ERROR)
         )
       }
-    }
-    "the call to HiP fails but ViewAndChange succeeds" in {
-      isAuthorised(true)
-
-      stubGetChargeDetails(testNino, from, to)(
-        status = SERVICE_UNAVAILABLE
-      )
-
-      ViewAndChangeStub.stubGetPayments(testNino, from, to)(
-        status = OK,
-        body = Json.toJson(List(payments1, payments2)).toString()
-      )
-
-      val res: WSResponse = IncomeTaxFinancialDetails.getPaymentDetails(testNino, from, to)
-
-      res should have(
-        httpStatus(OK),
-        jsonBodyMatching(Json.toJson(List(payments1, payments2)))
-      )
     }
   }
 

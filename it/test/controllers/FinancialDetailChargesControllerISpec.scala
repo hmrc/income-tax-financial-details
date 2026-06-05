@@ -18,9 +18,8 @@ package controllers
 
 import constants.BaseIntegrationTestConstants.*
 import constants.FinancialDetailIntegrationTestConstants.*
-import helpers.{ComponentSpecBase, WiremockHelper}
+import helpers.ComponentSpecBase
 import helpers.servicemocks.DesChargesStub.*
-import helpers.servicemocks.ViewAndChangeStub
 import models.financialDetails.hip.ChargesHipResponse
 import play.api.http.Status.*
 import play.api.libs.json.{JsValue, Json}
@@ -69,11 +68,6 @@ class FinancialDetailChargesControllerISpec extends ComponentSpecBase {
           status = NOT_FOUND, response = errorJson
         )
 
-        ViewAndChangeStub.stubGetCharges(testNino, from, to)(
-          status = NOT_FOUND,
-          body = errorJson.toString()
-        )
-
         val res: WSResponse = IncomeTaxFinancialDetails.getChargeDetails(testNino, from, to)
 
         res should have(
@@ -104,9 +98,6 @@ class FinancialDetailChargesControllerISpec extends ComponentSpecBase {
         stubGetChargeDetails(testNino, from, to)(
           status = SERVICE_UNAVAILABLE
         )
-
-        val vcChargesUrl = s"/income-tax-view-change/$testNino/financial-details/charges/from/$from/to/$to"
-        WiremockHelper.stubGet(vcChargesUrl, SERVICE_UNAVAILABLE, "")
 
         val res: WSResponse = IncomeTaxFinancialDetails.getChargeDetails(testNino, from, to)
 
@@ -159,11 +150,6 @@ class FinancialDetailChargesControllerISpec extends ComponentSpecBase {
           response = errorJson
         )
 
-        ViewAndChangeStub.stubGetChargeByDocumentId(testNino, documentId)(
-          status = NOT_FOUND,
-          body = errorJson.toString()
-        )
-
         val res: WSResponse = IncomeTaxFinancialDetails.getPaymentAllocationDetails(testNino, documentId)
 
         res should have(
@@ -195,36 +181,10 @@ class FinancialDetailChargesControllerISpec extends ComponentSpecBase {
           status = SERVICE_UNAVAILABLE
         )
 
-        val vcDocIdUrl = s"/income-tax-view-change/$testNino/financial-details/charges/documentId/$documentId"
-        WiremockHelper.stubGet(vcDocIdUrl, SERVICE_UNAVAILABLE, "")
-
         val res: WSResponse = IncomeTaxFinancialDetails.getPaymentAllocationDetails(testNino, documentId)
 
         res should have(
           httpStatus(INTERNAL_SERVER_ERROR)
-        )
-      }
-      "the call to HiP fails but ViewAndChange succeeds" in {
-        isAuthorised(true)
-
-        // 1) HiP fails
-        stubGetChargeDetails(testNino, from, to)(
-          status = SERVICE_UNAVAILABLE
-        )
-
-        // 2) ViewAndChange succeeds
-        ViewAndChangeStub.stubGetCharges(testNino, from, to)(
-          status = OK,
-          body = chargeJson.toString()
-        )
-
-        // 3) Call our endpoint
-        val res: WSResponse = IncomeTaxFinancialDetails.getChargeDetails(testNino, from, to)
-
-        // 4) Assert we returned the V&C result
-        res should have(
-          httpStatus(OK),
-          jsonBodyMatching(chargeJson)
         )
       }
     }

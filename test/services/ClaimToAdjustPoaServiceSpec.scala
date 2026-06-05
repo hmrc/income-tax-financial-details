@@ -16,7 +16,7 @@
 
 package services
 
-import connectors.{ClaimToAdjustPoaConnector, ViewAndChangeConnector}
+import connectors.ClaimToAdjustPoaConnector
 import constants.ClaimToAdjustPoaTestConstants.*
 import models.claimToAdjustPoa.ClaimToAdjustPoaResponse.ClaimToAdjustPoaResponse
 import org.mockito.ArgumentMatchers.any
@@ -30,11 +30,9 @@ class ClaimToAdjustPoaServiceSpec extends TestSupport {
 
   trait Setup {
     val claimToAdjustPoaConnector: ClaimToAdjustPoaConnector = mock(classOf[ClaimToAdjustPoaConnector])
-    val viewAndChangeConnector: ViewAndChangeConnector = mock(classOf[ViewAndChangeConnector])
 
     val service = new ClaimToAdjustPoaService(
       claimToAdjustPoaConnector,
-      viewAndChangeConnector
     )
   }
 
@@ -52,15 +50,13 @@ class ClaimToAdjustPoaServiceSpec extends TestSupport {
   }
 
   "the call to DES is unsuccessful" should {
-    "call the view and change connector and return its response" in new Setup {
+    "return the error response" in new Setup {
       when(claimToAdjustPoaConnector.postClaimToAdjustPoa(any())(any()))
         .thenReturn(Future.successful(claimToAdjustPoaErrorResponse))
-      when(viewAndChangeConnector.postClaimToAdjustPoa(any())(any()))
-        .thenReturn(Future.successful(claimToAdjustPoaViewAndChangeResult))
 
       val result: Future[ClaimToAdjustPoaResponse] = service.postClaimToAdjustPoa(claimToAdjustPoaRequest)(hc, ec)
 
-      await(result) shouldBe claimToAdjustPoaViewAndChangeResult
+      await(result) shouldBe claimToAdjustPoaErrorResponse
     }
   }
 

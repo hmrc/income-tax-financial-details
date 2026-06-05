@@ -16,27 +16,18 @@
 
 package services
 
-import connectors.httpParsers.OutStandingChargesHttpParser.{OutStandingChargeResponse, UnexpectedOutStandingChargeResponse}
-import connectors.{OutStandingChargesConnector, ViewAndChangeConnector}
-import play.api.http.Status.NOT_FOUND
+import connectors.httpParsers.OutStandingChargesHttpParser.OutStandingChargeResponse
+import connectors.OutStandingChargesConnector
 import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class OutStandingChargesService @Inject()(outstandingChargesConnector: OutStandingChargesConnector,
-                                          viewAndChangeConnector: ViewAndChangeConnector){
+class OutStandingChargesService @Inject()(outstandingChargesConnector: OutStandingChargesConnector){
 
   def listOutStandingCharges(idType: String, idNumber: String, taxYearEndDate: String)
                             (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[OutStandingChargeResponse] = {
-    outstandingChargesConnector.listOutStandingCharges(idType, idNumber, taxYearEndDate).flatMap{
-      case Right(success) =>
-        Future.successful(Right(success))
-      case Left(error: UnexpectedOutStandingChargeResponse) if error.code == NOT_FOUND =>
-        Future.successful(Left(error))
-      case _ =>
-        viewAndChangeConnector.listOutStandingCharges(idType, idNumber, taxYearEndDate)
-    }
+    outstandingChargesConnector.listOutStandingCharges(idType, idNumber, taxYearEndDate)
   }
 
 }

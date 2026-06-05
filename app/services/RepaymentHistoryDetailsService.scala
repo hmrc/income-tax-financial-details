@@ -16,12 +16,11 @@
 
 package services
 
-import connectors.{RepaymentHistoryDetailsConnector, ViewAndChangeConnector}
+import connectors.RepaymentHistoryDetailsConnector
 import connectors.hip.HipRepaymentHistoryDetailsConnector
 import connectors.hip.httpParsers.ChargeHipHttpParser.HttpGetResult
-import connectors.httpParsers.RepaymentHistoryHttpParser.{RepaymentHistoryError, RepaymentHistoryResponse, UnexpectedRepaymentHistoryResponse}
+import connectors.httpParsers.RepaymentHistoryHttpParser.RepaymentHistoryResponse
 import models.hip.repayments.SuccessfulRepaymentResponse
-import play.api.http.Status.NOT_FOUND
 import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.{Inject, Singleton}
@@ -29,56 +28,27 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class RepaymentHistoryDetailsService @Inject()(hipRepaymentHistoryDetailsConnector: HipRepaymentHistoryDetailsConnector,
-                                               repaymentHistoryDetailsConnector: RepaymentHistoryDetailsConnector,
-                                               viewAndChangeConnector: ViewAndChangeConnector) {
+                                               repaymentHistoryDetailsConnector: RepaymentHistoryDetailsConnector) {
 
   def getRepaymentHistoryDetailsList(idValue: String)
                                     (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpGetResult[SuccessfulRepaymentResponse]] = {
-    hipRepaymentHistoryDetailsConnector.getRepaymentHistoryDetailsList(idValue).flatMap {
-      case right@Right(_) =>
-        Future.successful(right)
-      case Left(error) if error.status == NOT_FOUND =>
-        Future.successful(Left(error))
-      case Left(_) =>
-        viewAndChangeConnector.getRepaymentHistoryDetailsList(idValue)
-    }
+    hipRepaymentHistoryDetailsConnector.getRepaymentHistoryDetailsList(idValue)
   }
 
   //ToDo remove when migration to HIP is completed
   def getIFRepaymentHistoryDetailsList(idValue: String)
                                     (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[RepaymentHistoryResponse] = {
-    repaymentHistoryDetailsConnector.getAllRepaymentHistoryDetails(idValue).flatMap {
-      case right@Right(_) =>
-        Future.successful(right)
-      case Left(error: UnexpectedRepaymentHistoryResponse) if error.code == NOT_FOUND =>
-        Future.successful(Left(error))
-      case Left(_) =>
-        viewAndChangeConnector.getIFRepaymentHistoryDetailsList(idValue)
-    }
+    repaymentHistoryDetailsConnector.getAllRepaymentHistoryDetails(idValue)
   }
 
   def getRepaymentHistoryDetails(idValue: String, repaymentRequestNumber: String)
                                 (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpGetResult[SuccessfulRepaymentResponse]] = {
-    hipRepaymentHistoryDetailsConnector.getRepaymentHistoryDetails(idValue, repaymentRequestNumber).flatMap {
-      case right@Right(_) =>
-        Future.successful(right)
-      case Left(error) if error.status == NOT_FOUND =>
-        Future.successful(Left(error))
-      case Left(_) =>
-        viewAndChangeConnector.getRepaymentHistoryDetails(idValue, repaymentRequestNumber)
-    }
+    hipRepaymentHistoryDetailsConnector.getRepaymentHistoryDetails(idValue, repaymentRequestNumber)
   }
 
   //ToDo remove when migration to HIP is completed
   def getIFRepaymentHistoryDetails(idValue: String, repaymentRequestNumber: String)
                                 (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[RepaymentHistoryResponse] = {
-    repaymentHistoryDetailsConnector.getRepaymentHistoryDetailsById(idValue, repaymentRequestNumber).flatMap {
-      case right@Right(_) =>
-        Future.successful(right)
-      case Left(error: UnexpectedRepaymentHistoryResponse) if error.code == NOT_FOUND =>
-        Future.successful(Left(error))
-      case Left(_) =>
-        viewAndChangeConnector.getIFRepaymentHistoryDetails(idValue, repaymentRequestNumber)
-    }
+    repaymentHistoryDetailsConnector.getRepaymentHistoryDetailsById(idValue, repaymentRequestNumber)
   }
 }
