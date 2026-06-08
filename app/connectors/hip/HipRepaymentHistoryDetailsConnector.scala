@@ -32,8 +32,8 @@ class HipRepaymentHistoryDetailsConnector @Inject()(val http: HttpClientV2, val 
 
   def getUrl(idValue: String, repaymentRequestNumber: Option[String]): String = {
     repaymentRequestNumber match {
-      case Some(value) => s"${appConfig.hipUrl}/income-tax/self-assessment/repayments-viewer/$idValue?repaymentRequestNumber=$value"
-      case None => s"${appConfig.hipUrl}/income-tax/self-assessment/repayments-viewer/$idValue"
+      case Some(value) => s"${appConfig.hipUrl}/etmp/RESTAdapter/ITSA/RepaymentsViewer/$idValue?repaymentRequestNumber=$value"
+      case None => s"${appConfig.hipUrl}/etmp/RESTAdapter/ITSA/RepaymentsViewer/$idValue"
     }
   }
     def getHeaders: Seq[(String, String)] = appConfig.getHIPHeaders(GetRepaymentHistoryDetails)

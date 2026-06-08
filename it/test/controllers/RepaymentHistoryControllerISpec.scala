@@ -17,7 +17,7 @@
 package controllers
 
 import helpers.ComponentSpecBase
-import helpers.servicemocks.DesChargesStub.{stubAllRepaymentHistory, stubRepaymentHistoryById}
+import helpers.servicemocks.DesChargesStub.{stubRepaymentHistoryByIdHip, stubRepaymentHistoryHip}
 import models.hip.repayments.*
 import play.api.http.Status.{INTERNAL_SERVER_ERROR, NOT_FOUND, OK, SERVICE_UNAVAILABLE}
 import play.api.libs.json.{JsValue, Json}
@@ -76,7 +76,7 @@ class RepaymentHistoryControllerISpec extends ComponentSpecBase {
 
         isAuthorised(true)
 
-        stubRepaymentHistoryById(nino, repaymentId)(
+        stubRepaymentHistoryByIdHip(nino, repaymentId)(
           status = OK,
           response = validRepaymentHistoryJson)
 
@@ -140,7 +140,7 @@ class RepaymentHistoryControllerISpec extends ComponentSpecBase {
         val errorJson = Json.arr(
           Json.obj("code" -> "NO_DATA_FOUND", "reason" -> "The remote endpoint has indicated that no data can be found.")
         )
-        stubRepaymentHistoryById(nino, repaymentId)(
+        stubRepaymentHistoryByIdHip(nino, repaymentId)(
           status = NOT_FOUND, response = errorJson
         )
         val res: WSResponse = IncomeTaxFinancialDetails.getRepaymentHistoryById(nino, repaymentId)
@@ -155,7 +155,7 @@ class RepaymentHistoryControllerISpec extends ComponentSpecBase {
 
         isAuthorised(true)
 
-        stubRepaymentHistoryById(nino, repaymentId)(
+        stubRepaymentHistoryByIdHip(nino, repaymentId)(
           status = SERVICE_UNAVAILABLE
         )
 
@@ -175,7 +175,7 @@ class RepaymentHistoryControllerISpec extends ComponentSpecBase {
 
         isAuthorised(true)
 
-        stubAllRepaymentHistory(nino)(
+        stubRepaymentHistoryHip(nino)(
           status = OK,
           response = validRepaymentHistoryJson)
 
@@ -235,7 +235,7 @@ class RepaymentHistoryControllerISpec extends ComponentSpecBase {
 
         isAuthorised(true)
 
-        stubAllRepaymentHistory(nino)(
+        stubRepaymentHistoryHip(nino)(
           status = SERVICE_UNAVAILABLE
         )
 
@@ -255,7 +255,7 @@ class RepaymentHistoryControllerISpec extends ComponentSpecBase {
         val errorJson = Json.arr(
           Json.obj("code" -> "NO_DATA_FOUND", "reason" -> "The remote endpoint has indicated that no data can be found.")
         )
-        stubAllRepaymentHistory(nino)(
+        stubRepaymentHistoryHip(nino)(
           status = NOT_FOUND, response = errorJson
         )
         val res: WSResponse = IncomeTaxFinancialDetails.getAllRepaymentHistory(nino)
