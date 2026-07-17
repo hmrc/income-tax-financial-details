@@ -22,7 +22,7 @@ import helpers.ComponentSpecBase
 import helpers.servicemocks.DesChargesStub.*
 import models.financialDetails.hip.ChargesHipResponse
 import play.api.http.Status.*
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 import play.api.libs.ws.WSResponse
 
 class FinancialDetailChargesControllerISpec extends ComponentSpecBase {
@@ -36,7 +36,7 @@ class FinancialDetailChargesControllerISpec extends ComponentSpecBase {
       "charge details are successfully retrieved" in {
 
         isAuthorised(true)
-
+        
         stubGetChargeDetails(testNino, from, to)(
           status = OK,
           response = chargeJson)
@@ -114,19 +114,23 @@ class FinancialDetailChargesControllerISpec extends ComponentSpecBase {
 
         isAuthorised(true)
 
-        stubGetSingleDocumentDetails(testNino, documentId)(
+        stubGetSingleDocumentDetails(nino = testNino, documentId = documentId)(
           status = OK,
-          response = chargeJson)
+          response = chargeJson
+        )
 
         val res: WSResponse = IncomeTaxFinancialDetails.getPaymentAllocationDetails(testNino, documentId)
 
-        val expectedResponseBody: JsValue = Json.toJson(ChargesHipResponse(
-          taxpayerDetails = taxpayerDetails,
-          balanceDetails = balanceDetails,
-          codingDetails = List(codingDetails),
-          documentDetails = List(documentDetail, documentDetail2),
-          financialDetails = List(financialDetail, financialDetail2)
-        ))
+        val expectedResponseBody: JsValue =
+          Json.toJson(
+            ChargesHipResponse(
+              taxpayerDetails = taxpayerDetails,
+              balanceDetails = balanceDetails,
+              codingDetails = List(codingDetails),
+              documentDetails = List(documentDetail, documentDetail2),
+              financialDetails = List(financialDetail, financialDetail2)
+            )
+          )
 
         res should have(
           httpStatus(OK),
@@ -188,5 +192,5 @@ class FinancialDetailChargesControllerISpec extends ComponentSpecBase {
         )
       }
     }
- }
+  }
 }

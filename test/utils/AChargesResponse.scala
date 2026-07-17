@@ -21,11 +21,12 @@ import models.financialDetails.hip.*
 import java.time.LocalDate
 
 
-case class AChargesResponse(model: ChargesHipResponse = ChargesHipResponse(
-  TaxpayerDetailsHip("NINO","BB123456A","ITSA"),
-  BalanceDetailsHip(0.0, None, 0.0, None, 0.0, None, 0.0, None, None, None, None),
-  Nil, Nil, Nil
-)) {
+case class AChargesResponse(model: ChargesHipResponse =
+                            ChargesHipResponse(
+                              taxpayerDetails = TaxpayerDetailsHip("NINO", "BB123456A", "ITSA"),
+                              balanceDetails = BalanceDetailsHip(0.0, None, 0.0, None, 0.0, None, 0.0, None, None, None, None),
+                              codingDetails = Nil, documentDetails = Nil, financialDetails = Nil
+                            )) {
 
   def withAvailableCredit(availableCredit: BigDecimal): AChargesResponse = {
     val balanceDetails = model.balanceDetails
@@ -104,37 +105,41 @@ case class AChargesResponse(model: ChargesHipResponse = ChargesHipResponse(
 
   def get(): ChargesHipResponse = model
 
-  private def details( transactionId: String,
-                       taxYear: Int,
-                       mainType: Option[String],
-                       mainTransaction: Option[String],
-                       originalAmount: BigDecimal,
-                       outstandingAmount:BigDecimal,
-                       dueDate: LocalDate,
-                       effectiveDateOfPayment: Option[LocalDate]
-                     ):(DocumentDetailHip, FinancialDetailHip) = {
+  private def details(transactionId: String,
+                      taxYear: Int,
+                      mainType: Option[String],
+                      mainTransaction: Option[String],
+                      originalAmount: BigDecimal,
+                      outstandingAmount: BigDecimal,
+                      dueDate: LocalDate,
+                      effectiveDateOfPayment: Option[LocalDate]
+                     ): (DocumentDetailHip, FinancialDetailHip) = {
 
     val dd = DocumentDetailHip(
       taxYear = taxYear,
-      transactionId =transactionId,
-      documentDescription = None,
+      transactionId = transactionId,
+      formBundleNumber = None,
+      creditReason = None,
+      documentDate = dueDate,
       documentText = None,
+      documentDueDate = Some(dueDate),
+      documentDescription = None,
       originalAmount = originalAmount,
       outstandingAmount = outstandingAmount,
-      documentDate = dueDate,
+      poaRelevantAmount = None,
+      statisticalFlag = "",
+      informationCode = None,
+      paymentLot = None,
+      paymentLotItem = None,
+      effectiveDateOfPayment = effectiveDateOfPayment,
+      accruingInterestAmount = None,
       interestRate = None,
       interestFromDate = None,
       interestEndDate = None,
       latePaymentInterestId = None,
-      interestOutstandingAmount = None,
-      paymentLotItem = None,
-      paymentLot = None,
       lpiWithDunningLock = None,
-      amountCodedOut = None,
-      effectiveDateOfPayment = effectiveDateOfPayment,
-      documentDueDate = Some(dueDate),
-      poaRelevantAmount = None,
-      accruingInterestAmount = None
+      interestOutstandingAmount = None,
+      amountCodedOut = None
     )
 
     val fd = FinancialDetailHip(

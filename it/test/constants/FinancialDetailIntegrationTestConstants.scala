@@ -25,130 +25,132 @@ object FinancialDetailIntegrationTestConstants {
 
   val chargeJson: JsObject = Json.obj(
     "success" -> Json.obj(
-    "taxpayerDetails" -> Json.obj(
-      "idType" -> "NINO",
-      "idNumber" -> "BB123456A",
-      "regimeType" -> "ITSA"
-    ),
-    "balanceDetails" -> Json.obj(
-      "balanceDueWithin30days" -> 100.00,
-      "balanceNotDuein30Days" -> 0,
-      "overDueAmount" -> 200.00,
-      "totalBalance" -> 300.00,
-      "unallocatedCredit" -> 400.00
-    ),
-    "codingDetails" -> Json.arr(
+      "taxpayerDetails" -> Json.obj(
+        "idType" -> "NINO",
+        "idNumber" -> "BB123456A",
+        "regimeType" -> "ITSA"
+      ),
+      "balanceDetails" -> Json.obj(
+        "balanceDueWithin30days" -> 100.00,
+        "balanceNotDuein30Days" -> 0,
+        "overDueAmount" -> 200.00,
+        "totalBalance" -> 300.00,
+        "unallocatedCredit" -> 400.00
+      ),
+      "codingDetails" -> Json.arr(
         Json.obj(
           "totalLiabilityAmount" -> 2300.00,
           "taxYearReturn" -> "2020"
         )
-    ),
-    "documentDetails" -> Json.arr(
-      Json.obj(
-        "taxYear" -> "2018",
-        "documentID" -> "id",
-        "documentDescription" -> "documentDescription",
-        "documentText" -> "documentText",
-        "totalAmount" -> 300.00,
-        "documentOutstandingAmount" -> 200.00,
-        "documentDate" -> "2018-03-29",
-        "interestRate" -> 2.60,
-        "interestFromDate" -> "2018-08-01",
-        "interestEndDate" -> "2019-01-15",
-        "latePaymentInterestID" -> "latePaymentInterestID",
-        "latePaymentInterestAmount" -> 201.00,
-        "accruingInterestAmount" -> 12.34,
-        "interestOutstandingAmount" -> 31.00,
-        "paymentLotItem" -> "paymentLotItem",
-        "paymentLot" -> "paymentLot",
-        "lpiWithDunningBlock" -> 12.50,
-        "amountCodedOut" -> 3.21,
-        "effectiveDateOfPayment" -> LocalDate.parse("2018-03-29"),
-        "poaRelevantAmount" -> 1000.00
       ),
-      Json.obj(
-        "taxYear" -> "2019",
-        "documentID" -> "id2",
-        "documentDescription" -> "documentDescription2",
-        "totalAmount" -> 100.00,
-        "documentOutstandingAmount" -> 50.00,
-        "documentDate" -> "2018-03-29",
-        "effectiveDateOfPayment" -> LocalDate.parse("2018-03-29"),
-        "poaRelevantAmount" -> 1000.00
-      )
-    ),
-    "financialDetailsItem" -> Json.arr(
-      Json.obj(
-        "taxYear" -> "2018",
-        "documentID" -> "id",
-        "documentDate" -> "2022-06-23",
-        "chargeReference" -> "chargeRef",
-        "documentDescription" -> "type",
-        "originalAmount" -> 1000.00,
-        "totalAmount" -> 1000.00,
-        "originalAmount" -> 500.00,
-        "outstandingAmount" -> 500.00,
-        "clearedAmount" -> 500.00,
-        "chargeType" -> "POA1",
-        "mainType" -> "4920",
-        "mainTransaction" -> "4920",
-        "accruedInterest" -> 1000,
-        "items" -> Json.arr(
-          Json.obj(
-            "subItem" -> "1",
-            "amount" -> 100.00,
-            "clearingDate" -> "2022-06-23",
-            "clearingReason" -> "clearingReason",
-            "clearingSAPDocument" -> "012345678912",
-            "outgoingPaymentMethod" -> "outgoingPaymentMethod",
-            "interestLock" -> "interestLock",
-            "dunningLock" -> "dunningLock",
-            "paymentReference" -> "paymentReference",
-            "paymentAmount" -> 2000.00,
-            "dueDate" -> "2022-06-23",
-            "paymentMethod" -> "paymentMethod",
-            "paymentLot" -> "paymentLot",
-            "paymentLotItem" -> "paymentLotItem",
-            "codedOutStatus" -> "I"
-          )
+      "documentDetails" -> Json.arr(
+        Json.obj(
+          "taxYear" -> "2018",
+          "documentID" -> "id",
+          "documentDescription" -> "documentDescription",
+          "documentText" -> "documentText",
+          "totalAmount" -> 300.00,
+          "documentOutstandingAmount" -> 200.00,
+          "documentDate" -> "2018-03-29",
+          "interestRate" -> 2.60,
+          "interestFromDate" -> "2018-08-01",
+          "interestEndDate" -> "2019-01-15",
+          "latePaymentInterestID" -> "latePaymentInterestID",
+          "latePaymentInterestAmount" -> 201.00,
+          "accruingInterestAmount" -> 12.34,
+          "interestOutstandingAmount" -> 31.00,
+          "paymentLotItem" -> "paymentLotItem",
+          "paymentLot" -> "paymentLot",
+          "lpiWithDunningBlock" -> 12.50,
+          "amountCodedOut" -> 3.21,
+          "effectiveDateOfPayment" -> LocalDate.parse("2018-03-29"),
+          "poaRelevantAmount" -> 1000.00,
+          "statisticalFlag" -> ""
+        ),
+        Json.obj(
+          "taxYear" -> "2019",
+          "documentID" -> "id2",
+          "documentDescription" -> "documentDescription2",
+          "totalAmount" -> 100.00,
+          "documentOutstandingAmount" -> 50.00,
+          "documentDate" -> "2018-03-29",
+          "effectiveDateOfPayment" -> LocalDate.parse("2018-03-29"),
+          "poaRelevantAmount" -> 1000.00,
+          "statisticalFlag" -> ""
         )
       ),
-      Json.obj(
-        "taxYear" -> "2019",
-        "documentID" -> "id2",
-        "documentDate" -> "2022-06-23",
-        "chargeReference" -> "chargeRef",
-        "documentDescription" -> "type2",
-        "totalAmount" -> 2000.00,
-        "originalAmount" -> 500.00,
-        "outstandingAmount" -> 200.00,
-        "clearedAmount" -> 500.00,
-        "chargeType" -> "POA1",
-        "mainType" -> "4920",
-        "mainTransaction" -> "4920",
-        "accruedInterest" -> 2000,
-        "items" -> Json.arr(
-          Json.obj(
-            "subItem" -> "2",
-            "amount" -> 200.00,
-            "clearingDate" -> "2022-06-23",
-            "clearingReason" -> "clearingReason2",
-            "clearingSAPDocument" -> "012345678912",
-            "outgoingPaymentMethod" -> "outgoingPaymentMethod2",
-            "interestLock" -> "interestLock2",
-            "dunningLock" -> "dunningLock2",
-            "paymentReference" -> "paymentReference2",
-            "paymentAmount" -> 3000.00,
-            "dueDate" -> "2022-06-23",
-            "paymentMethod" -> "paymentMethod2",
-            "paymentLot" -> "paymentLot2",
-            "paymentLotItem" -> "paymentLotItem2",
-            "codedOutStatus" -> "I"
+      "financialDetailsItem" -> Json.arr(
+        Json.obj(
+          "taxYear" -> "2018",
+          "documentID" -> "id",
+          "documentDate" -> "2022-06-23",
+          "chargeReference" -> "chargeRef",
+          "documentDescription" -> "type",
+          "originalAmount" -> 1000.00,
+          "totalAmount" -> 1000.00,
+          "originalAmount" -> 500.00,
+          "outstandingAmount" -> 500.00,
+          "clearedAmount" -> 500.00,
+          "chargeType" -> "POA1",
+          "mainType" -> "4920",
+          "mainTransaction" -> "4920",
+          "accruedInterest" -> 1000,
+          "items" -> Json.arr(
+            Json.obj(
+              "subItem" -> "1",
+              "amount" -> 100.00,
+              "clearingDate" -> "2022-06-23",
+              "clearingReason" -> "clearingReason",
+              "clearingSAPDocument" -> "012345678912",
+              "outgoingPaymentMethod" -> "outgoingPaymentMethod",
+              "interestLock" -> "interestLock",
+              "dunningLock" -> "dunningLock",
+              "paymentReference" -> "paymentReference",
+              "paymentAmount" -> 2000.00,
+              "dueDate" -> "2022-06-23",
+              "paymentMethod" -> "paymentMethod",
+              "paymentLot" -> "paymentLot",
+              "paymentLotItem" -> "paymentLotItem",
+              "codedOutStatus" -> "I"
+            )
+          )
+        ),
+        Json.obj(
+          "taxYear" -> "2019",
+          "documentID" -> "id2",
+          "documentDate" -> "2022-06-23",
+          "chargeReference" -> "chargeRef",
+          "documentDescription" -> "type2",
+          "totalAmount" -> 2000.00,
+          "originalAmount" -> 500.00,
+          "outstandingAmount" -> 200.00,
+          "clearedAmount" -> 500.00,
+          "chargeType" -> "POA1",
+          "mainType" -> "4920",
+          "mainTransaction" -> "4920",
+          "accruedInterest" -> 2000,
+          "items" -> Json.arr(
+            Json.obj(
+              "subItem" -> "2",
+              "amount" -> 200.00,
+              "clearingDate" -> "2022-06-23",
+              "clearingReason" -> "clearingReason2",
+              "clearingSAPDocument" -> "012345678912",
+              "outgoingPaymentMethod" -> "outgoingPaymentMethod2",
+              "interestLock" -> "interestLock2",
+              "dunningLock" -> "dunningLock2",
+              "paymentReference" -> "paymentReference2",
+              "paymentAmount" -> 3000.00,
+              "dueDate" -> "2022-06-23",
+              "paymentMethod" -> "paymentMethod2",
+              "paymentLot" -> "paymentLot2",
+              "paymentLotItem" -> "paymentLotItem2",
+              "codedOutStatus" -> "I"
+            )
           )
         )
       )
     )
-  )
   )
 
   val taxpayerDetails: TaxpayerDetailsHip = TaxpayerDetailsHip(
@@ -190,7 +192,8 @@ object FinancialDetailIntegrationTestConstants {
     amountCodedOut = Some(3.21),
     effectiveDateOfPayment = Some(LocalDate.parse("2018-03-29")),
     poaRelevantAmount = Some(1000.00),
-    accruingInterestAmount = Some(12.34)
+    accruingInterestAmount = Some(12.34),
+    statisticalFlag = "",
   )
 
   val documentDetail2: DocumentDetailHip = DocumentDetailHip(
@@ -212,7 +215,8 @@ object FinancialDetailIntegrationTestConstants {
     lpiWithDunningLock = None,
     effectiveDateOfPayment = Some(LocalDate.parse("2018-03-29")),
     poaRelevantAmount = Some(1000.00),
-    accruingInterestAmount = None
+    accruingInterestAmount = None,
+    statisticalFlag = "",
   )
 
   val financialDetail: FinancialDetailHip = FinancialDetailHip(
