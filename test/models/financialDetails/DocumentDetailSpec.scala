@@ -62,7 +62,8 @@ class DocumentDetailSpec extends AnyWordSpec with Matchers {
     "effectiveDateOfPayment" -> LocalDate.parse("2018-03-29"),
     "documentDueDate" -> LocalDate.parse("2019-03-29"),
     "poaRelevantAmount" -> Some(1000.00),
-    "accruingInterestAmount" -> 12.34
+    "accruingInterestAmount" -> 12.34,
+    "chargeClassification" -> Some("RA")
   )
 
   val documentDetailFullJsonWrite: JsValue = Json.obj(
@@ -86,7 +87,8 @@ class DocumentDetailSpec extends AnyWordSpec with Matchers {
     "effectiveDateOfPayment" -> LocalDate.parse("2018-03-29"),
     "documentDueDate" -> LocalDate.parse("2019-03-29"),
     "poaRelevantAmount" -> Some(1000.00),
-    "accruingInterestAmount" -> 12.34
+    "accruingInterestAmount" -> 12.34,
+    "chargeClassification" -> Some("RA")
   )
 
   val documentDetailLpiWithDunningLockJsonRead: JsValue = Json.obj("taxYear" -> "2018", "documentID" -> "id", "totalAmount" -> 1000.00,
@@ -94,7 +96,7 @@ class DocumentDetailSpec extends AnyWordSpec with Matchers {
     "effectiveDateOfPayment" -> LocalDate.parse("2018-03-29"), "poaRelevantAmount" -> Some(1000.00))
 
   val documentDetailLpiWithDunningBlock: DocumentDetailHip = DocumentDetailHip(taxYear=2018, transactionId="id", documentDate=LocalDate.parse("2018-03-29"), documentText=None, documentDueDate=None, documentDescription=None, originalAmount=1000.00, outstandingAmount=300.00, poaRelevantAmount = Some(1000.00),
-    lastClearedAmount=None, paymentLot=None, paymentLotItem=None, effectiveDateOfPayment = Some(LocalDate.parse("2018-03-29")), lpiWithDunningLock = Some(13.70))
+    paymentLot=None, paymentLotItem=None, effectiveDateOfPayment = Some(LocalDate.parse("2018-03-29")), lpiWithDunningLock = Some(13.70))
 
   val documentDetailLpiWithDunningBlockJsonWrite: JsObject =
     Json.obj("taxYear" -> "2018", "transactionId" -> "id", "originalAmount" -> 1000.00,

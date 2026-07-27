@@ -52,7 +52,6 @@ object FinancialDetailHipIntegrationTestConstants {
     originalAmount = 1000.11,
     outstandingAmount = 200.00,
     poaRelevantAmount = Some(1000.00),
-    lastClearedAmount = None,
     paymentLot = Some("paymentLot"),
     paymentLotItem = Some("paymentLotItem"),
     effectiveDateOfPayment = Some(LocalDate.parse("2018-03-29")),
@@ -64,7 +63,8 @@ object FinancialDetailHipIntegrationTestConstants {
     latePaymentInterestAmount = Some(201.00),
     lpiWithDunningLock = Some(12.50),
     interestOutstandingAmount = Some(31.00),
-    amountCodedOut = Some(3.21))
+    amountCodedOut = Some(3.21),
+    chargeClassification = Some("RA"))
 
   val financialDetailsHip: FinancialDetailHip = FinancialDetailHip(
     taxYear = "2018",

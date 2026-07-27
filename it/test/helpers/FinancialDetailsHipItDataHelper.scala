@@ -126,7 +126,8 @@ trait FinancialDetailsHipItDataHelper {
             "lpiWithDunningBlock" -> 12.50,
             "interestOutstandingAmount" -> 31.00,
             "amountCodedOut" -> 3.21,
-            "accruingInterestAmount" -> 12.34
+            "accruingInterestAmount" -> 12.34,
+            "chargeClassification" -> "RA"
           )
         ),
         "financialDetailsItem" -> Json.arr(

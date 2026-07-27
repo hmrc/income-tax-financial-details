@@ -46,8 +46,8 @@ case class DocumentDetailHip(
                               //lastClearingDate: Option[LocalDate] = None,
                               /* Last clearing reason */
                               //lastClearingReason: Option[String] = None,
-                              /* Currency amount. 13-digits total with 2 decimal places */
-                              lastClearedAmount: Option[BigDecimal] = None,
+                              /* Currency amount. 13-digits total with 2 decimal places, currently unused so commented out */
+                              // lastClearedAmount: Option[BigDecimal] = None,
                               /* Y for Statistical. N for not */
                               //statisticalFlag: String,
                               /* Identifies a charge that has multiple items associated e.g. there are two BCD items due to coding occurring */
@@ -72,7 +72,8 @@ case class DocumentDetailHip(
                               /* Currency amount. 13-digits total with 2 decimal places */
                               interestOutstandingAmount: Option[BigDecimal] = None,
                               /* Currency amount. 13-digits total with 2 decimal places */
-                              amountCodedOut: Option[BigDecimal] = None
+                              amountCodedOut: Option[BigDecimal] = None,
+                              chargeClassification: Option[String] = None
                               /* If Charge has been reduced, and credit arises, document number to be shown */
                               //documentNumberReducedCharge: Option[String] = None,
                               /* Document name of charge reduced */
@@ -95,7 +96,6 @@ object DocumentDetailHip {
       (__ \ "totalAmount").read[BigDecimal] and
       (__ \ "documentOutstandingAmount").read[BigDecimal] and
       (__ \ "poaRelevantAmount").readNullable[BigDecimal] and
-      (__ \ "lastClearedAmount").readNullable[BigDecimal] and
       (__ \ "paymentLot").readNullable[String] and
       (__ \ "paymentLotItem").readNullable[String] and
       (__ \ "effectiveDateOfPayment").readNullable[LocalDate] and
@@ -107,7 +107,8 @@ object DocumentDetailHip {
       (__ \ "latePaymentInterestAmount").readNullable[BigDecimal] and
       (__ \ "lpiWithDunningBlock").read[BigDecimal].map(Option(_)).orElse((__ \ "lpiWithDunningLock").readNullable[BigDecimal]) and
       (__ \ "interestOutstandingAmount").readNullable[BigDecimal] and
-      (__ \ "amountCodedOut").readNullable[BigDecimal]
+      (__ \ "amountCodedOut").readNullable[BigDecimal] and
+      (__ \ "chargeClassification").readNullable[String]
     )(DocumentDetailHip.apply _)
 }
 
