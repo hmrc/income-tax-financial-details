@@ -114,13 +114,14 @@ object ChargeHistoryTestConstants {
 			|""".stripMargin)
 
 
-  val testValidChargeHistoryModel: ChargeHistorySuccessResponse = ChargeHistorySuccessResponse(
-    idType = "MTDBSA",
-    idValue = "XAIT000000000000",
-    regimeType = "ITSA",
-    chargeHistoryDetails = Some(List(
-      ChargeHistoryDetailModel("  2019 ", "123456789", LocalDate.parse("2020-01-29"), "Balancing Charge", 12345678912.12, "2020-02-24", "amended return", None)
-    )))
+  val testValidChargeHistoryModel: ChargeHistorySuccessResponse =
+    ChargeHistorySuccessResponse(
+      idType = "MTDBSA",
+      idValue = "XAIT000000000000",
+      regimeType = "ITSA",
+      chargeHistoryDetails = Some(List(
+        ChargeHistoryDetailModel("  2019 ", "123456789", LocalDate.parse("2020-01-29"), "Balancing Charge", 12345678912.12, "2020-02-24", "amended return", None)
+      )))
 
   val testValidChargeHistoryModel2: ChargeHistorySuccessResponse = ChargeHistorySuccessResponse(
     idType = "MTDBSA",

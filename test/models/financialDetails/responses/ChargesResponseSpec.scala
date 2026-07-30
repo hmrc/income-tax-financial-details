@@ -96,30 +96,7 @@ class ChargesResponseSpec extends AnyWordSpec with Matchers {
         "totalLiabilityAmount" -> 2300.00,
         "taxYearReturn" -> "2020-04-20")
     ),
-    "documentDetails" -> Json.arr(Json.obj(
-      "taxYear" -> 2018,
-      "transactionId" -> "id",
-      "documentDate" -> LocalDate.parse("2018-03-29"),
-      "documentText" -> "documentText",
-      "documentDueDate" -> LocalDate.parse("2019-03-29"),
-      "documentDescription" -> "documentDescription",
-      "originalAmount" -> 300.00,
-      "outstandingAmount" -> 200.00,
-      "poaRelevantAmount" -> Some(1000.00),
-      "paymentLot" -> "paymentLot",
-      "paymentLotItem" -> "paymentLotItem",
-      "effectiveDateOfPayment" -> LocalDate.parse("2018-03-29"),
-      "interestRate" -> 2.60,
-      "interestFromDate" -> LocalDate.parse("2018-08-01"),
-      "interestEndDate" -> LocalDate.parse("2019-01-15"),
-      "latePaymentInterestId" -> "latePaymentInterestID",
-      "latePaymentInterestAmount" -> 201.00,
-      "lpiWithDunningLock" -> 12.50,
-      "interestOutstandingAmount" -> 31.00,
-      "amountCodedOut" -> 3.21,
-      "accruingInterestAmount" -> 12.34,
-      "chargeClassification" -> "RA"
-    )),
+    "documentDetails" -> Json.arr(Json.toJson(documentDetail)),
     "financialDetails" -> Json.arr(Json.parse(
       """{
         |     "taxYear": "2018",
@@ -159,6 +136,7 @@ class ChargesResponseSpec extends AnyWordSpec with Matchers {
                paymentLotItem: Option[String] = Some("item01")): DocumentDetailHip = {
     DocumentDetailHip(
       taxYear = 2018,
+      transactionId = documentId,
       documentDescription = None,
       documentText = None,
       originalAmount = 1000.00,
@@ -170,7 +148,7 @@ class ChargesResponseSpec extends AnyWordSpec with Matchers {
       latePaymentInterestId = None,
       latePaymentInterestAmount = None,
       interestOutstandingAmount = None,
-      transactionId = documentId,
+      statisticalFlag = "",
       paymentLot = paymentLot,
       paymentLotItem = paymentLotItem,
       lpiWithDunningLock = None,
@@ -195,6 +173,7 @@ class ChargesResponseSpec extends AnyWordSpec with Matchers {
       latePaymentInterestId = None,
       latePaymentInterestAmount = None,
       interestOutstandingAmount = None,
+      statisticalFlag = "",
       transactionId = documentId,
       paymentLot = None,
       paymentLotItem = None,

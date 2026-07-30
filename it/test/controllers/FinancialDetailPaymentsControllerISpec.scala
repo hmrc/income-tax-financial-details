@@ -20,8 +20,9 @@ import constants.BaseIntegrationTestConstants.*
 import helpers.ComponentSpecBase
 import helpers.servicemocks.DesChargesStub.stubGetChargeDetails
 import models.financialDetails.Payment
+import models.financialDetails.hip.ChargesHipResponse
 import play.api.http.Status.*
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.*
 import play.api.libs.ws.WSResponse
 
 import java.time.LocalDate
@@ -31,21 +32,22 @@ class FinancialDetailPaymentsControllerISpec extends ComponentSpecBase {
   val from: String = "from"
   val to: String = "to"
 
-  val payments1: Payment = Payment(
-    taxYear = 2018,
-    reference = Some("paymentReference"),
-    amount = BigDecimal("-1000.00"),
-    outstandingAmount = BigDecimal("100"),
-    documentDescription = Some("documentDescription"),
-    method = Some("paymentMethod"),
-    lot = None,
-    lotItem = None,
-    dueDate = Some(LocalDate.parse("2018-03-29")),
-    documentDate = LocalDate.parse("2018-03-29"),
-    transactionId = "id",
-    mainType = None,
-    mainTransaction = None
-  )
+  val payments1: Payment =
+    Payment(
+      taxYear = 2018,
+      reference = Some("paymentReference"),
+      amount = BigDecimal("-1000.00"),
+      outstandingAmount = BigDecimal("100"),
+      documentDescription = Some("documentDescription"),
+      method = Some("paymentMethod"),
+      lot = None,
+      lotItem = None,
+      dueDate = Some(LocalDate.parse("2018-03-29")),
+      documentDate = LocalDate.parse("2018-03-29"),
+      transactionId = "id",
+      mainType = None,
+      mainTransaction = None
+    )
 
   val payments2: Payment = Payment(
     taxYear = 2018,
@@ -53,7 +55,7 @@ class FinancialDetailPaymentsControllerISpec extends ComponentSpecBase {
     amount = BigDecimal("-1000.00"),
     outstandingAmount = BigDecimal("100"),
     method = Some("paymentMethod2"),
-    documentDescription =  Some("documentDescription2"),
+    documentDescription = Some("documentDescription2"),
     lot = None,
     lotItem = None,
     dueDate = Some(LocalDate.parse("2018-03-29")),
@@ -91,7 +93,8 @@ class FinancialDetailPaymentsControllerISpec extends ComponentSpecBase {
           "totalAmount" -> -1000.00,
           "documentOutstandingAmount" -> 100.00,
           "documentDate" -> "2018-03-29",
-          "effectiveDateOfPayment" -> LocalDate.parse("2018-03-29")
+          "effectiveDateOfPayment" -> LocalDate.parse("2018-03-29"),
+          "statisticalFlag" -> ""
         ),
         Json.obj(
           "taxYear" -> "2018",
@@ -101,7 +104,8 @@ class FinancialDetailPaymentsControllerISpec extends ComponentSpecBase {
           "totalAmount" -> -1000.00,
           "documentOutstandingAmount" -> 100.00,
           "documentDate" -> "2018-03-29",
-          "effectiveDateOfPayment" -> LocalDate.parse("2018-03-29")
+          "effectiveDateOfPayment" -> LocalDate.parse("2018-03-29"),
+          "statisticalFlag" -> ""
         )
       ),
       "financialDetailsItem" -> Json.arr(
@@ -159,9 +163,20 @@ class FinancialDetailPaymentsControllerISpec extends ComponentSpecBase {
       "payment details are successfully retrieved" in {
         isAuthorised(true)
 
+        chargeJson.validate[ChargesHipResponse] match {
+          case JsSuccess(value, _) =>
+            println(s"DOCUMENT DETAILS: ${value.documentDetails}")
+            println(s"PAYMENTS: ${value.payments}")
+
+          case JsError(errors) =>
+            println(JsError.toJson(errors))
+            fail(s"chargeJson failed validation: $errors")
+        }
+
         stubGetChargeDetails(testNino, from, to)(
           status = OK,
-          response = chargeJson)
+          response = chargeJson
+        )
 
         val res: WSResponse = IncomeTaxFinancialDetails.getPaymentDetails(testNino, from, to)
 

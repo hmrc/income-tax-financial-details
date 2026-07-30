@@ -69,13 +69,14 @@ trait FinancialDetailsHipItDataHelper {
 
   val chargesResponseJsonInvalid: JsValue = Json.obj("" -> "")
 
-  val chargesHipResponse: ChargesHipResponse = ChargesHipResponse(
-    taxpayerDetails = testTaxPayerHipDetails,
-    balanceDetails = testBalanceHipDetails,
-    documentDetails = List(documentDetailsHip),
-    financialDetails = List(financialDetailsHip),
-    codingDetails = codingOutList
-  )
+  val chargesHipResponse: ChargesHipResponse =
+    ChargesHipResponse(
+      taxpayerDetails = testTaxPayerHipDetails,
+      balanceDetails = testBalanceHipDetails,
+      documentDetails = List(documentDetailsHip),
+      financialDetails = List(financialDetailsHip),
+      codingDetails = codingOutList
+    )
 
   val chargeHipJson: JsObject =
     Json.obj("success" ->
@@ -127,7 +128,7 @@ trait FinancialDetailsHipItDataHelper {
             "interestOutstandingAmount" -> 31.00,
             "amountCodedOut" -> 3.21,
             "accruingInterestAmount" -> 12.34,
-            "chargeClassification" -> "RA"
+            "statisticalFlag" -> ""
           )
         ),
         "financialDetailsItem" -> Json.arr(

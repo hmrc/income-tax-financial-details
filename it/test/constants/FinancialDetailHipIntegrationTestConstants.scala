@@ -64,7 +64,8 @@ object FinancialDetailHipIntegrationTestConstants {
     lpiWithDunningLock = Some(12.50),
     interestOutstandingAmount = Some(31.00),
     amountCodedOut = Some(3.21),
-    chargeClassification = Some("RA"))
+    statisticalFlag = "",
+  )
 
   val financialDetailsHip: FinancialDetailHip = FinancialDetailHip(
     taxYear = "2018",

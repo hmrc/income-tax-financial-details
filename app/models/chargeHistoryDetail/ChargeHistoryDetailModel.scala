@@ -20,14 +20,16 @@ import play.api.libs.json.{Json, OFormat}
 
 import java.time.LocalDate
 
-case class ChargeHistoryDetailModel(taxYear: String,
-                                    documentId: String,
-                                    documentDate: LocalDate,
-                                    documentDescription: String,
-                                    totalAmount: BigDecimal,
-                                    reversalDate: String,
-                                    reversalReason: String,
-                                    poaAdjustmentReason: Option[String])
+case class ChargeHistoryDetailModel(
+                                     taxYear: String,
+                                     documentId: String,
+                                     documentDate: LocalDate,
+                                     documentDescription: String,
+                                     totalAmount: BigDecimal,
+                                     reversalDate: String,
+                                     reversalReason: String,
+                                     poaAdjustmentReason: Option[String]
+                                   )
 
 object ChargeHistoryDetailModel {
   implicit val format: OFormat[ChargeHistoryDetailModel] = Json.format[ChargeHistoryDetailModel]

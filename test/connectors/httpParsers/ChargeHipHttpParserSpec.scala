@@ -28,7 +28,7 @@ class ChargeHipHttpParserSpec extends TestSupport {
 
   "ChargesHttpParser" should {
     "return a charge" when {
-      s"$OK is returned with valid json" in {
+      "OK 200 is returned with valid json" in {
         val httpResponse: HttpResponse = HttpResponse(OK, json = Json.toJson(validHipChargesJson), headers = Map.empty)
         val expectedResult: ChargeHipResponse = Right(testChargeHipResponse)
         val actualResult: ChargeHipResponse = ChargeHipReads.read("", "", httpResponse)
