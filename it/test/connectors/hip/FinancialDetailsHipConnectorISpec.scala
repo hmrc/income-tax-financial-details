@@ -18,7 +18,7 @@ package connectors.hip
 
 import connectors.httpParsers.ChargeHttpParser.{UnexpectedChargeErrorResponse, UnexpectedChargeResponse}
 import helpers.{ComponentSpecBase, FinancialDetailsHipItDataHelper, WiremockHelper}
-import play.api.http.Status.{INTERNAL_SERVER_ERROR, NOT_FOUND, OK}
+import play.api.http.Status.{INTERNAL_SERVER_ERROR, NOT_FOUND, UNPROCESSABLE_ENTITY, OK}
 import play.api.libs.json.Json
 
 
@@ -62,6 +62,36 @@ class FinancialDetailsHipConnectorISpec extends ComponentSpecBase with Financial
         "return an UnexpectedChargeResponse error response when no data is found" in {
           val jsonError = Json.obj("code" -> "NO_DATA_FOUND", "reason" -> "The remote endpoint has indicated that no data can be found.")
           WiremockHelper.stubGet(urlGetChargeDetails, NOT_FOUND, jsonError.toString())
+          val result = connector.getChargeDetails(nino, dateFrom, dateTo).futureValue
+
+          result shouldBe Left(UnexpectedChargeResponse(NOT_FOUND, jsonError.toString()))
+        }
+
+        "return an UnexpectedChargeResponse 404 error response when Unprocessable Content 422 with code 003 is returned from HIP" in {
+          val jsonError = Json.obj(
+            "errors" -> Json.obj(
+              "code" -> "003",
+              "processingDate" -> "2022-01-31T09:26:17Z",
+              "text" -> "Request could not be processed"
+            )
+          )
+
+          WiremockHelper.stubGet(urlGetChargeDetails, UNPROCESSABLE_ENTITY, jsonError.toString())
+          val result = connector.getChargeDetails(nino, dateFrom, dateTo).futureValue
+
+          result shouldBe Left(UnexpectedChargeResponse(NOT_FOUND, jsonError.toString()))
+        }
+
+        "return an UnexpectedChargeResponse 404 error response when Unprocessable Content 422 with code 005 is returned from HIP" in {
+          val jsonError = Json.obj(
+            "errors" -> Json.obj(
+              "code" -> "005",
+              "processingDate" -> "2022-01-31T09:26:17Z",
+              "text" -> "No match found for reference provided"
+            )
+          )
+
+          WiremockHelper.stubGet(urlGetChargeDetails, UNPROCESSABLE_ENTITY, jsonError.toString())
           val result = connector.getChargeDetails(nino, dateFrom, dateTo).futureValue
 
           result shouldBe Left(UnexpectedChargeResponse(NOT_FOUND, jsonError.toString()))
