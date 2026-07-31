@@ -128,7 +128,8 @@ trait FinancialDetailsHipItDataHelper {
             "interestOutstandingAmount" -> 31.00,
             "amountCodedOut" -> 3.21,
             "accruingInterestAmount" -> 12.34,
-            "statisticalFlag" -> ""
+            "statisticalFlag" -> "",
+            "chargeClassification" -> "RA"
           )
         ),
         "financialDetailsItem" -> Json.arr(
