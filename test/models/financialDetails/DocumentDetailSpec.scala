@@ -104,6 +104,30 @@ class DocumentDetailSpec extends AnyWordSpec with Matchers {
     "chargeClassification" -> Some("RA")
   )
 
+  val documentDetailFullJsonWrite: JsValue = Json.obj(
+    "taxYear" -> 2018,
+    "transactionId" -> "id",
+    "documentDate" -> LocalDate.parse("2018-03-29"),
+    "documentDescription" -> "documentDescription",
+    "documentText" -> "documentText",
+    "originalAmount" -> 300.00,
+    "outstandingAmount" -> 200.00,
+    "interestRate" -> 2.60,
+    "interestFromDate" -> LocalDate.parse("2018-08-01"),
+    "interestEndDate" -> LocalDate.parse("2019-01-15"),
+    "latePaymentInterestId" -> "latePaymentInterestID",
+    "latePaymentInterestAmount" -> Some(201.00),
+    "interestOutstandingAmount" -> 31.00,
+    "paymentLotItem" -> "paymentLotItem",
+    "paymentLot" -> "paymentLot",
+    "lpiWithDunningLock" -> 12.50,
+    "amountCodedOut" -> 3.21,
+    "effectiveDateOfPayment" -> LocalDate.parse("2018-03-29"),
+    "documentDueDate" -> LocalDate.parse("2019-03-29"),
+    "poaRelevantAmount" -> Some(1000.00),
+    "accruingInterestAmount" -> 12.34,
+    "chargeClassification" -> "RA"
+  )
   val documentDetailFullJsonWrite: JsObject =
     Json.obj(
       "taxYear" -> "2018",

@@ -25,7 +25,9 @@ case class Transaction(transactionType: TransactionType,
                        taxYear: Option[Int],
                        dueDate: Option[LocalDate],
                        effectiveDateOfPayment: Option[LocalDate],
-                       transactionId: String)
+                       transactionId: String,
+                       chargeClassification: Option[String] = None
+                      )
 
 object Transaction {
 
