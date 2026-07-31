@@ -36,7 +36,8 @@ class RepaymentHistoryDetailServiceSpec extends TestSupport
   lazy val defaultHIPRepaymentHistoryResp = SuccessfulRepaymentResponse(
     transactionHeader = TransactionHeader(
       status = "OK",
-      processingDate = java.time.LocalDateTime.parse("2021-09-01T12:00:00")
+      processingDate = java.time.LocalDateTime.parse("2021-09-01T12:00:00"),
+      returnParameters = None
     ),
     responseDetails = ResponseDetails(
       repaymentsViewerDetails = Seq(

@@ -18,23 +18,46 @@ package connectors.hip.httpParsers
 
 
 import connectors.hip.httpParsers.errorResponses.ErrorResponseHttpParsers
-import models.hip.repayments.SuccessfulRepaymentResponse
+import models.hip.ErrorResponse
+import models.hip.repayments.{EtmpFailureRepaymentResponse, SuccessfulRepaymentResponse}
 import play.api.http.Status.*
+import play.api.libs.json.Json
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
 object RepaymentsHistoryDetailsHttpParser extends ErrorResponseHttpParsers{
 
   given RepaymentsHistoryDetailsReads: HttpReads[HttpGetResult[SuccessfulRepaymentResponse]] with {
 
-    override def read(method: String, url: String, response: HttpResponse): HttpGetResult[SuccessfulRepaymentResponse] =
+    override def read(method: String, url: String, response: HttpResponse): HttpGetResult[SuccessfulRepaymentResponse] = {
       response.status match {
         case OK =>
           logger.info("successfully parsed response to List[RepaymentHistory]")
           Right(response.json.as[SuccessfulRepaymentResponse])
+        case UNPROCESSABLE_ENTITY =>
+          logger.info(s"${response.status} returned from HiP with body: ${response.body}, checking for data not found scenario")
+          handleUnprocessableStatusCode(response)
         case status =>
           logger.error(s"Call to RepaymentsHistory failed with status: $status and response body: ${response.body}")
           handleErrorResponse(response)
       }
+    }
+
+    private def handleUnprocessableStatusCode(response: HttpResponse): HttpGetResult[SuccessfulRepaymentResponse] = {
+      response.json.validate[EtmpFailureRepaymentResponse].fold(
+        invalid => {
+          logger.error(s"Unexpected response with status code: ${response.status}, response: $invalid")
+          Left(ErrorResponse.UnprocessableData(response.body))
+        },
+        expected => {
+          if (expected.containsNoDataResponse) {
+            logger.info(s"Data not found error, converting to 404, status: ${response.status}, response: $expected")
+            Left(ErrorResponse.GenericError(NOT_FOUND, Json.parse(response.body)))
+          } else {
+            logger.error(s"Unexpected response with status code: ${response.status}, response: $expected")
+            Left(ErrorResponse.UnprocessableData(response.body))
+          }
+        })
+    }
   }
 
 }

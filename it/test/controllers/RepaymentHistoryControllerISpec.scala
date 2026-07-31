@@ -16,10 +16,11 @@
 
 package controllers
 
+import constants.HipRepaymentHistoryDetailsIntegrationTestConstants
 import helpers.ComponentSpecBase
 import helpers.servicemocks.DesChargesStub.{stubRepaymentHistoryByIdHip, stubRepaymentHistoryHip}
 import models.hip.repayments.*
-import play.api.http.Status.{INTERNAL_SERVER_ERROR, NOT_FOUND, OK, SERVICE_UNAVAILABLE}
+import play.api.http.Status.{INTERNAL_SERVER_ERROR, NOT_FOUND, OK, SERVICE_UNAVAILABLE, UNPROCESSABLE_ENTITY}
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.WSResponse
 
@@ -85,7 +86,8 @@ class RepaymentHistoryControllerISpec extends ComponentSpecBase {
         val expectedResponseBody: JsValue = Json.toJson(SuccessfulRepaymentResponse(
           transactionHeader = TransactionHeader(
             status = "OK",
-            processingDate = java.time.LocalDateTime.parse("2021-09-01T12:00:00")
+            processingDate = java.time.LocalDateTime.parse("2021-09-01T12:00:00"),
+            returnParameters = None
           ),
           responseDetails = ResponseDetails(
             repaymentsViewerDetails = Seq(
@@ -148,6 +150,21 @@ class RepaymentHistoryControllerISpec extends ComponentSpecBase {
           httpStatus(NOT_FOUND)
         )
       }
+
+      "an unexpected status with UNPROCESSABLE_ENTITY was returned with No Data error codes when retrieving repayment history by ID" in {
+
+        isAuthorised(true)
+
+        val errorJson = HipRepaymentHistoryDetailsIntegrationTestConstants.repaymentsHistoryFailureWithError
+
+        stubRepaymentHistoryByIdHip(nino, repaymentId)(
+          status = UNPROCESSABLE_ENTITY, response = errorJson
+        )
+        val res: WSResponse = IncomeTaxFinancialDetails.getRepaymentHistoryById(nino, repaymentId)
+        res should have(
+          httpStatus(NOT_FOUND)
+        )
+      }
     }
 
     s"return $INTERNAL_SERVER_ERROR" when {
@@ -184,7 +201,8 @@ class RepaymentHistoryControllerISpec extends ComponentSpecBase {
         val expectedResponseBody: JsValue = Json.toJson(SuccessfulRepaymentResponse(
           transactionHeader = TransactionHeader(
             status = "OK",
-            processingDate = java.time.LocalDateTime.parse("2021-09-01T12:00:00")
+            processingDate = java.time.LocalDateTime.parse("2021-09-01T12:00:00"),
+            returnParameters = None
           ),
           responseDetails = ResponseDetails(
             repaymentsViewerDetails = Seq(
@@ -257,6 +275,21 @@ class RepaymentHistoryControllerISpec extends ComponentSpecBase {
         )
         stubRepaymentHistoryHip(nino)(
           status = NOT_FOUND, response = errorJson
+        )
+        val res: WSResponse = IncomeTaxFinancialDetails.getAllRepaymentHistory(nino)
+
+        res should have(
+          httpStatus(NOT_FOUND)
+        )
+      }
+
+      "an unexpected status with UNPROCESSABLE_ENTITY was returned with No Data error codes when retrieving repayment history by date range" in {
+        isAuthorised(true)
+
+        val errorJson = HipRepaymentHistoryDetailsIntegrationTestConstants.repaymentsHistoryFailureWithError
+
+        stubRepaymentHistoryHip(nino)(
+          status = UNPROCESSABLE_ENTITY, response = errorJson
         )
         val res: WSResponse = IncomeTaxFinancialDetails.getAllRepaymentHistory(nino)
 
