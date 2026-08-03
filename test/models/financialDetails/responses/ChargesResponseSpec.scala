@@ -163,6 +163,7 @@ class ChargesResponseSpec extends AnyWordSpec with Matchers {
       "taxYear" -> 2018,
       "transactionId" -> "id",
       "documentDate" -> LocalDate.parse("2018-03-29"),
+      "statisticalFlag" -> "",
       "documentText" -> "documentText",
       "documentDueDate" -> LocalDate.parse("2019-03-29"),
       "documentDescription" -> "documentDescription",

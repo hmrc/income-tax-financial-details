@@ -27,9 +27,9 @@ case class DocumentDetailHip(
                               /* SAP document number or Form Bundle Number for zero amount documents */
                               transactionId: String,
                               /* If the document was created using the Form Bundle, the FB Number is provided */
-                              //formBundleNumber: Option[String] = None,
+                              formBundleNumber: Option[String] = None,
                               /* Gives the reason as to why there is a credit on the account.  */
-                              //creditReason: Option[String] = None,
+                              creditReason: Option[String] = None,
                               documentDate: LocalDate,
                               /* Document Text */
                               documentText: Option[String] = None,
@@ -42,15 +42,15 @@ case class DocumentDetailHip(
                               outstandingAmount: BigDecimal, // renamed from documentOutstandingAmount
                               /* Currency amount. 13-digits total with 2 decimal places */
                               poaRelevantAmount: Option[BigDecimal] = None,
-                              //lastClearingDate: Option[LocalDate] = None,
+//                              lastClearingDate: Option[LocalDate] = None,
                               /* Last clearing reason */
-                              //lastClearingReason: Option[String] = None,
+//                              lastClearingReason: Option[String] = None,
                               /* Currency amount. 13-digits total with 2 decimal places */
                               lastClearedAmount: Option[BigDecimal] = None,
                               /* Y for Statistical. N for not */
-                              //statisticalFlag: String,
+                              statisticalFlag: String,
                               /* Identifies a charge that has multiple items associated e.g. there are two BCD items due to coding occurring */
-                              //  informationCode: Option[String] = None,
+                              informationCode: Option[String] = None,
                               //  /* Payment Lot */
                               paymentLot: Option[String] = None,
                               /* Payment Lot Item */
@@ -74,12 +74,12 @@ case class DocumentDetailHip(
                               amountCodedOut: Option[BigDecimal] = None,
                               chargeClassification: Option[String] = None
                               /* If Charge has been reduced, and credit arises, document number to be shown */
-                              //documentNumberReducedCharge: Option[String] = None,
+//                              documentNumberReducedCharge: Option[String] = None,
                               /* Document name of charge reduced */
-                              //chargeTypeReducedCharge: Option[String] = None,
-                              //amendmentDateReducedCharge: Option[LocalDate] = None,
+//                              chargeTypeReducedCharge: Option[String] = None,
+//                              amendmentDateReducedCharge: Option[LocalDate] = None,
                               /* Format: YYYY */
-                              //taxYearReducedCharge: Option[String] = None
+//                              taxYearReducedCharge: Option[String] = None
                             )
 
 
@@ -111,37 +111,11 @@ object DocumentDetailHip {
 
   implicit val reads: Reads[DocumentDetailHip] = normalise.andThen(macroReads)
 
-  implicit val writes: Writes[DocumentDetailHip] = (d: DocumentDetailHip) => {
-    val required = Json.obj(
-      "taxYear"           -> d.taxYear,
-      "transactionId"     -> d.transactionId,
-      "documentDate"      -> d.documentDate,
-      "originalAmount"    -> d.originalAmount,
-      "outstandingAmount" -> d.outstandingAmount
-    )
+  private val macroWrites: OWrites[DocumentDetailHip] = Json.writes[DocumentDetailHip]
 
-    val optionalFields: Seq[(String, JsValue)] = Seq(
-      d.documentText.map("documentText" -> Json.toJson(_)),
-      d.documentDueDate.map("documentDueDate" -> Json.toJson(_)),
-      d.documentDescription.map("documentDescription" -> Json.toJson(_)),
-      d.poaRelevantAmount.map("poaRelevantAmount" -> Json.toJson(_)),
-      d.lastClearedAmount.map("lastClearedAmount" -> Json.toJson(_)),
-      d.paymentLot.map("paymentLot" -> Json.toJson(_)),
-      d.paymentLotItem.map("paymentLotItem" -> Json.toJson(_)),
-      d.effectiveDateOfPayment.map("effectiveDateOfPayment" -> Json.toJson(_)),
-      d.accruingInterestAmount.map("accruingInterestAmount" -> Json.toJson(_)),
-      d.interestRate.map("interestRate" -> Json.toJson(_)),
-      d.interestFromDate.map("interestFromDate" -> Json.toJson(_)),
-      d.interestEndDate.map("interestEndDate" -> Json.toJson(_)),
-      d.latePaymentInterestId.map("latePaymentInterestId" -> Json.toJson(_)),
-      d.latePaymentInterestAmount.map("latePaymentInterestAmount" -> Json.toJson(_)),
-      d.lpiWithDunningLock.map("lpiWithDunningLock" -> Json.toJson(_)),
-      d.interestOutstandingAmount.map("interestOutstandingAmount" -> Json.toJson(_)),
-      d.amountCodedOut.map("amountCodedOut" -> Json.toJson(_)),
-      d.chargeClassification.map("chargeClassification" -> Json.toJson(_))
-    ).flatten
-
-    required ++ JsObject(optionalFields)
+  implicit val writes: OWrites[DocumentDetailHip] = OWrites { d =>
+    JsObject(macroWrites.writes(d).fields.filterNot { case (_, value) => value == JsNull })
   }
+
 }
 

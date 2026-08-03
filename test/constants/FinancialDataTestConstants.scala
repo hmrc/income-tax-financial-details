@@ -151,6 +151,7 @@ object FinancialDataTestConstants {
     documentText = Some("documentText"),
     originalAmount = 300.00,
     outstandingAmount = 200.00,
+    statisticalFlag = "",
     documentDate = LocalDate.parse("2018-03-29"),
     interestRate = Some(2.60),
     interestFromDate = Some(LocalDate.parse("2018-08-01")),
@@ -165,7 +166,8 @@ object FinancialDataTestConstants {
     effectiveDateOfPayment = Some(LocalDate.parse("2018-03-29")),
     documentDueDate = Some(LocalDate.parse("2019-03-29")),
     poaRelevantAmount = Some(1000.00),
-    accruingInterestAmount = Some(12.34)
+    accruingInterestAmount = Some(12.34),
+    chargeClassification = Some("RA")
   )
 
   val documentDetail2: DocumentDetailHip = DocumentDetailHip(
@@ -175,6 +177,7 @@ object FinancialDataTestConstants {
     documentText = None,
     originalAmount = 100.00,
     outstandingAmount = 50.00,
+    statisticalFlag = "",
     documentDate = LocalDate.parse("2018-03-29"),
     interestRate = None,
     interestFromDate = None,
@@ -195,6 +198,7 @@ object FinancialDataTestConstants {
     documentText = None,
     originalAmount = -1000,
     outstandingAmount = 0,
+    statisticalFlag = "",
     documentDate = LocalDate.parse("2022-06-23"),
     interestRate = None,
     interestFromDate = None,
@@ -414,6 +418,7 @@ object FinancialDataTestConstants {
 
   val documentDetailsHip: DocumentDetailHip = DocumentDetailHip(taxYear = 2018,
     transactionId = "id",
+    statisticalFlag = "",
     documentDate = LocalDate.parse("2018-03-29"),
     documentText = Some("documentText"),
     documentDueDate = Some(LocalDate.parse("2019-03-29")),
@@ -433,7 +438,9 @@ object FinancialDataTestConstants {
     latePaymentInterestAmount = Some(201.00),
     lpiWithDunningLock = Some(12.50),
     interestOutstandingAmount = Some(31.00),
-    amountCodedOut = Some(3.21))
+    amountCodedOut = Some(3.21),
+    chargeClassification = Some("RA")
+  )
 
   val financialDetailsHip: FinancialDetailHip = FinancialDetailHip(
     taxYear = "2018",
