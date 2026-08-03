@@ -60,6 +60,69 @@ class ChargesResponseSpec extends AnyWordSpec with Matchers {
     )
   )
 
+  val chargeResponseBadDocumentJson: JsObject = Json.obj(
+    "success" -> Json.obj(
+      "taxpayerDetails" -> Json.obj(
+        "idType" -> "NINO1",
+        "idNumber" -> "AB123456A",
+        "regimeType" -> "ITSA"),
+      "balanceDetails" -> Json.obj(
+        "balanceDueWithin30days" -> 100.00,
+        "balanceNotDuein30Days" -> 200,
+        "overDueAmount" -> 300.00,
+        "totalBalance" -> 400.00
+      ),
+      "codingDetails" -> Json.arr(Json.obj(
+        "totalLiabilityAmount" -> 2300.00,
+        "taxYearReturn" -> "2020-04-20")
+      ),
+      "documentDetails" -> Json.arr(
+        Json.toJson(documentDetail),
+        Json.obj(
+          "taxYear" -> "2017",
+          "documentDate" -> "2026-04-27",
+          "documentDescription" -> "ITSA BCD",
+          "documentText" -> "documentText",
+          "documentDueDate" -> "2027-01-31",
+          "formBundleNumber" -> "88888888",
+          "totalAmount" -> 400,
+          "documentOutstandingAmount" -> 400,
+          "statisticalFlag" -> "N"
+        )),
+      "financialDetails" -> Json.arr(Json.parse(
+        """{
+          |     "taxYear": "2018",
+          |     "transactionId": "id",
+          |     "chargeType": "POA1",
+          |     "mainType": "4920",
+          |     "chargeReference": "chargeRef",
+          |     "mainTransaction": "4920",
+          |     "originalAmount": 500.00,
+          |     "outstandingAmount": 500.00,
+          |     "clearedAmount": 500.00,
+          |     "accruedInterest": 1000,
+          |     "items": [{
+          |       "amount": 100.00,
+          |       "clearingDate": "2022-06-23",
+          |       "clearingReason": "clearingReason",
+          |       "clearingSAPDocument": "012345678912",
+          |       "outgoingPaymentMethod": "outgoingPaymentMethod",
+          |       "interestLock": "interestLock",
+          |       "dunningLock": "dunningLock",
+          |       "paymentReference": "paymentReference",
+          |       "paymentAmount": 2000.00,
+          |       "dueDate": "2022-06-23",
+          |       "paymentMethod": "paymentMethod",
+          |       "paymentLot": "paymentLot",
+          |       "paymentLotItem": "paymentLotItem",
+          |       "subItem": "1",
+          |       "codedOutStatus": "I",
+          |       "paymentId": "paymentLot-paymentLotItem"
+          |       }
+          |     ]
+          |}""".stripMargin)))
+  )
+
   val chargeResponseMinReadJson: JsObject = Json.obj(
     "success" -> Json.obj(
       "taxpayerDetails" -> Json.obj(
@@ -324,6 +387,14 @@ class ChargesResponseSpec extends AnyWordSpec with Matchers {
           List(
             (JsPath \ "success/taxpayerDetails", List(JsonValidationError("error.path.missing"))),
             (JsPath \ "success/balanceDetails", List(JsonValidationError("error.path.missing"))))).toString
+      }
+
+      "only one document item is invalid should maintain the specific failure" in {
+        Json.fromJson[ChargesHipResponse](chargeResponseBadDocumentJson).toString shouldBe JsError(
+          List(
+            (JsPath \ "success/documentDetails(1)", List(JsonValidationError(List("'documentID' is undefined on object. Available keys are 'taxYear', 'documentDate', 'documentDescription', 'documentText', 'documentDueDate', 'formBundleNumber', 'totalAmount', 'documentOutstandingAmount', 'statisticalFlag'"))))
+          )
+        ).toString
       }
     }
 
