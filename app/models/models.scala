@@ -20,9 +20,9 @@ package object models {
 
   def readNullable[T](path: JsPath)(implicit reads: Reads[T]): Reads[Option[T]] = path.readNullable[T] orElse Reads.pure[Option[T]](None)
 
-  def readNullableSeq[T](path: JsPath)(implicit reads: Reads[Seq[T]]): Reads[Seq[T]] = path.read[Seq[T]] orElse Reads.pure[Seq[T]](Nil)
+  def readNullableSeq[T](path: JsPath)(implicit reads: Reads[Seq[T]]): Reads[Seq[T]] = path.readNullable[Seq[T]].map(_.getOrElse(Seq.empty[T]))
 
-  def readNullableList[T](path: JsPath)(implicit reads: Reads[List[T]]): Reads[List[T]] = path.read[List[T]] orElse Reads.pure[List[T]](Nil)
+  def readNullableList[T](path: JsPath)(implicit reads: Reads[List[T]]): Reads[List[T]] = path.readNullable[List[T]].map(_.getOrElse(List.empty[T]))
 
 }
 
