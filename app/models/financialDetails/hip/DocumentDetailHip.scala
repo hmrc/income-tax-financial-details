@@ -85,25 +85,42 @@ case class DocumentDetailHip(
 
 
 object DocumentDetailHip {
+
+  private val taxYearReads: Reads[Int] = Reads {
+    case JsString(s) => JsSuccess(s.toInt)
+    case n: JsNumber => JsSuccess(n.value.toInt)
+    case _ => JsError("error.expected.jsnumberorjsstring")
+  }
+
+  private def firstOf[A](primary: JsResult[A], secondary: => JsResult[A]): JsResult[A] =
+    primary.fold(_ => secondary, value => JsSuccess(value))
+
   private val normalise: Reads[JsObject] = Reads { json =>
-    json.validate[JsObject].map { obj =>
+    json.validate[JsObject].flatMap { obj =>
       val lpiWithDunningLock =
         (obj \ "lpiWithDunningBlock").asOpt[BigDecimal]
           .orElse((obj \ "lpiWithDunningLock").asOpt[BigDecimal])
 
-      val renamed: Seq[(String, JsValue)] =
-        Seq(
-          "taxYear"           -> Json.toJson((obj \ "taxYear").as[String].toInt), // <= RT conversion applied
-          "transactionId"     -> Json.toJson((obj \ "documentID").as[String]),
-          "originalAmount"    -> Json.toJson((obj \ "totalAmount").as[BigDecimal]),
-          "outstandingAmount" -> Json.toJson((obj \ "documentOutstandingAmount").as[BigDecimal])
-        ) ++
-          (obj \ "latePaymentInterestID").asOpt[String]
-            .map(v => "latePaymentInterestId" -> Json.toJson(v)).toSeq ++
-          lpiWithDunningLock
-            .map(v => "lpiWithDunningLock" -> Json.toJson(v)).toSeq
+      for {
+        taxYear           <- (obj \ "taxYear").validate[Int](taxYearReads)
+        transactionId     <- firstOf((obj \ "transactionId").validate[String], (obj \ "documentID").validate[String])
+        originalAmount    <- firstOf((obj \ "originalAmount").validate[BigDecimal], (obj \ "totalAmount").validate[BigDecimal])
+        outstandingAmount <- firstOf((obj \ "outstandingAmount").validate[BigDecimal], (obj \ "documentOutstandingAmount").validate[BigDecimal])
+      } yield {
+        val renamed: Seq[(String, JsValue)] =
+          Seq(
+            "taxYear"           -> Json.toJson(taxYear),
+            "transactionId"     -> Json.toJson(transactionId),
+            "originalAmount"    -> Json.toJson(originalAmount),
+            "outstandingAmount" -> Json.toJson(outstandingAmount)
+          ) ++
+            (obj \ "latePaymentInterestID").asOpt[String]
+              .map(v => "latePaymentInterestId" -> Json.toJson(v)).toSeq ++
+            lpiWithDunningLock
+              .map(v => "lpiWithDunningLock" -> Json.toJson(v)).toSeq
 
-      obj ++ JsObject(renamed)
+        obj ++ JsObject(renamed)
+      }
     }
   }
 
