@@ -17,13 +17,14 @@
 package constants
 
 import models.hip.repayments.*
+import play.api.libs.json.{JsValue, Json}
 
 import java.time.{LocalDate, LocalDateTime, LocalTime}
 
 object HipRepaymentHistoryDetailsIntegrationTestConstants {
 
   val hipRepaymentHistoryList: SuccessfulRepaymentResponse = SuccessfulRepaymentResponse(
-    TransactionHeader(status = "OK", processingDate = LocalDateTime.of(LocalDate.of(2025, 12, 17), LocalTime.of(9, 30, 17))),
+    TransactionHeader(status = "OK", processingDate = LocalDateTime.of(LocalDate.of(2025, 12, 17), LocalTime.of(9, 30, 17)), returnParameters = None),
     responseDetails = ResponseDetails(
       Seq(RepaymentViewerDetail(
         repaymentRequestNumber = "000000003135",
@@ -63,7 +64,7 @@ object HipRepaymentHistoryDetailsIntegrationTestConstants {
   )
 
   val hipRepaymentHistorySingleItem: SuccessfulRepaymentResponse = SuccessfulRepaymentResponse(
-    TransactionHeader(status = "OK", processingDate = LocalDateTime.of(LocalDate.of(2025, 12, 17), LocalTime.of(9, 30, 17))),
+    TransactionHeader(status = "OK", processingDate = LocalDateTime.of(LocalDate.of(2025, 12, 17), LocalTime.of(9, 30, 17)), returnParameters = None),
     responseDetails = ResponseDetails(
       Seq(RepaymentViewerDetail(
         repaymentRequestNumber = "000000003135",
@@ -102,4 +103,14 @@ object HipRepaymentHistoryDetailsIntegrationTestConstants {
     )
   )
 
+  val repaymentsHistoryFailureWithError: JsValue = Json.obj("etmp_transaction_header" -> Json.obj(
+    "status" -> "422",
+    "processingDate" -> LocalDateTime.of(LocalDate.of(2025, 12, 17), LocalTime.of(9, 30, 17)),
+    "returnParameters" -> Json.arr(
+      Json.obj(
+        "paramName" -> "ERRORCODE",
+        "paramValue" -> "001"
+      )
+    )
+  ))
 }

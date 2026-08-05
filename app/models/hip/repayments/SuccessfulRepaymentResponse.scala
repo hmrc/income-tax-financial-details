@@ -37,7 +37,7 @@ object SuccessfulRepaymentResponse {
     private val legacyReads: Reads[SuccessfulRepaymentResponse] =
       (__ \ "repaymentsViewerDetails").read[Seq[RepaymentViewerDetail]].map { details =>
         SuccessfulRepaymentResponse(
-          transactionHeader = TransactionHeader("OK", LocalDateTime.now()),
+          transactionHeader = TransactionHeader("OK", LocalDateTime.now(), None),
           responseDetails = ResponseDetails(details)
         )
       }
@@ -49,9 +49,27 @@ object SuccessfulRepaymentResponse {
   }
 }
 
+case class EtmpFailureRepaymentResponse(transactionHeader: TransactionHeader) {
+  val containsNoDataResponse: Boolean = transactionHeader.returnParameters.exists(_.exists(_.isNoDataCode))
+}
+
+object EtmpFailureRepaymentResponse {
+  implicit val reads: Reads[EtmpFailureRepaymentResponse] = (JsPath \ "etmp_transaction_header").read[TransactionHeader].map(x => EtmpFailureRepaymentResponse(x))
+  implicit val writes: Writes[EtmpFailureRepaymentResponse] = Json.writes[EtmpFailureRepaymentResponse] 
+}
+
+case class ReturnParameters(paramName: String, paramValue: String) {
+  val isNoDataCode: Boolean = paramName == "ERRORCODE" && paramValue =="001"
+}
+
+object ReturnParameters {
+  implicit val format: Format[ReturnParameters] = Json.format[ReturnParameters]
+}
+
 case class TransactionHeader(
                               status: String,
-                              processingDate: LocalDateTime
+                              processingDate: LocalDateTime,
+                              returnParameters: Option[List[ReturnParameters]]
                             )
 
 object TransactionHeader {
