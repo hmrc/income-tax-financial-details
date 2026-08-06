@@ -67,7 +67,10 @@ object ChargeHipHttpParser extends ErrorResponseHttpParsers {
       case JsSuccess(success, _) =>
         success match {
           case error: HipResponseErrorsObject if error.errors.code == "005" =>
-            logger.info(s"Resource not found code identified, converting to 404 response")
+            logger.info(s"Resource (NINO) not found code 005 identified, converting to 404 response")
+            Left(UnexpectedChargeResponse(NOT_FOUND, unprocessableResponse.body))
+          case error: HipResponseErrorsObject if error.errors.code == "003" =>
+            logger.info(s"No charges found for NINO code 003 identified, converting to 404 response")
             Left(UnexpectedChargeResponse(NOT_FOUND, unprocessableResponse.body))
           case _ =>
             logger.error(s"$unprocessableResponse.status returned from HiP with body: ${unprocessableResponse.body}")

@@ -62,7 +62,7 @@ class ChargeHipHttpParserSpec extends TestSupport {
           |""".stripMargin
       ).toString()
 
-      "a 422 status is returned with a resource not found error code" in {
+      "a 422 HIP status is returned with a <No match found for reference provided> error code then convert to 404" in {
         val httpResponse: HttpResponse = HttpResponse(UNPROCESSABLE_ENTITY, body = jsonBodyETMPError("005"))
         val expectedResult: ChargeHipResponse = Left(UnexpectedChargeResponse(NOT_FOUND, jsonBodyETMPError("005")))
         val actualResult: ChargeHipResponse = ChargeHipReads.read("", "", httpResponse)
@@ -70,7 +70,15 @@ class ChargeHipHttpParserSpec extends TestSupport {
         actualResult shouldBe expectedResult
       }
 
-      "a 422 status is returned without a resource not found error code" in {
+      "a 422 HIP status is returned with a <Request could not be processed> error code then convert to 404" in {
+        val httpResponse: HttpResponse = HttpResponse(UNPROCESSABLE_ENTITY, body = jsonBodyETMPError("003"))
+        val expectedResult: ChargeHipResponse = Left(UnexpectedChargeResponse(NOT_FOUND, jsonBodyETMPError("003")))
+        val actualResult: ChargeHipResponse = ChargeHipReads.read("", "", httpResponse)
+
+        actualResult shouldBe expectedResult
+      }
+
+      "a 422 HIP status is returned without a resource not found error code then keep as 422" in {
         val httpResponse: HttpResponse = HttpResponse(UNPROCESSABLE_ENTITY, body = jsonBodyETMPError("006"))
         val expectedResult: ChargeHipResponse = Left(UnexpectedChargeResponse(UNPROCESSABLE_ENTITY, jsonBodyETMPError("006")))
         val actualResult: ChargeHipResponse = ChargeHipReads.read("", "", httpResponse)
