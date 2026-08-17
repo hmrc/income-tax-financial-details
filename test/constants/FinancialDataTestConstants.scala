@@ -108,31 +108,31 @@ object FinancialDataTestConstants {
 			|{
 			|     "taxYear": "2018",
 			|     "transactionId": "id",
-|     "chargeType": "POA1",
-|     "mainType": "4920",
-|     "chargeReference" : "chargeRef",
-|     "mainTransaction": "4920",
+      |     "chargeType": "POA1",
+      |     "mainType": "4920",
+      |     "chargeReference" : "chargeRef",
+      |     "mainTransaction": "4920",
 			|     "originalAmount": 500.00,
 			|     "outstandingAmount": 500.00,
 			|     "clearedAmount": 500.00,
-|     "accruedInterest": 1000,
+      |     "accruedInterest": 1000,
 			|     "items": [{
 			|       "amount": 100.00,
 			|       "clearingDate": "2022-06-23",
 			|       "clearingReason": "clearingReason",
-|       "clearingSAPDocument": "012345678912",
+      |       "clearingSAPDocument": "012345678912",
 			|       "outgoingPaymentMethod": "outgoingPaymentMethod",
-|       "interestLock": "interestLock",
-|       "dunningLock": "dunningLock",
+      |       "interestLock": "interestLock",
+      |       "dunningLock": "dunningLock",
 			|       "paymentReference": "paymentReference",
 			|       "paymentAmount": 2000.00,
 			|       "dueDate": "2022-06-23",
 			|       "paymentMethod": "paymentMethod",
 			|       "paymentLot": "paymentLot",
-|       "subItem" : "1",
+      |       "subItem" : "1",
 			|       "paymentLotItem": "paymentLotItem",
 			|       "paymentId": "paymentLot-paymentLotItem",
-|       "codedOutStatus": "I"
+      |       "codedOutStatus": "I"
 			|       }
 			|     ]
 			|}
@@ -151,6 +151,7 @@ object FinancialDataTestConstants {
     documentText = Some("documentText"),
     originalAmount = 300.00,
     outstandingAmount = 200.00,
+    statisticalFlag = "",
     documentDate = LocalDate.parse("2018-03-29"),
     interestRate = Some(2.60),
     interestFromDate = Some(LocalDate.parse("2018-08-01")),
@@ -165,7 +166,6 @@ object FinancialDataTestConstants {
     effectiveDateOfPayment = Some(LocalDate.parse("2018-03-29")),
     documentDueDate = Some(LocalDate.parse("2019-03-29")),
     poaRelevantAmount = Some(1000.00),
-    statisticalFlag = "",
     accruingInterestAmount = Some(12.34),
     chargeClassification = Some("RA")
   )
@@ -177,6 +177,7 @@ object FinancialDataTestConstants {
     documentText = None,
     originalAmount = 100.00,
     outstandingAmount = 50.00,
+    statisticalFlag = "",
     documentDate = LocalDate.parse("2018-03-29"),
     interestRate = None,
     interestFromDate = None,
@@ -188,32 +189,30 @@ object FinancialDataTestConstants {
     lpiWithDunningLock = None,
     effectiveDateOfPayment = Some(LocalDate.parse("2018-03-29")),
     poaRelevantAmount = Some(1000.00),
-    statisticalFlag = "",
     accruingInterestAmount = None
   )
 
-  val documentDetail3: DocumentDetailHip =
-    DocumentDetailHip(
-      taxYear = 2018,
-      documentDescription = Some("documentDescription"),
-      documentText = None,
-      originalAmount = -1000,
-      outstandingAmount = 0,
-      documentDate = LocalDate.parse("2022-06-23"),
-      interestRate = None,
-      interestFromDate = None,
-      interestEndDate = None,
-      latePaymentInterestId = None,
-      interestOutstandingAmount = None,
-      transactionId = "id",
-      paymentLot = None,
-      paymentLotItem = None,
-      lpiWithDunningLock = None,
-      effectiveDateOfPayment = Some(LocalDate.parse("2018-03-29")),
-      poaRelevantAmount = Some(1000.00),
-      statisticalFlag = "",
-      accruingInterestAmount = None
-    )
+  val documentDetail3: DocumentDetailHip = DocumentDetailHip(
+    taxYear = 2018,
+    documentDescription = Some("documentDescription"),
+    documentText = None,
+    originalAmount = -1000,
+    outstandingAmount = 0,
+    statisticalFlag = "",
+    documentDate = LocalDate.parse("2022-06-23"),
+    interestRate = None,
+    interestFromDate = None,
+    interestEndDate = None,
+    latePaymentInterestId = None,
+    interestOutstandingAmount = None,
+    transactionId = "id",
+    paymentLot = None,
+    paymentLotItem = None,
+    lpiWithDunningLock = None,
+    effectiveDateOfPayment = Some(LocalDate.parse("2018-03-29")),
+    poaRelevantAmount = Some(1000.00),
+    accruingInterestAmount = None
+  )
 
   val financialDetail3: FinancialDetailHip = FinancialDetailHip(
     taxYear = "2018",
@@ -340,18 +339,18 @@ object FinancialDataTestConstants {
   val validSubItemJson: JsValue = Json.parse(
     """
 			|{
-|       "subItem": "001",
+      |       "subItem": "001",
 			|       "amount": -300.00,
 			|       "clearingDate": "2024-10-29",
 			|       "clearingReason": "Allocated to Charge",
-|       "clearingSAPDocument":  "003400044065",
+      |       "clearingSAPDocument":  "003400044065",
 			|       "paymentReference": "100207948",
 			|       "paymentAmount": 500.00,
 			|       "dueDate": "2025-07-10",
 			|       "paymentMethod": "PAYMENTS MADE BY CHEQUE",
 			|       "paymentLot": "24714",
 			|       "paymentLotItem": "000002",
-|       "codedOutStatus": "S"
+      |       "codedOutStatus": "S"
 			|}
 			|""".stripMargin)
 
@@ -372,14 +371,16 @@ object FinancialDataTestConstants {
   )
 
 
+
+
   val validSubItemJsonAfterWrites: JsValue = Json.parse(
     """
 			|{
-|       "subItem": "001",
+      |       "subItem": "001",
 			|       "amount": -300.00,
 			|       "clearingDate": "2024-10-29",
 			|       "clearingReason": "Allocated to Charge",
-|       "clearingSAPDocument":  "003400044065",
+      |       "clearingSAPDocument":  "003400044065",
 			|       "paymentReference": "100207948",
 			|       "paymentAmount": 500.00,
 			|       "dueDate": "2025-07-10",
@@ -387,7 +388,7 @@ object FinancialDataTestConstants {
 			|       "paymentLot": "24714",
 			|       "paymentLotItem": "000002",
 			|       "paymentId": "24714-000002",
-|       "codedOutStatus": "S"
+      |       "codedOutStatus": "S"
 			|}
 			|""".stripMargin)
 
@@ -417,6 +418,7 @@ object FinancialDataTestConstants {
 
   val documentDetailsHip: DocumentDetailHip = DocumentDetailHip(taxYear = 2018,
     transactionId = "id",
+    statisticalFlag = "",
     documentDate = LocalDate.parse("2018-03-29"),
     documentText = Some("documentText"),
     documentDueDate = Some(LocalDate.parse("2019-03-29")),
@@ -424,6 +426,7 @@ object FinancialDataTestConstants {
     originalAmount = 1000.00,
     outstandingAmount = 200.00,
     poaRelevantAmount = Some(1000.00),
+    lastClearedAmount = None,
     paymentLot = Some("paymentLot"),
     paymentLotItem = Some("paymentLotItem"),
     effectiveDateOfPayment = Some(LocalDate.parse("2018-03-29")),
@@ -435,7 +438,6 @@ object FinancialDataTestConstants {
     latePaymentInterestAmount = Some(201.00),
     lpiWithDunningLock = Some(12.50),
     interestOutstandingAmount = Some(31.00),
-    statisticalFlag = "",
     amountCodedOut = Some(3.21),
     chargeClassification = Some("RA")
   )
@@ -447,10 +449,10 @@ object FinancialDataTestConstants {
     taxPeriodFrom = Some(LocalDate.parse("2017-04-05")),
     taxPeriodTo = Some(LocalDate.parse("2018-04-06")),
     chargeReference = Some("chargeRef"),
-    mainTransaction = Some("4920"),
+    mainTransaction =  Some("4920"),
     originalAmount = Some(BigDecimal(500.00)),
     outstandingAmount = Some(BigDecimal("500.00")),
-    clearedAmount = Some(BigDecimal(500.00)),
+    clearedAmount =  Some(BigDecimal(500.00)),
     accruedInterest = Some(BigDecimal("1000.00")),
     items = Some(
       Seq(

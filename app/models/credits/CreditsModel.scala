@@ -66,7 +66,8 @@ object CreditsModel {
           taxYear = Some(documentDetail.taxYear),
           dueDate = documentDetail.documentDueDate,
           effectiveDateOfPayment = documentDetail.effectiveDateOfPayment,
-          transactionId = documentDetail.transactionId
+          transactionId = documentDetail.transactionId,
+          chargeClassification = documentDetail.chargeClassification
         )
       }
     })
