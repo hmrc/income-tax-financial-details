@@ -32,7 +32,8 @@ case class Payment(taxYear: Int,
                    documentDate: LocalDate,
                    transactionId: String,
                    mainType: Option[String],
-                   mainTransaction: Option[String])
+                   mainTransaction: Option[String],
+                   chargeClassification: Option[String] = None)
 
 object Payment {
   implicit val format: Format[Payment] = Json.format[Payment]

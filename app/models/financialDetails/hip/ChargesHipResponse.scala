@@ -68,7 +68,8 @@ case class ChargesHipResponse(
           documentDate = document.documentDate,
           transactionId = document.transactionId,
           mainType = mainType,
-          mainTransaction = mainTransaction
+          mainTransaction = mainTransaction,
+          chargeClassification = document.chargeClassification
         )
       }
     }
