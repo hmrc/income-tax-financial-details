@@ -40,7 +40,8 @@ class PaymentSpec extends AnyWordSpec with Matchers {
         documentDate = LocalDate.parse("2025-02-01"),
         transactionId = "TXN123",
         mainType = Some("SA Payment"),
-        mainTransaction = Some("Payment on Account")
+        mainTransaction = Some("Payment on Account"),
+        chargeClassification = Some("RA")
       )
 
       val json = Json.toJson(payment)
@@ -58,7 +59,8 @@ class PaymentSpec extends AnyWordSpec with Matchers {
         "documentDate" -> "2025-02-01",
         "transactionId" -> "TXN123",
         "mainType" -> "SA Payment",
-        "mainTransaction" -> "Payment on Account"
+        "mainTransaction" -> "Payment on Account",
+        "chargeClassification" -> "RA"
       )
 
       json shouldBe expectedJson
@@ -78,7 +80,8 @@ class PaymentSpec extends AnyWordSpec with Matchers {
         "documentDate" -> "2025-02-01",
         "transactionId" -> "TXN123",
         "mainType" -> "SA Payment",
-        "mainTransaction" -> "Payment on Account"
+        "mainTransaction" -> "Payment on Account",
+        "chargeClassification" -> "RA"
       )
 
       val result = json.as[Payment]
@@ -96,7 +99,8 @@ class PaymentSpec extends AnyWordSpec with Matchers {
         documentDate = LocalDate.parse("2025-02-01"),
         transactionId = "TXN123",
         mainType = Some("SA Payment"),
-        mainTransaction = Some("Payment on Account")
+        mainTransaction = Some("Payment on Account"),
+        chargeClassification = Some("RA")
       )
     }
 
@@ -114,7 +118,8 @@ class PaymentSpec extends AnyWordSpec with Matchers {
         documentDate = LocalDate.parse("2025-02-01"),
         transactionId = "TXN999",
         mainType = None,
-        mainTransaction = None
+        mainTransaction = None,
+        chargeClassification = None
       )
 
       val json = Json.toJson(payment)
