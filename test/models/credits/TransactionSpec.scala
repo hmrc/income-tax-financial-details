@@ -31,6 +31,7 @@ class TransactionSpec extends AnyWordSpec with Matchers {
         amount = BigDecimal(250.75),
         taxYear = Some(2025),
         dueDate = Some(LocalDate.parse("2025-03-31")),
+        documentDate = Some(LocalDate.parse("2025-03-31")),
         effectiveDateOfPayment = Some(LocalDate.parse("2025-03-31")),
         transactionId = "TXN12345"
       )
@@ -42,6 +43,7 @@ class TransactionSpec extends AnyWordSpec with Matchers {
         "amount" -> 250.75,
         "taxYear" -> 2025,
         "dueDate" -> "2025-03-31",
+        "documentDate" -> "2025-03-31",
         "effectiveDateOfPayment" -> "2025-03-31",
         "transactionId" -> "TXN12345"
       )
@@ -55,6 +57,7 @@ class TransactionSpec extends AnyWordSpec with Matchers {
         "amount" -> 100.50,
         "taxYear" -> JsNull,
         "dueDate" -> "2025-04-15",
+        "documentDate" -> "2025-04-15",
         "effectiveDateOfPayment" -> "2025-04-15",
         "transactionId" -> "TXN67890"
       )
@@ -66,6 +69,7 @@ class TransactionSpec extends AnyWordSpec with Matchers {
         amount = BigDecimal(100.50),
         taxYear = None,
         dueDate = Some(LocalDate.parse("2025-04-15")),
+        documentDate = Some(LocalDate.parse("2025-04-15")),
         effectiveDateOfPayment = Some(LocalDate.parse("2025-04-15")),
         transactionId = "TXN67890"
       )
@@ -77,6 +81,7 @@ class TransactionSpec extends AnyWordSpec with Matchers {
         amount = BigDecimal(500),
         taxYear = None,
         dueDate = None,
+        documentDate = None,
         effectiveDateOfPayment = None,
         transactionId = "TXN999"
       )
