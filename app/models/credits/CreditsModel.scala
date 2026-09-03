@@ -48,6 +48,7 @@ object CreditsModel {
         None,
         None,
         None,
+        None,
         ""
       )).toList
   }
@@ -65,6 +66,7 @@ object CreditsModel {
           // TODO: convert TaxYear to Int in the actual model?
           taxYear = Some(documentDetail.taxYear),
           dueDate = documentDetail.documentDueDate,
+          documentDate = Some(documentDetail.documentDate),
           effectiveDateOfPayment = documentDetail.effectiveDateOfPayment,
           transactionId = documentDetail.transactionId,
           chargeClassification = documentDetail.chargeClassification
