@@ -25,7 +25,8 @@ case class CreditsModel(availableCreditForRepayment: BigDecimal,
                         totalCredit: BigDecimal,
                         firstPendingAmountRequested: Option[BigDecimal],
                         secondPendingAmountRequested: Option[BigDecimal],
-                        transactions: List[Transaction])
+                        transactions: List[Transaction]
+                        )
 
 object CreditsModel {
 
@@ -49,7 +50,8 @@ object CreditsModel {
         None,
         None,
         None,
-        ""
+        "",
+        false
       )).toList
   }
 
@@ -69,7 +71,8 @@ object CreditsModel {
           documentDate = Some(documentDetail.documentDate),
           effectiveDateOfPayment = documentDetail.effectiveDateOfPayment,
           transactionId = documentDetail.transactionId,
-          chargeClassification = documentDetail.chargeClassification
+          chargeClassification = documentDetail.chargeClassification,
+          dunningLock = fd.items.exists(_.exists(_.dunningLock.contains("Stand over order")))
         )
       }
     })
