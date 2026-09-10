@@ -68,3 +68,8 @@ case object GetRepaymentHistoryDetails extends HipApi {
   val name = "repayments-history"
   def apply(): String = name
 }
+
+case object GetPaymentAllocationsHipApi extends HipApi {
+  val name = "get-payment-allocations"
+  def apply(): String = name
+}
