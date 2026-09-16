@@ -38,7 +38,7 @@ object PaymentAllocationsResponseModel {
   implicit val format: OFormat[PaymentAllocationsResponseModel] = Json.format[PaymentAllocationsResponseModel]
 }
 
-case class PaymentAllocationsSuccess(paymentDetails: PaymentDetails)
+case class PaymentAllocationsSuccess(paymentDetails: Seq[PaymentAllocations])
 
 object PaymentAllocationsSuccess {
   implicit val format: OFormat[PaymentAllocationsSuccess] = Json.format[PaymentAllocationsSuccess]

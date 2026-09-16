@@ -28,7 +28,7 @@ import play.api.libs.json.*
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class HipPaymentAllocationConnector @Inject()(val httpClient: HttpClientV2, val appConfig: MicroserviceAppConfig) extends RawResponseReads with HipConnectorDataHelper {
+class HipPaymentAllocationsConnector @Inject()(val httpClient: HttpClientV2, val appConfig: MicroserviceAppConfig) extends RawResponseReads with HipConnectorDataHelper {
 
   def getUrl(nino: String): String = {
     s"${appConfig.hipUrl}/etmp/RESTAdapter/payment-allocation/NINO/$nino/ITSA"
@@ -75,7 +75,7 @@ class HipPaymentAllocationConnector @Inject()(val httpClient: HttpClientV2, val 
       } recover {
       case ex =>
         logger.error(s"Unexpected failed future, ${ex.getMessage}")
-        Left(PaymentAllocationsError(INTERNAL_SERVER_ERROR.toString, s"Unexpected failed future"))
+        Left(PaymentAllocationsError(INTERNAL_SERVER_ERROR.toString, "Unexpected failed future"))
     }
   }
 

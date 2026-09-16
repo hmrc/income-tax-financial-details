@@ -16,7 +16,6 @@
 
 package models.hip.paymentAllocations
 
-import models.paymentAllocations.AllocationDetail
 import models.{readNullable, readNullableSeq}
 import play.api.libs.functional.syntax.*
 import play.api.libs.json.{Json, OWrites, Reads, __}
