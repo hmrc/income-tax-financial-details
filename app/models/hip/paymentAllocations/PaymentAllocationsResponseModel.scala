@@ -24,6 +24,8 @@ case class PaymentAllocationsError(code: String, text: String) extends PaymentAl
 
 case class PaymentAllocationsNotFound(code: String, text: String) extends PaymentAllocationsResponseError
 
+type HipPaymentAllocationsResponse = Either[PaymentAllocationsResponseError, PaymentAllocationsResponseModel]
+
 object PaymentAllocationsError {
   implicit val format: OFormat[PaymentAllocationsError] = Json.format[PaymentAllocationsError]
 }

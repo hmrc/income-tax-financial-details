@@ -17,18 +17,24 @@
 package services
 
 import connectors.PaymentAllocationsConnector
+import connectors.hip.HipPaymentAllocationsConnector
 import connectors.httpParsers.PaymentAllocationsHttpParser.PaymentAllocationsResponse
+import models.hip.paymentAllocations.HipPaymentAllocationsResponse
 import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-case class PaymentAllocationsService @Inject()(paymentAllocationsConnector: PaymentAllocationsConnector) {
+case class PaymentAllocationsService @Inject()(paymentAllocationsConnector: PaymentAllocationsConnector,
+                                               hipPaymentAllocationsConnector: HipPaymentAllocationsConnector) {
 
   def getPaymentAllocations(nino: String, paymentLot: String, paymentLotItem: String)
-                           (implicit hc: HeaderCarrier, ec: ExecutionContext)
-  : Future[PaymentAllocationsResponse] = {
-
+                           (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[PaymentAllocationsResponse] = {
     paymentAllocationsConnector.getPaymentAllocations(nino, paymentLot, paymentLotItem)
+  }
+  
+  def getPaymentAllocationsHip(nino: String, paymentLot: String, paymentLotItem: String)
+                              (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HipPaymentAllocationsResponse] = {
+    hipPaymentAllocationsConnector.getPaymentAllocations(nino, paymentLot, paymentLotItem)
   }
 }

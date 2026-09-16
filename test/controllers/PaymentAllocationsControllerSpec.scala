@@ -37,7 +37,8 @@ class PaymentAllocationsControllerSpec extends ControllerBaseSpec with MockMicro
   object PaymentAllocationsController extends PaymentAllocationsController(
     authentication = new AuthenticationPredicate(mockMicroserviceAuthConnector, controllerComponents, microserviceAppConfig),
     cc = controllerComponents,
-    paymentAllocationsService = mockService
+    paymentAllocationsService = mockService,
+    appConfig = microserviceAppConfig
   )
 
   val nino: String = "AA000000A"

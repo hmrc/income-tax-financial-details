@@ -19,7 +19,7 @@ package connectors.hip
 import config.MicroserviceAppConfig
 import connectors.RawResponseReads
 import models.hip.{GetPaymentAllocationsHipApi, HipResponseErrorsObject}
-import models.hip.paymentAllocations.{PaymentAllocationsError, PaymentAllocationsNotFound, PaymentAllocationsResponseError, PaymentAllocationsResponseModel}
+import models.hip.paymentAllocations.{HipPaymentAllocationsResponse, PaymentAllocationsError, PaymentAllocationsNotFound, PaymentAllocationsResponseError, PaymentAllocationsResponseModel}
 import play.api.http.Status.*
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -44,7 +44,7 @@ class HipPaymentAllocationsConnector @Inject()(val httpClient: HttpClientV2, val
   def getHeaders: Seq[(String, String)] = appConfig.getHIPHeaders(GetPaymentAllocationsHipApi)
 
   def getPaymentAllocations(nino: String, paymentLot: String, paymentLotItem: String)
-                           (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[Either[PaymentAllocationsResponseError, PaymentAllocationsResponseModel]] = {
+                           (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[HipPaymentAllocationsResponse] = {
     val url = getUrl(nino)
     val params = queryParameters(paymentLot, paymentLotItem)
     httpClient
