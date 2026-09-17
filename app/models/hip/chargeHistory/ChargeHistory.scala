@@ -28,7 +28,8 @@ case class ChargeHistory(taxYear: String,
                          totalAmount: BigDecimal,
                          reversalDate: LocalDateTime,
                          reversalReason: String,
-                         poaAdjustmentReason: Option[String])
+                         poaAdjustmentReason: Option[String],
+                         chargeClassification: Option[ChargeClassification])
 
 object ChargeHistory extends JsonUtils {
   implicit val format: OFormat[ChargeHistory] = Json.format[ChargeHistory]

@@ -17,6 +17,7 @@
 package constants.hip
 
 import models.hip.chargeHistory.*
+import models.hip.chargeHistory.ChargeClassification.`Rejected Correction`
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.http.HttpResponse
@@ -33,7 +34,8 @@ object ChargeHistoryTestConstants {
     totalAmount = 25678.99,
     reversalDate = LocalDateTime.of(LocalDate.of(2022, 3, 14), LocalTime.of(9, 30, 45)),
     reversalReason = "Manual amendment",
-    poaAdjustmentReason = Some("005")
+    poaAdjustmentReason = Some("005"),
+    chargeClassification = Some(`Rejected Correction`)
   )
 
   val chargeHistoryDetails: ChargeHistoryDetails = ChargeHistoryDetails(
@@ -60,7 +62,8 @@ object ChargeHistoryTestConstants {
       |  "totalAmount" : 25678.99,
       |  "reversalDate" : "2022-03-14T09:30:45Z",
       |  "reversalReason" : "Manual amendment",
-      |  "poaAdjustmentReason" : "005"
+      |  "poaAdjustmentReason" : "005",
+      |  "chargeClassification": "RC"
       |}
       |""".stripMargin)
 
@@ -77,7 +80,8 @@ object ChargeHistoryTestConstants {
       |    "totalAmount" : 25678.99,
       |    "reversalDate" : "2022-03-14T09:30:45Z",
       |    "reversalReason" : "Manual amendment",
-      |    "poaAdjustmentReason" : "005"
+      |    "poaAdjustmentReason" : "005",
+      |    "chargeClassification": "RC"
       |  } ]
       |}
       |""".stripMargin)
@@ -95,7 +99,8 @@ object ChargeHistoryTestConstants {
       |    "totalAmount" : 25678.99,
       |    "reversalDate" : "2022-03-14T09:30:45Z",
       |    "reversalReason" : "Manual amendment",
-      |    "poaAdjustmentReason" : "005"
+      |    "poaAdjustmentReason" : "005",
+      |    "chargeClassification": "RC"
       |  } ]
       |}
       |""".stripMargin
@@ -116,7 +121,8 @@ object ChargeHistoryTestConstants {
       |      "totalAmount" : 25678.99,
       |      "reversalDate" : "2022-03-14T09:30:45Z",
       |      "reversalReason" : "Manual amendment",
-      |      "poaAdjustmentReason" : "005"
+      |      "poaAdjustmentReason" : "005",
+      |      "chargeClassification": "RC"
       |    } ]
       |  }
       |}
@@ -138,7 +144,8 @@ object ChargeHistoryTestConstants {
       |      "totalAmount" : 25678.99,
       |      "reversalDate" : "2022-03-14T09:30:45Z",
       |      "reversalReason" : "Manual amendment",
-      |      "poaAdjustmentReason" : "005"
+      |      "poaAdjustmentReason" : "005",
+      |      "chargeClassification": "RC"
       |    } ]
       |  }
       |}
@@ -161,7 +168,8 @@ object ChargeHistoryTestConstants {
       |        "totalAmount" : 25678.99,
       |        "reversalDate" : "2022-03-14T09:30:45Z",
       |        "reversalReason" : "Manual amendment",
-      |        "poaAdjustmentReason" : "005"
+      |        "poaAdjustmentReason" : "005",
+      |        "chargeClassification": "RC"
       |      } ]
       |    }
       |  }
@@ -185,7 +193,8 @@ object ChargeHistoryTestConstants {
       |        "totalAmount" : 25678.99,
       |        "reversalDate" : "2022-03-14T09:30:45Z",
       |        "reversalReason" : "Manual amendment",
-      |        "poaAdjustmentReason" : "005"
+      |        "poaAdjustmentReason" : "005",
+      |        "chargeClassification": "RC"
       |      } ]
       |    }
       |  }

@@ -16,22 +16,25 @@
 
 package models.hip.chargeHistory
 
-import constants.hip.ChargeHistoryTestConstants.{chargeHistoryDetails, chargeHistoryDetailsJsonReads, chargeHistoryDetailsJsonWrites}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import play.api.libs.json.{JsSuccess, Json}
+import play.api.libs.json.{JsString, Json}
 
-class ChargeHistoryDetailsSpec extends AnyWordSpec with Matchers {
+class ChargeClassificationSpec extends AnyWordSpec with Matchers {
 
-  "ChargeHistoryDetails" should {
-    "write to JSON" in {
-      val result = Json.toJson(chargeHistoryDetails)
-      result shouldBe chargeHistoryDetailsJsonWrites
+  "JSON writes" must {
+    "serialize correctly" in {
+      ChargeClassification.values.map(cc => (cc, cc.hipValue)).toSeq.foreach { case (obj, name) =>
+        Json.toJson(obj) shouldBe JsString(name)
+      }
     }
-
-    "read from JSON" in {
-      val result = Json.fromJson[ChargeHistoryDetails](chargeHistoryDetailsJsonReads)
-      result shouldBe JsSuccess(chargeHistoryDetails)
+  }
+  
+  "Json reads" must {
+    "deserialize correctly" in {
+      ChargeClassification.values.map(cc => (cc.hipValue, cc)).toSeq.foreach { case (name, obj) =>
+        JsString(name).as[ChargeClassification] shouldBe obj
+      }
     }
   }
 }
