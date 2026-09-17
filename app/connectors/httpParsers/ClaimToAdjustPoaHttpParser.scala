@@ -19,11 +19,13 @@ package connectors.httpParsers
 import models.claimToAdjustPoa.ClaimToAdjustPoaApiResponse.*
 import models.claimToAdjustPoa.ClaimToAdjustPoaResponse.{ClaimToAdjustPoaResponse, ErrorResponse}
 import play.api.Logger
-import play.api.http.Status.{CREATED, INTERNAL_SERVER_ERROR}
+import play.api.http.Status.{BAD_GATEWAY, CREATED, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE}
 import play.api.libs.json.JsSuccess
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
 object ClaimToAdjustPoaHttpParser {
+
+    val CLIENT_CLOSED_REQUEST = 499
 
     implicit object ClaimToAdjustPoaResponseReads extends HttpReads[ClaimToAdjustPoaResponse] {
 
@@ -44,7 +46,13 @@ object ClaimToAdjustPoaHttpParser {
                     case JsSuccess(model, _) =>
                         ClaimToAdjustPoaResponse(status = status, Left(ErrorResponse(model.toString)))
                     case _ =>
-                        Logger("application").warn("Invalid JSON in Claim To Adjust POA failure response")
+                        val response = if (status == CLIENT_CLOSED_REQUEST || status == BAD_GATEWAY || status == SERVICE_UNAVAILABLE) {
+                            "Downstream Timeout Error Response"
+                        } else {
+                            "Invalid JSON in Claim To Adjust POA failure response"
+                        }
+                        
+                        Logger("application").warn(response)
                         ClaimToAdjustPoaResponse(INTERNAL_SERVER_ERROR,
                             Left(ErrorResponse("Invalid JSON in failure response")))
                 }

@@ -28,21 +28,26 @@ trait ErrorResponseHttpParsers extends Logging {
 
   type HttpGetResult[T] = Either[ErrorResponse, T]
 
+  val CLIENT_CLOSED_REQUEST = 499
+  private val isDownstreamTransientError: PartialFunction[Int, Boolean] = {
+    case CLIENT_CLOSED_REQUEST | BAD_GATEWAY | SERVICE_UNAVAILABLE | GATEWAY_TIMEOUT => true
+  }
+
   protected def handleErrorResponse(httpResponse: HttpResponse): Left[ErrorResponse, Nothing] = {
     logger.debug(s"Body received: ${httpResponse.body}")
     Try(httpResponse.status match {
       case BAD_REQUEST =>
         httpResponse.json.validate[OriginFailuresResponse].orElse(httpResponse.json.validate[OriginWithErrorCodeAndResponse]).fold(
           invalid => {
-            logger.error(s"Unexpected response with status code: $BAD_REQUEST, response: $invalid")
+            logger.error(s"[ErrorResponseHttpParsers][handleErrorResponse] Unexpected response with status code: $BAD_REQUEST, response: $invalid")
             Left(ErrorResponse.UnexpectedJsonResponse)
           },
           {
             case expected@(_: OriginFailuresResponse) =>
-              logger.error(s"Bad request error response: $expected")
+              logger.error(s"[ErrorResponseHttpParsers][handleErrorResponse] Bad request error response: $expected")
               Left(ErrorResponse.GenericError(BAD_REQUEST, Json.toJson(expected)))
             case expected@(_: OriginWithErrorCodeAndResponse) =>
-              logger.error(s"Bad request error response: $expected")
+              logger.error(s"[ErrorResponseHttpParsers][handleErrorResponse] Bad request error response: $expected")
               Left(ErrorResponse.GenericError(BAD_REQUEST, Json.toJson(expected)))
           }
         )
@@ -51,38 +56,40 @@ trait ErrorResponseHttpParsers extends Logging {
           case Some(json) =>
             json.validate[Seq[FailureResponse]].fold(
               invalid => {
-                logger.error(s"Unexpected response with status code: ${httpResponse.status}, response: $invalid")
+                logger.error(s"[ErrorResponseHttpParsers][handleErrorResponse] Unexpected response with status code: ${httpResponse.status}, response: $invalid")
                 Left(ErrorResponse.GenericError(httpResponse.status, Json.toJson(CustomResponse("Unexpected Unauthorized or Not found error"))))
               },
               expected => {
-                logger.error(s"Unauthorised or Not found error response, status: ${httpResponse.status}, response: $expected")
+                logger.error(s"[ErrorResponseHttpParsers][handleErrorResponse] Unauthorised or Not found error response, status: ${httpResponse.status}, response: $expected")
                 Left(ErrorResponse.GenericError(httpResponse.status, Json.toJson(expected)))
 
               }
             )
           case None =>
-            logger.warn(s"Non-JSON error body received for ${httpResponse.status}: ${httpResponse.body}")
+            logger.warn(s"[ErrorResponseHttpParsers][handleErrorResponse] Non-JSON error body received for ${httpResponse.status}: ${httpResponse.body}")
             Left(ErrorResponse.GenericError(httpResponse.status, Json.obj("error" -> httpResponse.body)))
         }
-      case INTERNAL_SERVER_ERROR | SERVICE_UNAVAILABLE =>
+      case status if isDownstreamTransientError(status) =>
+        logger.warn(s"[ErrorResponseHttpParsers][handleErrorResponse] Downstream Timeout error response, status: ${httpResponse.status}, response: ${httpResponse.body}")
+        Left(ErrorResponse.UnexpectedResponse)
+      case INTERNAL_SERVER_ERROR =>
         httpResponse.json.validate[OriginFailuresResponse].fold(
           invalid => {
-            logger.error(s"Unexpected response with status code: ${httpResponse.status}, response: $invalid")
+            logger.error(s"[ErrorResponseHttpParsers][handleErrorResponse] Unexpected response with status code: ${httpResponse.status}, response: $invalid")
             Left(ErrorResponse.UnexpectedJsonResponse)
           },
           expected => {
-            logger.error(s"InternalServerError or ServiceUnavailable error response, status: ${httpResponse.status}, response: $expected")
+            logger.error(s"[ErrorResponseHttpParsers][handleErrorResponse] InternalServerError response, status:  ${httpResponse.status}, response: $expected")
             Left(ErrorResponse.GenericError(httpResponse.status, Json.toJson(expected)))
           }
         )
-      case BAD_GATEWAY => Left(ErrorResponse.BadGatewayResponse)
       case UNPROCESSABLE_ENTITY => Left(ErrorResponse.UnprocessableData(httpResponse.body))
       case _ =>
-        logger.error(s"Unexpected response with status code: ${httpResponse.status}, response: ${httpResponse.body}")
+        logger.error(s"[ErrorResponseHttpParsers][handleErrorResponse] Unexpected response with status code: ${httpResponse.status}, response: ${httpResponse.body}")
         Left(ErrorResponse.UnexpectedJsonResponse)
 
     }).getOrElse {
-      logger.error(s"Non Json response returned with status code: ${httpResponse.status}, response: ${httpResponse.body}")
+      logger.error(s"[ErrorResponseHttpParsers][handleErrorResponse] Non Json response returned with status code: ${httpResponse.status}, response: ${httpResponse.body}")
       Left(ErrorResponse.UnexpectedResponse)
     }
   }
