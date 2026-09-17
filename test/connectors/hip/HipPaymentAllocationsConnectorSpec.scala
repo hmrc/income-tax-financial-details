@@ -94,7 +94,7 @@ class HipPaymentAllocationsConnectorSpec extends TestSupport with MockHttpV2 {
     "return a paymentAllocationError when the response returned was an InternalServerError" in {
       mockPaymentAllocations(serverErrorFromApi)
       getPaymentAllocations(testNino, testPaymentLot, testPaymentLotItem).futureValue shouldBe
-        Left(PaymentAllocationsError(INTERNAL_SERVER_ERROR.toString, "Unexpected response status"))
+        Left(PaymentAllocationsError(INTERNAL_SERVER_ERROR.toString, "Unexpected error retrieving payment allocations"))
     }
   }
 
