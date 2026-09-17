@@ -70,7 +70,7 @@ class HipPaymentAllocationsConnector @Inject()(val httpClient: HttpClientV2, val
           case UNPROCESSABLE_ENTITY => Left(handleUnprocessableStatusResponse(response))
           case _ =>
             logger.error(s"RESPONSE status: ${response.status}, body: ${response.body}")
-            Left(PaymentAllocationsError(response.status.toString, "Unexpected response status"))
+            Left(PaymentAllocationsError(response.status.toString, "Unexpected error retrieving payment allocations"))
         }
       } recover {
       case ex =>
@@ -89,10 +89,10 @@ class HipPaymentAllocationsConnector @Inject()(val httpClient: HttpClientV2, val
         success match {
           case error: HipResponseErrorsObject if notFoundCodes.contains(error.errors.code) =>
             logger.info("Data not found, converting to 404 response")
-            PaymentAllocationsNotFound(NOT_FOUND.toString, s"Error code returned: ${error.errors.code}")
+            PaymentAllocationsNotFound(NOT_FOUND.toString, s"Error code returned: ${error.errors.code}, text: ${error.errors.text}")
           case _ =>
             logger.error(s"${unprocessableResponse.status} returned from HIP with body: ${unprocessableResponse.body}")
-            PaymentAllocationsError(unprocessableResponse.status.toString, s"Error code returned: ${success.errors.code}")
+            PaymentAllocationsError(unprocessableResponse.status.toString, s"Errors ${success.errors.text}")
         }
     }
   }
