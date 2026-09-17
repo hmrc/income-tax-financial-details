@@ -61,5 +61,17 @@ class RepaymentsHistoryDetailsHttpParserSpec extends TestSupport {
         result shouldBe Left(ErrorResponse.UnprocessableData("{}"))
       }
     }
+
+    "return a 499 error response" when {
+      "provided with a response with a 499 status with a non-etmp response body" in {
+        val testResponse: HttpResponse = HttpResponse(
+          status = 499,
+          body = "{}"
+        )
+        val result: RepaymentsHistoryDetailsHttpParser.HttpGetResult[SuccessfulRepaymentResponse] = RepaymentsHistoryDetailsReads.read("", "", testResponse)
+
+        result shouldBe Left(ErrorResponse.UnexpectedResponse)
+      }
+    }
   }
 }

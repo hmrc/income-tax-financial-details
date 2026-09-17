@@ -27,7 +27,7 @@ import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 object RepaymentsHistoryDetailsHttpParser extends ErrorResponseHttpParsers{
 
   given RepaymentsHistoryDetailsReads: HttpReads[HttpGetResult[SuccessfulRepaymentResponse]] with {
-
+    
     override def read(method: String, url: String, response: HttpResponse): HttpGetResult[SuccessfulRepaymentResponse] = {
       response.status match {
         case OK =>

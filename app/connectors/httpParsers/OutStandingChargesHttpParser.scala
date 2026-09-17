@@ -18,10 +18,12 @@ package connectors.httpParsers
 
 import models.outStandingCharges.{OutStandingCharge, OutstandingChargesSuccessResponse}
 import play.api.Logging
-import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND, OK}
+import play.api.http.Status.{BAD_GATEWAY, BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND, OK, SERVICE_UNAVAILABLE}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
 object OutStandingChargesHttpParser extends Logging {
+
+  val CLIENT_CLOSED_REQUEST = 499
 
   sealed trait OutStandingChargesError
 
@@ -36,17 +38,20 @@ object OutStandingChargesHttpParser extends Logging {
       response.status match {
         case OK =>
           val outstandingCharges = response.json.as[List[OutStandingCharge]]
-          logger.info("successfully parsed response to List[OutStandingCharge]")
+          logger.info("[OutStandingChargesReads][read] successfully parsed response to List[OutStandingCharge]")
 
           Right(OutstandingChargesSuccessResponse(outstandingCharges))
         case status if status == NOT_FOUND =>
-          logger.info(s"$status returned from DES with body: ${response.body}")
+          logger.info(s"[OutStandingChargesReads][read] $status returned from DES with body: ${response.body}")
+          Left(UnexpectedOutStandingChargeResponse(status, response.body))
+        case status if status == CLIENT_CLOSED_REQUEST || status == BAD_GATEWAY || status == SERVICE_UNAVAILABLE =>
+          logger.warn(s"[OutStandingChargesReads][read] Downstream Timeout Error Response $status returned from DES with body: ${response.body}")
           Left(UnexpectedOutStandingChargeResponse(status, response.body))
         case status if status >= BAD_REQUEST && status < INTERNAL_SERVER_ERROR =>
-          logger.error(s"$status returned from DES with body: ${response.body}")
+          logger.error(s"[OutStandingChargesReads][read] $status returned from DES with body: ${response.body}")
           Left(UnexpectedOutStandingChargeResponse(status, response.body))
         case status =>
-          logger.error(s"Unexpected Response with status: $status")
+          logger.error(s"[OutStandingChargesReads][read] Unexpected Response with status: $status")
           Left(OutStandingChargeErrorResponse)
       }
     }
