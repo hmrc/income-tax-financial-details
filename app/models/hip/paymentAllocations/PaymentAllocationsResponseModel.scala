@@ -34,14 +34,12 @@ object PaymentAllocationsNotFound {
   implicit val format: OFormat[PaymentAllocationsNotFound] = Json.format[PaymentAllocationsNotFound]
 }
 
-case class PaymentAllocationsResponseModel(success: PaymentAllocationsSuccess)
+case class PaymentAllocationsResponseModel(paymentDetails: Seq[PaymentAllocations])
 
 object PaymentAllocationsResponseModel {
-  implicit val format: OFormat[PaymentAllocationsResponseModel] = Json.format[PaymentAllocationsResponseModel]
-}
-
-case class PaymentAllocationsSuccess(paymentDetails: Seq[PaymentAllocations])
-
-object PaymentAllocationsSuccess {
-  implicit val format: OFormat[PaymentAllocationsSuccess] = Json.format[PaymentAllocationsSuccess]
+  implicit val writes: Writes[PaymentAllocationsResponseModel] = Json.writes[PaymentAllocationsResponseModel]
+  implicit val reads: Reads[PaymentAllocationsResponseModel] = Reads { json =>
+    (json \ "success" \ "paymentDetails").validate[Seq[PaymentAllocations]]
+      .map(PaymentAllocationsResponseModel.apply)
+  }
 }

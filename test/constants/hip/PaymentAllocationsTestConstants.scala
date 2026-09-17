@@ -27,8 +27,7 @@ object PaymentAllocationsTestConstants {
 
   val paymentAllocationsResponseModelFull: PaymentAllocationsResponseModel = {
     PaymentAllocationsResponseModel(
-      success = PaymentAllocationsSuccess(
-          Seq(PaymentAllocations(
+          paymentDetails = Seq(PaymentAllocations(
             amount = Some(1220.34),
             method = Some("A"),
             reference = Some("1594"),
@@ -45,13 +44,11 @@ object PaymentAllocationsTestConstants {
             ))
           ))
         )
-      )
   }
 
   val paymentAllocationsResponseModelFullJson: JsValue = Json.parse(
     """
       |{
-      |  "success" : {
       |    "paymentDetails" : [ {
       |      "amount" : 1220.34,
       |      "method" : "A",
@@ -68,7 +65,6 @@ object PaymentAllocationsTestConstants {
       |        "chargeReference" : "1594"
       |      } ]
       |    } ]
-      |  }
       |}""".stripMargin
   )
 
