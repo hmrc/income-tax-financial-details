@@ -18,7 +18,8 @@ package controllers
 
 import helpers.ComponentSpecBase
 import helpers.servicemocks.HipGetChargeHistoryStub.stubGetChargeHistory
-import models.hip.chargeHistory._
+import models.hip.chargeHistory.*
+import models.hip.chargeHistory.ChargeClassification.`Rejected Correction`
 import play.api.http.Status.{INTERNAL_SERVER_ERROR, NOT_FOUND, OK, UNPROCESSABLE_ENTITY}
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.WSResponse
@@ -47,7 +48,8 @@ class ChargeHistoryControllerISpec extends ComponentSpecBase {
         |        "totalAmount" : 25678.99,
         |        "reversalDate" : "2022-03-14T09:30:45Z",
         |        "reversalReason" : "Manual amendment",
-        |        "poaAdjustmentReason" : "005"
+        |        "poaAdjustmentReason" : "005",
+        |        "chargeClassification": "RC"
         |      } ]
         |    }
         |  }
@@ -79,7 +81,8 @@ class ChargeHistoryControllerISpec extends ComponentSpecBase {
               totalAmount = 25678.99,
               reversalDate = LocalDateTime.of(LocalDate.of(2022, 3, 14), LocalTime.of(9, 30, 45)),
               reversalReason = "Manual amendment",
-              poaAdjustmentReason = Some("005")
+              poaAdjustmentReason = Some("005"),
+              chargeClassification = Some(`Rejected Correction`)
             )
           ))))
 

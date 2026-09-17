@@ -17,8 +17,9 @@
 package connectors.hip
 
 import helpers.{ComponentSpecBase, WiremockHelper}
-import models.hip.chargeHistory._
-import play.api.http.Status._
+import models.hip.chargeHistory.*
+import models.hip.chargeHistory.ChargeClassification.`Rejected Correction`
+import play.api.http.Status.*
 import play.api.libs.json.{JsValue, Json}
 
 import java.time.{LocalDate, LocalDateTime, LocalTime}
@@ -38,7 +39,8 @@ class GetChargeHistoryConnectorISpec extends ComponentSpecBase {
     totalAmount = 25678.99,
     reversalDate = LocalDateTime.of(LocalDate.of(2022, 3, 14), LocalTime.of(9, 30, 45)),
     reversalReason = "Manual amendment",
-    poaAdjustmentReason = Some("005")
+    poaAdjustmentReason = Some("005"),
+    chargeClassification = Some(`Rejected Correction`)
   )
 
   val chargeHistoryDetails: ChargeHistoryDetails = ChargeHistoryDetails(
@@ -75,7 +77,8 @@ class GetChargeHistoryConnectorISpec extends ComponentSpecBase {
       |        "totalAmount" : 25678.99,
       |        "reversalDate" : "2022-03-14T09:30:45Z",
       |        "reversalReason" : "Manual amendment",
-      |        "poaAdjustmentReason" : "005"
+      |        "poaAdjustmentReason" : "005",
+      |        "chargeClassification": "RC"
       |      } ]
       |    }
       |  }
