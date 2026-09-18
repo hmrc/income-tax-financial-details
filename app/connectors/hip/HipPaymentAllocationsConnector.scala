@@ -55,27 +55,29 @@ class HipPaymentAllocationsConnector @Inject()(val httpClient: HttpClientV2, val
       .map { response =>
         response.status match {
           case OK =>
-            response.json.validate[PaymentAllocationsResponseModel].fold(
-              invalid => {
-                logger.error(s"Validation errors: $invalid")
-                Left(PaymentAllocationsError(INTERNAL_SERVER_ERROR.toString, "Json validation error attempting to parse PaymentAllocationsResponseModel"))
-              },
-              valid => {
-                logger.info("Successfully parsed response to PaymentAllocationsResponseModel")
-                Right(valid)
-              })
+            response.json.validate[PaymentAllocationsResponseModel] match {
+              case JsSuccess(result, _) => result.paymentDetails.headOption match {
+                case Some(paymentAllocations) => Right(paymentAllocations)
+                case None =>
+                  logger.error("Unable to parse payment allocations response")
+                  Left(PaymentAllocationsError)
+              }
+              case JsError(errors) =>
+                logger.error(s"Json validation error. Reasons: $errors")
+                Left(PaymentAllocationsError)
+            }
           case NOT_FOUND =>
-            logger.warn(s"RESPONSE status: ${response.status}, body: ${response.body}")
-            Left(PaymentAllocationsNotFound(NOT_FOUND.toString, "Payment allocations not found"))
+            logger.info("No allocations found for payment")
+            Left(PaymentAllocationsNotFound)
           case UNPROCESSABLE_ENTITY => Left(handleUnprocessableStatusResponse(response))
           case _ =>
-            logger.error(s"RESPONSE status: ${response.status}, body: ${response.body}")
-            Left(PaymentAllocationsError(response.status.toString, "Unexpected error retrieving payment allocations"))
+            logger.error(s"RESPONSE from HIP status: -  ${response.status}, body -  ${response.body}")
+            Left(PaymentAllocationsError)
         }
       } recover {
       case ex =>
         logger.error(s"Unexpected failed future, ${ex.getMessage}")
-        Left(PaymentAllocationsError(INTERNAL_SERVER_ERROR.toString, "Unexpected failed future"))
+        Left(PaymentAllocationsError)
     }
   }
 
@@ -84,15 +86,15 @@ class HipPaymentAllocationsConnector @Inject()(val httpClient: HttpClientV2, val
     unprocessableResponse.json.validate[HipResponseErrorsObject] match {
       case JsError(errors) =>
         logger.error(s"${unprocessableResponse.status} returned from HIP with body: ${unprocessableResponse.body}")
-        PaymentAllocationsError(NOT_FOUND.toString, s"Errors: $errors")
+        PaymentAllocationsError
       case JsSuccess(success, _) =>
         success match {
           case error: HipResponseErrorsObject if notFoundCodes.contains(error.errors.code) =>
             logger.info("Data not found, converting to 404 response")
-            PaymentAllocationsNotFound(NOT_FOUND.toString, s"Error code returned: ${error.errors.code}, text: ${error.errors.text}")
+            PaymentAllocationsNotFound
           case _ =>
             logger.error(s"${unprocessableResponse.status} returned from HIP with body: ${unprocessableResponse.body}")
-            PaymentAllocationsError(unprocessableResponse.status.toString, s"Errors ${success.errors.text}")
+            PaymentAllocationsError
         }
     }
   }

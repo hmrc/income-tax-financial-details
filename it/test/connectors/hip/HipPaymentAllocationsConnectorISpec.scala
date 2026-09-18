@@ -35,23 +35,25 @@ class HipPaymentAllocationsConnectorISpec extends ComponentSpecBase {
 
   val url: String = s"/etmp/RESTAdapter/payment-allocation/NINO/$nino/ITSA?paymentLot=$paymentLot&paymentLotItem=$paymentLotItem"
 
-  val paymentAllocationsResponseModel: PaymentAllocationsResponseModel = PaymentAllocationsResponseModel(
-    paymentDetails = Seq(PaymentAllocations(
-      amount = Some(12345.45),
-      method = Some("B"),
-      reference = Some("2222"),
-      transactionDate = Some(LocalDate.of(2024, 5, 12)),
-      allocations = Seq(AllocationDetail(
-        transactionId = Some("1234567890"),
-        from = Some(LocalDate.of(2024, 5, 10)),
-        to = Some(LocalDate.of(2025, 5, 30)),
-        chargeType = Some("1481"),
-        mainType = Some("4915"),
-        amount = Some(3892.90),
-        clearedAmount = Some(1511.13),
-        chargeReference = Some("1234567890")
-      ))
+  val paymentAllocationsSingle: PaymentAllocations = PaymentAllocations(
+    amount = Some(12345.45),
+    method = Some("B"),
+    reference = Some("2222"),
+    transactionDate = Some(LocalDate.of(2024, 5, 12)),
+    allocations = Seq(AllocationDetail(
+      transactionId = Some("1234567890"),
+      from = Some(LocalDate.of(2024, 5, 10)),
+      to = Some(LocalDate.of(2025, 5, 30)),
+      chargeType = Some("1481"),
+      mainType = Some("4915"),
+      amount = Some(3892.90),
+      clearedAmount = Some(1511.13),
+      chargeReference = Some("1234567890")
     ))
+  )
+
+  val paymentAllocationsResponseModel: PaymentAllocationsResponseModel = PaymentAllocationsResponseModel(
+    paymentDetails = Seq(paymentAllocationsSingle)
   )
 
   val paymentAllocationsResponseModelApi: JsObject = Json.obj(
@@ -87,7 +89,7 @@ class HipPaymentAllocationsConnectorISpec extends ComponentSpecBase {
           WiremockHelper.stubGet(url, OK, paymentAllocationsResponseModelApi.toString)
           val result = connector.getPaymentAllocations(nino, paymentLot, paymentLotItem).futureValue
 
-          result shouldBe Right(paymentAllocationsResponseModel)
+          result shouldBe Right(paymentAllocationsSingle)
         }
 
         "return a PaymentAllocationsError when the response cannot be parsed" in {
@@ -95,7 +97,7 @@ class HipPaymentAllocationsConnectorISpec extends ComponentSpecBase {
           WiremockHelper.stubGet(url, OK, invalidJson.toString)
           val result = connector.getPaymentAllocations(nino, paymentLot, paymentLotItem).futureValue
 
-          result shouldBe Left(PaymentAllocationsError(INTERNAL_SERVER_ERROR.toString, "Json validation error attempting to parse PaymentAllocationsResponseModel"))
+          result shouldBe Left(PaymentAllocationsError)
         }
       }
 
@@ -104,7 +106,7 @@ class HipPaymentAllocationsConnectorISpec extends ComponentSpecBase {
           WiremockHelper.stubGet(url, NOT_FOUND, "{}")
           val result = connector.getPaymentAllocations(nino, paymentLot, paymentLotItem).futureValue
 
-          result shouldBe Left(PaymentAllocationsNotFound(NOT_FOUND.toString, "Payment allocations not found"))
+          result shouldBe Left(PaymentAllocationsNotFound)
         }
       }
 
@@ -114,7 +116,7 @@ class HipPaymentAllocationsConnectorISpec extends ComponentSpecBase {
           WiremockHelper.stubGet(url, UNPROCESSABLE_ENTITY, jsonError.toString)
           val result = connector.getPaymentAllocations(nino, paymentLot, paymentLotItem).futureValue
 
-          result shouldBe Left(PaymentAllocationsNotFound(NOT_FOUND.toString, "Error code returned: 003, text: Request could not be processed"))
+          result shouldBe Left(PaymentAllocationsNotFound)
         }
       }
 
@@ -123,7 +125,7 @@ class HipPaymentAllocationsConnectorISpec extends ComponentSpecBase {
           WiremockHelper.stubGet(url, INTERNAL_SERVER_ERROR, "{}")
           val result = connector.getPaymentAllocations(nino, paymentLot, paymentLotItem).futureValue
 
-          result shouldBe Left(PaymentAllocationsError(INTERNAL_SERVER_ERROR.toString, "Unexpected error retrieving payment allocations"))
+          result shouldBe Left(PaymentAllocationsError)
         }
       }
     }

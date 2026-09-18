@@ -104,6 +104,14 @@ object PaymentAllocationsTestConstants {
     chargeReference = Some("1594")
   )
 
+  val paymentAllocationSingle = PaymentAllocations(
+    amount = Some(1220.34),
+    method = Some("A"),
+    reference = Some("1594"),
+    transactionDate = Some(LocalDate.of(2026, 5, 12)),
+    allocations = Seq(allocationDetail)
+  )
+
   val successResponseFromApi = HttpResponse(OK, paymentAllocationsResponseFromApi.toString, Map.empty)
   val badSuccessFromApi = HttpResponse(OK, Json.obj("badSuccess" -> Json.obj()).toString, Map.empty)
   val notFoundFromApi = HttpResponse(NOT_FOUND, "{}", Map.empty)

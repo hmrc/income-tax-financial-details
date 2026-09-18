@@ -20,19 +20,11 @@ import play.api.libs.json.*
 
 sealed trait PaymentAllocationsResponseError
 
-case class PaymentAllocationsError(code: String, text: String) extends PaymentAllocationsResponseError
+case object PaymentAllocationsError extends PaymentAllocationsResponseError
 
-case class PaymentAllocationsNotFound(code: String, text: String) extends PaymentAllocationsResponseError
+case object PaymentAllocationsNotFound extends PaymentAllocationsResponseError
 
-type HipPaymentAllocationsResponse = Either[PaymentAllocationsResponseError, PaymentAllocationsResponseModel]
-
-object PaymentAllocationsError {
-  implicit val format: OFormat[PaymentAllocationsError] = Json.format[PaymentAllocationsError]
-}
-
-object PaymentAllocationsNotFound {
-  implicit val format: OFormat[PaymentAllocationsNotFound] = Json.format[PaymentAllocationsNotFound]
-}
+type HipPaymentAllocationsResponse = Either[PaymentAllocationsResponseError, PaymentAllocations]
 
 case class PaymentAllocationsResponseModel(paymentDetails: Seq[PaymentAllocations])
 

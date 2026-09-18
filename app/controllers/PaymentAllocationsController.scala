@@ -45,7 +45,7 @@ class PaymentAllocationsController @Inject()(authentication: AuthenticationPredi
           paymentLotItem = paymentLotItem
         ) map {
           case Right(paymentAllocations) => Ok(Json.toJson(paymentAllocations))
-          case Left(notFound: PaymentAllocationsNotFound) => NotFound("No payment allocations found")
+          case Left(PaymentAllocationsNotFound) => NotFound("No payment allocations found")
           case Left(_) => InternalServerError("Failed to retrieve payment allocations")
         }
       } else {
