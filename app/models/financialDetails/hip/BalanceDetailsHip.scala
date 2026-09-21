@@ -51,7 +51,8 @@ case class BalanceDetailsHip(
                               /* Currency amount. 13-digits total with 2 decimal places */
                               totalCreditAvailableForRepayment: Option[BigDecimal] = None,
                               /* Currency amount. 13-digits total with 2 decimal places */
-                              allocatedCreditForFutureCharges: Option[BigDecimal] = None //renamed from allocatedCreditForChargesBecomingDueIn30Days
+                              allocatedCreditForFutureCharges: Option[BigDecimal] = None, //renamed from allocatedCreditForChargesBecomingDueIn30Days
+                              totalFormalAndInformal: Option[BigDecimal] = None
                             )
 
 object BalanceDetailsHip {
@@ -71,7 +72,8 @@ object BalanceDetailsHip {
       (__ \ "firstPendingAmountRequested").readNullable[BigDecimal] and
       (__ \ "secondPendingAmountRequested").readNullable[BigDecimal] and
       (__ \ "totalCreditAvailableForRepayment").readNullable[BigDecimal] and
-      (__ \ "allocatedCreditForChargesBecomingDueIn30Days").readNullable[BigDecimal]
+      (__ \ "allocatedCreditForChargesBecomingDueIn30Days").readNullable[BigDecimal] and
+      (__ \ "totalFormalAndInformal").readNullable[BigDecimal]
     )(BalanceDetailsHip.apply _)
 
 }

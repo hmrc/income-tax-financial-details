@@ -47,7 +47,8 @@ case class DocumentDetailHip(
                               lpiWithDunningLock: Option[BigDecimal] = None,
                               interestOutstandingAmount: Option[BigDecimal] = None,
                               amountCodedOut: Option[BigDecimal] = None,
-                              chargeClassification: Option[String] = None
+                              chargeClassification: Option[String] = None,
+                              totalSoAmt: Option[BigDecimal] = None
                             )
 
 
