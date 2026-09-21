@@ -65,7 +65,8 @@ object FinancialDetailIntegrationTestConstants {
           "amountCodedOut" -> 3.21,
           "effectiveDateOfPayment" -> LocalDate.parse("2018-03-29"),
           "poaRelevantAmount" -> 1000.00,
-          "statisticalFlag" -> ""
+          "statisticalFlag" -> "",
+          "collectableAmt" -> 450.00
         ),
         Json.obj(
           "taxYear" -> "2019",
@@ -194,6 +195,7 @@ object FinancialDetailIntegrationTestConstants {
     poaRelevantAmount = Some(1000.00),
     accruingInterestAmount = Some(12.34),
     statisticalFlag = "",
+    collectableAmt = Some(450.00)
   )
 
   val documentDetail2: DocumentDetailHip = DocumentDetailHip(

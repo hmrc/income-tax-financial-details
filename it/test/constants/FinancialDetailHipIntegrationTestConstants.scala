@@ -65,6 +65,7 @@ object FinancialDetailHipIntegrationTestConstants {
     interestOutstandingAmount = Some(31.00),
     amountCodedOut = Some(3.21),
     statisticalFlag = "",
+    collectableAmt = Some(450.00)
   )
 
   val financialDetailsHip: FinancialDetailHip = FinancialDetailHip(
