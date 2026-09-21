@@ -167,7 +167,8 @@ object FinancialDataTestConstants {
     documentDueDate = Some(LocalDate.parse("2019-03-29")),
     poaRelevantAmount = Some(1000.00),
     accruingInterestAmount = Some(12.34),
-    chargeClassification = Some("RA")
+    chargeClassification = Some("RA"),
+    collectableAmt = Some(350.00)
   )
 
   val documentDetail2: DocumentDetailHip = DocumentDetailHip(

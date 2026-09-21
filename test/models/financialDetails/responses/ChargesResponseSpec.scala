@@ -182,7 +182,8 @@ class ChargesResponseSpec extends AnyWordSpec with Matchers {
       "interestOutstandingAmount" -> 31.00,
       "amountCodedOut" -> 3.21,
       "accruingInterestAmount" -> 12.34,
-      "chargeClassification" -> "RA"
+      "chargeClassification" -> "RA",
+      "collectableAmt" -> 350.00
     )),
     "financialDetails" -> Json.arr(Json.parse(
       """{
