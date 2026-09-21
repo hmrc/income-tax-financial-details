@@ -91,7 +91,6 @@ class MicroserviceAppConfig @Inject()(servicesConfig: ServicesConfig) {
           Seq(
             ("X-Originating-System", "MDTPITVC"),
             ("X-Receipt-Date", DateUtils.nowAsUtc),
-            ("X-Regime-Type", "ITSA"),
             ("X-Transmitting-System", "HIP")
           )
         case _ => Seq.empty

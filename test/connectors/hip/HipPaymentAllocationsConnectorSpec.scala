@@ -82,7 +82,6 @@ class HipPaymentAllocationsConnectorSpec extends TestSupport with MockHttpV2 {
         getHeaders.exists(_._1 == "correlationId") shouldBe true
         getHeaders.exists(_._1 == "X-Originating-System") shouldBe true
         getHeaders.exists(_._1 == "X-Receipt-Date") shouldBe true
-        getHeaders.exists(_._1 == "X-Regime-Type") shouldBe true
         getHeaders.exists(_._1 == "X-Transmitting-System") shouldBe true
 
         getPaymentAllocations(testNino, testPaymentLot, testPaymentLotItem).futureValue shouldBe Right(paymentAllocationSingle)
