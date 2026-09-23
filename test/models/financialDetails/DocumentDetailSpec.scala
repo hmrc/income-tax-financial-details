@@ -101,7 +101,8 @@ class DocumentDetailSpec extends AnyWordSpec with Matchers {
     "poaRelevantAmount" -> Some(1000.00),
     "statisticalFlag" -> "",
     "accruingInterestAmount" -> 12.34,
-    "chargeClassification" -> Some("RA")
+    "chargeClassification" -> Some("RA"),
+    "collectableAmt" -> 350.00
   )
 
   val documentDetailFullJsonWrite: JsValue = Json.obj(
@@ -127,7 +128,8 @@ class DocumentDetailSpec extends AnyWordSpec with Matchers {
     "documentDueDate" -> LocalDate.parse("2019-03-29"),
     "poaRelevantAmount" -> Some(1000.00),
     "accruingInterestAmount" -> 12.34,
-    "chargeClassification" -> "RA"
+    "chargeClassification" -> "RA",
+    "collectableAmt" -> 350.00
   )
 
   val documentDetailLpiWithDunningLockJsonRead: JsValue =
