@@ -16,9 +16,12 @@
 
 package controllers
 
+import config.MicroserviceAppConfig
 import services.PaymentAllocationsService
 import connectors.httpParsers.PaymentAllocationsHttpParser.NotFoundResponse
 import controllers.predicates.AuthenticationPredicate
+import models.hip.GetPaymentAllocationsHipApi
+import models.hip.paymentAllocations.PaymentAllocationsNotFound
 import play.api.libs.json.Json
 import play.api.mvc.*
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -29,19 +32,32 @@ import scala.concurrent.ExecutionContext
 @Singleton
 class PaymentAllocationsController @Inject()(authentication: AuthenticationPredicate,
                                              cc: ControllerComponents,
-                                             paymentAllocationsService: PaymentAllocationsService)
+                                             paymentAllocationsService: PaymentAllocationsService,
+                                             appConfig: MicroserviceAppConfig)
                                             (implicit ec: ExecutionContext) extends BackendController(cc) {
 
   def getPaymentAllocations(nino: String, paymentLot: String, paymentLotItem: String): Action[AnyContent] = {
     authentication.async { implicit request =>
-      paymentAllocationsService.getPaymentAllocations(
-        nino = nino,
-        paymentLot = paymentLot,
-        paymentLotItem = paymentLotItem
-      ) map {
-        case Right(paymentAllocations) => Ok(Json.toJson(paymentAllocations))
-        case Left(NotFoundResponse) => NotFound("No payment allocations found")
-        case Left(_) => InternalServerError("Failed to retrieve payment allocations")
+      if (appConfig.hipFeatureSwitchEnabled(GetPaymentAllocationsHipApi)) {
+        paymentAllocationsService.getPaymentAllocationsHip(
+          nino = nino,
+          paymentLot = paymentLot,
+          paymentLotItem = paymentLotItem
+        ) map {
+          case Right(paymentAllocations) => Ok(Json.toJson(paymentAllocations))
+          case Left(PaymentAllocationsNotFound) => NotFound("No payment allocations found")
+          case Left(_) => InternalServerError("Failed to retrieve payment allocations")
+        }
+      } else {
+        paymentAllocationsService.getPaymentAllocations(
+          nino = nino,
+          paymentLot = paymentLot,
+          paymentLotItem = paymentLotItem
+        ) map {
+          case Right(paymentAllocations) => Ok(Json.toJson(paymentAllocations))
+          case Left(NotFoundResponse) => NotFound("No payment allocations found")
+          case Left(_) => InternalServerError("Failed to retrieve payment allocations")
+        }
       }
     }
   }

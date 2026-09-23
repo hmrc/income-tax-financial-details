@@ -48,7 +48,8 @@ case class DocumentDetailHip(
                               interestOutstandingAmount: Option[BigDecimal] = None,
                               amountCodedOut: Option[BigDecimal] = None,
                               chargeClassification: Option[String] = None,
-                              totalSoAmt: Option[BigDecimal] = None
+                              totalSoAmt: Option[BigDecimal] = None,
+                              collectableAmt: Option[BigDecimal] = None
                             )
 
 

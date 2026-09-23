@@ -14,24 +14,23 @@
  * limitations under the License.
  */
 
-package models.hip.chargeHistory
+package models.hip.paymentAllocation
 
-import constants.hip.ChargeHistoryTestConstants.{chargeHistoryDetails, chargeHistoryDetailsJsonReads, chargeHistoryDetailsJsonWrites}
+import constants.hip.PaymentAllocationsTestConstants.{paymentAllocationsResponseFromApi, paymentAllocationsResponseModelFull, paymentAllocationsResponseModelFullJson}
+import models.hip.paymentAllocations.PaymentAllocationsResponseModel
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.{JsSuccess, Json}
 
-class ChargeHistoryDetailsSpec extends AnyWordSpec with Matchers {
+class PaymentAllocationsResponseModelSpec extends AnyWordSpec with Matchers {
 
-  "ChargeHistoryDetails" should {
-    "write to JSON" in {
-      val result = Json.toJson(chargeHistoryDetails)
-      result shouldBe chargeHistoryDetailsJsonWrites
+  "PaymentAllocationsResponseModelSpec" should {
+    "read from json" in {
+      Json.fromJson[PaymentAllocationsResponseModel](paymentAllocationsResponseFromApi) shouldBe JsSuccess(paymentAllocationsResponseModelFull)
     }
 
-    "read from JSON" in {
-      val result = Json.fromJson[ChargeHistoryDetails](chargeHistoryDetailsJsonReads)
-      result shouldBe JsSuccess(chargeHistoryDetails)
+    "write to json" in {
+      Json.toJson(paymentAllocationsResponseModelFull) shouldBe paymentAllocationsResponseModelFullJson
     }
   }
 }

@@ -16,9 +16,12 @@
 
 package controllers
 
+import config.MicroserviceAppConfig
 import connectors.httpParsers.PaymentAllocationsHttpParser.{NotFoundResponse, UnexpectedResponse}
 import controllers.predicates.AuthenticationPredicate
 import mocks.MockMicroserviceAuthConnector
+import models.hip.GetPaymentAllocationsHipApi
+import models.hip.paymentAllocations.{AllocationDetail, PaymentAllocations, PaymentAllocationsError, PaymentAllocationsNotFound}
 import models.paymentAllocations.{paymentAllocationsFull, paymentAllocationsWriteJsonFull}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.when
@@ -28,33 +31,120 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import services.PaymentAllocationsService
 
+import java.time.LocalDate
 import scala.concurrent.Future
 
 class PaymentAllocationsControllerSpec extends ControllerBaseSpec with MockMicroserviceAuthConnector {
 
   val controllerComponents: ControllerComponents = stubControllerComponents()
-  val mockService = mock[PaymentAllocationsService]
+  val mockService: PaymentAllocationsService = mock[PaymentAllocationsService]
+  val mockAppConfig: MicroserviceAppConfig = mock[MicroserviceAppConfig]
+  val authPredicate = new AuthenticationPredicate(mockMicroserviceAuthConnector, controllerComponents, microserviceAppConfig)
+
   object PaymentAllocationsController extends PaymentAllocationsController(
-    authentication = new AuthenticationPredicate(mockMicroserviceAuthConnector, controllerComponents, microserviceAppConfig),
+    authentication = authPredicate,
     cc = controllerComponents,
-    paymentAllocationsService = mockService
+    paymentAllocationsService = mockService,
+    appConfig = mockAppConfig
   )
 
   val nino: String = "AA000000A"
   val paymentLot: String = "paymentLot"
   val paymentLotItem: String = "paymentLotItem"
 
-  "getPaymentAllocations" should {
+  "getPaymentAllocations" when {
+    "the GetPaymentAllocationsHipApi feature switch is disabled" should {
+      s"return $OK with the retrieved payment allocations" when {
+        "the connector returns the payment allocations" in {
+          mockAuth()
+          when(mockAppConfig.hipFeatureSwitchEnabled(GetPaymentAllocationsHipApi)).thenReturn(false)
+
+          when(
+            mockService.getPaymentAllocations(
+              ArgumentMatchers.eq(nino),
+              ArgumentMatchers.eq(paymentLot),
+              ArgumentMatchers.eq(paymentLotItem)
+            )(ArgumentMatchers.any(), ArgumentMatchers.any())
+          ).thenReturn(Future.successful(Right(paymentAllocationsFull)))
+
+          val result = PaymentAllocationsController.getPaymentAllocations(nino, paymentLot, paymentLotItem)(FakeRequest())
+
+          status(result) shouldBe OK
+          contentAsJson(result) shouldBe paymentAllocationsWriteJsonFull
+        }
+      }
+      s"return a $NOT_FOUND response" when {
+        "the service returns a NotFoundResponse" in {
+          mockAuth()
+          when(mockAppConfig.hipFeatureSwitchEnabled(GetPaymentAllocationsHipApi)).thenReturn(false)
+
+          when(
+            mockService.getPaymentAllocations(
+              ArgumentMatchers.eq(nino),
+              ArgumentMatchers.eq(paymentLot),
+              ArgumentMatchers.eq(paymentLotItem)
+            )(ArgumentMatchers.any(), ArgumentMatchers.any())
+          ).thenReturn(Future.successful(Left(NotFoundResponse)))
+
+          val result = PaymentAllocationsController.getPaymentAllocations(nino, paymentLot, paymentLotItem)(FakeRequest())
+
+          status(result) shouldBe NOT_FOUND
+          contentAsString(result) shouldBe "No payment allocations found"
+        }
+      }
+
+      s"return $INTERNAL_SERVER_ERROR" when {
+        "the service returns an error" in {
+          mockAuth()
+          when(mockAppConfig.hipFeatureSwitchEnabled(GetPaymentAllocationsHipApi)).thenReturn(false)
+
+          when(
+            mockService.getPaymentAllocations(
+              ArgumentMatchers.eq(nino),
+              ArgumentMatchers.eq(paymentLot),
+              ArgumentMatchers.eq(paymentLotItem)
+            )(ArgumentMatchers.any(), ArgumentMatchers.any())
+          ).thenReturn(Future.successful(Left(UnexpectedResponse)))
+
+          val result = PaymentAllocationsController.getPaymentAllocations(nino, paymentLot, paymentLotItem)(FakeRequest())
+
+          status(result) shouldBe INTERNAL_SERVER_ERROR
+          contentAsString(result) shouldBe "Failed to retrieve payment allocations"
+        }
+      }
+    }
+  }
+
+  "the GetPaymentAllocationsHipApi feature switch is enabled" should {
     s"return $OK with the retrieved payment allocations" when {
       "the connector returns the payment allocations" in {
+
+        val paymentAllocationsFullHip: PaymentAllocations = PaymentAllocations(
+          amount = Some(500.00),
+          method = Some("method"),
+          reference = Some("reference"),
+          transactionDate = Some(LocalDate.of(2022, 6, 23)),
+          allocations = Seq(AllocationDetail(
+            transactionId = Some("transactionId"),
+            from = Some(LocalDate.of(2022, 6, 23)),
+            to = Some(LocalDate.of(2022, 6, 23)),
+            chargeType = Some("type"),
+            mainType = Some("mainType"),
+            amount = Some(1000.00),
+            clearedAmount = Some(500.00),
+            chargeReference = Some("chargeReference")
+          ))
+        )
         mockAuth()
+        when(mockAppConfig.hipFeatureSwitchEnabled(GetPaymentAllocationsHipApi)).thenReturn(true)
+
         when(
-          mockService.getPaymentAllocations(
+          mockService.getPaymentAllocationsHip(
             ArgumentMatchers.eq(nino),
             ArgumentMatchers.eq(paymentLot),
             ArgumentMatchers.eq(paymentLotItem)
           )(ArgumentMatchers.any(), ArgumentMatchers.any())
-        ).thenReturn(Future.successful(Right(paymentAllocationsFull)))
+        ).thenReturn(Future.successful(Right(paymentAllocationsFullHip)))
 
         val result = PaymentAllocationsController.getPaymentAllocations(nino, paymentLot, paymentLotItem)(FakeRequest())
 
@@ -65,13 +155,15 @@ class PaymentAllocationsControllerSpec extends ControllerBaseSpec with MockMicro
     s"return a $NOT_FOUND response" when {
       "the service returns a NotFoundResponse" in {
         mockAuth()
+        when(mockAppConfig.hipFeatureSwitchEnabled(GetPaymentAllocationsHipApi)).thenReturn(true)
+
         when(
-          mockService.getPaymentAllocations(
+          mockService.getPaymentAllocationsHip(
             ArgumentMatchers.eq(nino),
             ArgumentMatchers.eq(paymentLot),
             ArgumentMatchers.eq(paymentLotItem)
           )(ArgumentMatchers.any(), ArgumentMatchers.any())
-        ).thenReturn(Future.successful(Left(NotFoundResponse)))
+        ).thenReturn(Future.successful(Left(PaymentAllocationsNotFound)))
 
         val result = PaymentAllocationsController.getPaymentAllocations(nino, paymentLot, paymentLotItem)(FakeRequest())
 
@@ -83,13 +175,15 @@ class PaymentAllocationsControllerSpec extends ControllerBaseSpec with MockMicro
     s"return $INTERNAL_SERVER_ERROR" when {
       "the service returns an error" in {
         mockAuth()
+        when(mockAppConfig.hipFeatureSwitchEnabled(GetPaymentAllocationsHipApi)).thenReturn(true)
+
         when(
-          mockService.getPaymentAllocations(
+          mockService.getPaymentAllocationsHip(
             ArgumentMatchers.eq(nino),
             ArgumentMatchers.eq(paymentLot),
             ArgumentMatchers.eq(paymentLotItem)
           )(ArgumentMatchers.any(), ArgumentMatchers.any())
-        ).thenReturn(Future.successful(Left(UnexpectedResponse)))
+        ).thenReturn(Future.successful(Left(PaymentAllocationsError)))
 
         val result = PaymentAllocationsController.getPaymentAllocations(nino, paymentLot, paymentLotItem)(FakeRequest())
 
@@ -98,5 +192,4 @@ class PaymentAllocationsControllerSpec extends ControllerBaseSpec with MockMicro
       }
     }
   }
-
 }
