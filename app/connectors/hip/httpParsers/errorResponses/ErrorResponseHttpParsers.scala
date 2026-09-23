@@ -29,7 +29,7 @@ trait ErrorResponseHttpParsers extends Logging {
   type HttpGetResult[T] = Either[ErrorResponse, T]
 
   val CLIENT_CLOSED_REQUEST = 499
-  private val isDownstreamTransientError: PartialFunction[Int, Boolean] = {
+  private[httpParsers] val isDownstreamTransientError: PartialFunction[Int, Boolean] = {
     case CLIENT_CLOSED_REQUEST | BAD_GATEWAY | SERVICE_UNAVAILABLE | GATEWAY_TIMEOUT => true
   }
 
