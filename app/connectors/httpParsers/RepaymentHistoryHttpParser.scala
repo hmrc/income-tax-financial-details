@@ -17,7 +17,7 @@
 package connectors.httpParsers
 
 import models.repaymentHistory.RepaymentHistorySuccessResponse
-import play.api.http.Status.OK
+import play.api.http.Status.{BAD_GATEWAY, OK, SERVICE_UNAVAILABLE}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
 object RepaymentHistoryHttpParser extends ResponseHttpParsers {
@@ -25,23 +25,26 @@ object RepaymentHistoryHttpParser extends ResponseHttpParsers {
   sealed trait RepaymentHistoryError
 
   case class UnexpectedRepaymentHistoryResponse(code: Int, response: String) extends RepaymentHistoryError
-
   case object RepaymentHistoryErrorResponse extends RepaymentHistoryError
 
   type RepaymentHistoryResponse = Either[RepaymentHistoryError, RepaymentHistorySuccessResponse]
 
-
   implicit object RepaymentHistoryReads extends HttpReads[RepaymentHistoryResponse] {
+    val CLIENT_CLOSED_REQUEST = 499
+
     override def read(method: String, url: String, response: HttpResponse): RepaymentHistoryResponse = {
       response.status match {
         case OK =>
-          logger.info("successfully parsed response to List[RepaymentHistory]")
+          logger.info("[RepaymentHistoryHttpParser][read] successfully parsed response to List[RepaymentHistory]")
           Right(response.json.as[RepaymentHistorySuccessResponse])
+        case status if status == CLIENT_CLOSED_REQUEST || status == BAD_GATEWAY || status == SERVICE_UNAVAILABLE =>
+          logger.warn(s"[RepaymentHistoryHttpParser][read] Unexpected Response with status: $status")
+          Left(RepaymentHistoryErrorResponse)
         case status if status >= 400 && status < 500 =>
-          logger.error(s"$status returned from DES with body: ${response.body}")
+          logger.error(s"[RepaymentHistoryHttpParser][read] $status returned from DES with body: ${response.body}")
           Left(UnexpectedRepaymentHistoryResponse(status, response.body))
         case status =>
-          logger.error(s"Unexpected Response with status: $status")
+          logger.error(s"[RepaymentHistoryHttpParser][read] Unexpected Response with status: $status")
           Left(RepaymentHistoryErrorResponse)
       }
     }

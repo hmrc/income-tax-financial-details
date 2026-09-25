@@ -27,7 +27,7 @@ import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 object RepaymentsHistoryDetailsHttpParser extends ErrorResponseHttpParsers{
 
   given RepaymentsHistoryDetailsReads: HttpReads[HttpGetResult[SuccessfulRepaymentResponse]] with {
-
+    
     override def read(method: String, url: String, response: HttpResponse): HttpGetResult[SuccessfulRepaymentResponse] = {
       response.status match {
         case OK =>
@@ -37,7 +37,9 @@ object RepaymentsHistoryDetailsHttpParser extends ErrorResponseHttpParsers{
           logger.info(s"${response.status} returned from HiP with body: ${response.body}, checking for data not found scenario")
           handleUnprocessableStatusCode(response)
         case status =>
-          logger.error(s"Call to RepaymentsHistory failed with status: $status and response body: ${response.body}")
+          if (!isDownstreamTransientError.isDefinedAt(status)) {
+            logger.error(s"Call to RepaymentsHistory failed with status: $status and response body: ${response.body}")
+          }
           handleErrorResponse(response)
       }
     }

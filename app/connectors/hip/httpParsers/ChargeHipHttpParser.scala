@@ -20,7 +20,7 @@ import connectors.hip.httpParsers.errorResponses.ErrorResponseHttpParsers
 import connectors.httpParsers.ChargeHttpParser.{ChargeResponseError, UnexpectedChargeErrorResponse, UnexpectedChargeResponse}
 import models.financialDetails.hip.ChargesHipResponse
 import models.hip.HipResponseErrorsObject
-import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, NETWORK_AUTHENTICATION_REQUIRED, NOT_FOUND, UNPROCESSABLE_ENTITY}
+import play.api.http.Status.{BAD_GATEWAY, BAD_REQUEST, INTERNAL_SERVER_ERROR, NETWORK_AUTHENTICATION_REQUIRED, NOT_FOUND, SERVICE_UNAVAILABLE, UNPROCESSABLE_ENTITY}
 
 object ChargeHipHttpParser extends ErrorResponseHttpParsers {
 
@@ -31,28 +31,33 @@ object ChargeHipHttpParser extends ErrorResponseHttpParsers {
   type ChargeHipResponse = Either[ChargeResponseError, ChargesHipResponse]
 
   implicit object ChargeHipReads extends HttpReads[ChargeHipResponse] {
+    val CLIENT_CLOSED_REQUEST = 499
+
     override def read(method: String, url: String, response: HttpResponse): ChargeHipResponse = {
       response.status match {
         case OK =>
           response.json.validate[ChargesHipResponse] match {
             case JsError(errors) =>
-              logger.error("Unable to parse response into HipChargesResponse - " + errors)
+              logger.error("[ChargeHipHttpParser][read] Unable to parse response into HipChargesResponse - " + errors)
               Left(UnexpectedChargeErrorResponse)
 
             case JsSuccess(value, _) =>
               Right(value)
           }
         case status if status == UNPROCESSABLE_ENTITY =>
-          logger.info(s"$status returned from HiP with body: ${response.body}, checking for data not found scenario")
+          logger.info(s"[ChargeHipHttpParser][read] $status returned from HiP with body: ${response.body}, checking for data not found scenario")
           handleUnprocessableStatusResponse(response)
+        case CLIENT_CLOSED_REQUEST | BAD_GATEWAY | SERVICE_UNAVAILABLE =>
+          logger.warn(s"[ChargeHipHttpParser][read] Downstream Timeout Error Response status: ${response.status}, body: ${response.body}")
+          Left(UnexpectedChargeErrorResponse)
         case status if status >= BAD_REQUEST && status < INTERNAL_SERVER_ERROR =>
-          logger.error(s"$status returned from HiP with body: ${response.body}")
+          logger.error(s"[ChargeHipHttpParser][read] $status returned from HiP with body: ${response.body}")
           Left(UnexpectedChargeResponse(status, response.body))
         case status if status >= INTERNAL_SERVER_ERROR && status <= NETWORK_AUTHENTICATION_REQUIRED =>
-          logger.warn(s"$status returned from HiP with body: ${response.body}")
+          logger.warn(s"[ChargeHipHttpParser][read] $status returned from HiP with body: ${response.body}")
           Left(UnexpectedChargeErrorResponse)
         case status =>
-          logger.info(s"Unexpected Response from Hip with status: $status")
+          logger.info(s"[ChargeHipHttpParser][read] Unexpected Response from Hip with status: $status")
           Left(UnexpectedChargeErrorResponse)
       }
     }
@@ -61,19 +66,19 @@ object ChargeHipHttpParser extends ErrorResponseHttpParsers {
   private def handleUnprocessableStatusResponse(unprocessableResponse: HttpResponse): ChargeHipResponse = {
     unprocessableResponse.json.validate[HipResponseErrorsObject] match {
       case JsError(errors) =>
-        logger.error("Unable to parse response as Business Validation Error - " + errors)
-        logger.error(s"$unprocessableResponse.status returned from HiP with body: ${unprocessableResponse.body}")
+        logger.error("[ChargeHipHttpParser][handleUnprocessableStatusResponse] Unable to parse response as Business Validation Error - " + errors)
+        logger.error(s"[ChargeHipHttpParser][handleUnprocessableStatusResponse] $unprocessableResponse.status returned from HiP with body: ${unprocessableResponse.body}")
         Left(UnexpectedChargeResponse(unprocessableResponse.status, unprocessableResponse.body))
       case JsSuccess(success, _) =>
         success match {
           case error: HipResponseErrorsObject if error.errors.code == "005" =>
-            logger.info(s"Resource (NINO) not found code 005 identified, converting to 404 response")
+            logger.info(s"[ChargeHipHttpParser][handleUnprocessableStatusResponse] Resource (NINO) not found code 005 identified, converting to 404 response")
             Left(UnexpectedChargeResponse(NOT_FOUND, unprocessableResponse.body))
           case error: HipResponseErrorsObject if error.errors.code == "003" =>
-            logger.info(s"No charges found for NINO code 003 identified, converting to 404 response")
+            logger.info(s"[ChargeHipHttpParser][handleUnprocessableStatusResponse] No charges found for NINO code 003 identified, converting to 404 response")
             Left(UnexpectedChargeResponse(NOT_FOUND, unprocessableResponse.body))
           case _ =>
-            logger.error(s"$unprocessableResponse.status returned from HiP with body: ${unprocessableResponse.body}")
+            logger.error(s"[ChargeHipHttpParser][handleUnprocessableStatusResponse] $unprocessableResponse.status returned from HiP with body: ${unprocessableResponse.body}")
             Left(UnexpectedChargeResponse(unprocessableResponse.status, unprocessableResponse.body))
         }
     }

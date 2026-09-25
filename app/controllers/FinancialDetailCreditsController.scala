@@ -32,6 +32,9 @@ class FinancialDetailCreditsController @Inject()(authentication: AuthenticationP
                                                  financialDetailChargesService : FinancialDetailService)
                                                 (implicit ec: ExecutionContext) extends BackendController(cc) with Logging {
 
+  private def isDownstreamTimeout(status: Int): Boolean =
+    status == 499 || status == 502 || status == 503
+
   def getCredits(nino: String, fromDate: String, toDate: String): Action[AnyContent] = {
     authentication.async { implicit request =>
       financialDetailChargesService.getCredits(
@@ -40,16 +43,19 @@ class FinancialDetailCreditsController @Inject()(authentication: AuthenticationP
         toDate
       ) map {
         case Right(creditsAsJson) =>
-          logger.debug("Successful Response: " + creditsAsJson)
+          logger.debug("[FinancialDetailCreditsController][getCredits] Successful Response: " + creditsAsJson)
           Ok(creditsAsJson)
         case Left(error: UnexpectedChargeResponse) if error.code == NOT_FOUND =>
-          logger.info("404: " + error)
+          logger.info("[FinancialDetailCreditsController][getCredits] 404: " + error)
+          Status(error.code)(error.response)
+        case Left(error: UnexpectedChargeResponse) if isDownstreamTimeout(error.code) =>
+          logger.warn("[FinancialDetailCreditsController][getCredits] Downstream Timeout Error Response: " + error)
           Status(error.code)(error.response)
         case Left(error: UnexpectedChargeResponse) if error.code >= BAD_REQUEST && error.code < INTERNAL_SERVER_ERROR =>
-          logger.error("error: " + error)
+          logger.error("[FinancialDetailCreditsController][getCredits] error: " + error)
           Status(error.code)(error.response)
         case Left(otherError) =>
-          logger.error("other error: " + otherError)
+          logger.error("[FinancialDetailCreditsController][getCredits] other error: " + otherError)
           InternalServerError("Failed to retrieve charge details")
       }
     }
