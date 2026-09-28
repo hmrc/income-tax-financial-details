@@ -33,6 +33,9 @@ class FinancialDetailChargesController @Inject()(authentication: AuthenticationP
                                                  financialDetailChargesService : FinancialDetailService)
                                                 (implicit ec: ExecutionContext) extends BackendController(cc) with Logging {
 
+  private def isDownstreamTimeout(status: Int): Boolean =
+    status == 499 || status == 502 || status == 503
+
   def getChargeDetails(nino: String, fromDate: String, toDate: String): Action[AnyContent] = {
     authentication.async { implicit request =>
       financialDetailChargesService.getChargeDetails(
@@ -41,16 +44,19 @@ class FinancialDetailChargesController @Inject()(authentication: AuthenticationP
         toDate
       ) map {
         case Right(chargeDetailsAsJson) =>
-          logger.info("Successful Response: " + chargeDetailsAsJson)
+          logger.info("[FinancialDetailChargesController][getChargeDetails] Successful Response: " + chargeDetailsAsJson)
           Ok(chargeDetailsAsJson)
         case Left(error: UnexpectedChargeResponse) if error.code == NOT_FOUND =>
-          logger.info("404: " + error)
+          logger.info("[FinancialDetailChargesController][getChargeDetails] 404: " + error)
+          Status(error.code)(error.response)
+        case Left(error: UnexpectedChargeResponse) if isDownstreamTimeout(error.code) =>
+          logger.warn("[FinancialDetailChargesController][getChargeDetails] Downstream Timeout Error Response: " + error)
           Status(error.code)(error.response)
         case Left(error: UnexpectedChargeResponse) if error.code >= BAD_REQUEST && error.code < INTERNAL_SERVER_ERROR =>
-          logger.error("error: " + error)
+          logger.error("[FinancialDetailChargesController][getChargeDetails] error: " + error)
           Status(error.code)(error.response)
         case Left(otherError) =>
-          logger.error("other error: " + otherError)
+          logger.error("[FinancialDetailChargesController][getChargeDetails] other error: " + otherError)
           InternalServerError("Failed to retrieve charge details")
       }
     }
@@ -63,13 +69,16 @@ class FinancialDetailChargesController @Inject()(authentication: AuthenticationP
         documentId = documentId
       ) map {
         case Right(chargeDetails) =>
-          logger.debug("Successful Response: " + chargeDetails)
+          logger.debug("[FinancialDetailChargesController][getChargeDetails] Successful Response: " + chargeDetails)
           Ok(Json.toJson(chargeDetails))
+        case Left(error: UnexpectedChargeResponse) if isDownstreamTimeout(error.code) =>
+          logger.warn("[FinancialDetailChargesController][getChargeDetails] Downstream Timeout Error Response: " + error)
+          Status(error.code)(error.response)
         case Left(error: UnexpectedChargeResponse) if error.code >= 400 && error.code < 500 =>
-          logger.error("error: " + error)
+          logger.error("[FinancialDetailChargesController][getChargeDetails] error: " + error)
           Status(error.code)(error.response)
         case Left(otherError) =>
-          logger.error("other error: " + otherError)
+          logger.error("[FinancialDetailChargesController][getChargeDetails] other error: " + otherError)
           InternalServerError("Failed to retrieve payment allocation details")
       }
     }

@@ -20,7 +20,7 @@ import config.MicroserviceAppConfig
 import connectors.RawResponseReads
 import models.hip.chargeHistory.{ChargeHistoryError, ChargeHistoryNotFound, ChargeHistoryResponseError, ChargeHistorySuccessWrapper}
 import models.hip.{GetChargeHistoryHipApi, HipResponseErrorsObject}
-import play.api.http.Status.{INTERNAL_SERVER_ERROR, NOT_FOUND, OK, UNPROCESSABLE_ENTITY}
+import play.api.http.Status.{BAD_GATEWAY, INTERNAL_SERVER_ERROR, NOT_FOUND, OK, SERVICE_UNAVAILABLE, UNPROCESSABLE_ENTITY}
 import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
@@ -41,6 +41,7 @@ class GetChargeHistoryConnector @Inject()(val http: HttpClientV2,
                       (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[Either[ChargeHistoryResponseError, ChargeHistorySuccessWrapper]] = {
 
     val url = getChargeHistoryDetailsUrl("NINO", idValue, chargeReference)
+    val CLIENT_CLOSED_REQUEST = 499
 
     http
       .get(url"$url")
@@ -50,14 +51,14 @@ class GetChargeHistoryConnector @Inject()(val http: HttpClientV2,
         response =>
           response.status match {
             case OK =>
-              logger.debug(s"RESPONSE status:${response.status}") // TODO - MIPR-2637: Inform V&C team about no longer logging the response body
+              logger.debug(s"[GetChargeHistoryConnector][getChargeHistory] RESPONSE status:${response.status}") // TODO - MIPR-2637: Inform V&C team about no longer logging the response body
               response.json.validate[ChargeHistorySuccessWrapper].fold(
                 invalid => {
-                  logger.error(s"Validation Errors: $invalid")
+                  logger.error(s"[GetChargeHistoryConnector][getChargeHistory] Validation Errors: $invalid")
                   Left(ChargeHistoryError(INTERNAL_SERVER_ERROR, "Json validation error parsing ChargeHistorySuccess model"))
                 }, {
                   valid =>
-                  logger.info("Successfully parsed response to ChargeHistorySuccess model")
+                  logger.info("[GetChargeHistoryConnector][getChargeHistory] Successfully parsed response to ChargeHistorySuccess model")
                   Right(valid)
                 }
               )
@@ -65,13 +66,16 @@ class GetChargeHistoryConnector @Inject()(val http: HttpClientV2,
               logger.warn(s" RESPONSE status: ${response.status}, body: ${response.body}")
               Left(ChargeHistoryNotFound(response.status, response.body))
             case UNPROCESSABLE_ENTITY => Left(handleUnprocessableStatusResponse(response))
+            case CLIENT_CLOSED_REQUEST | BAD_GATEWAY | SERVICE_UNAVAILABLE =>
+              logger.warn(s"[GetChargeHistoryConnector][getChargeHistory] Downstream Timeout Error Response status: ${response.status}, body: ${response.body}")
+              Left(ChargeHistoryError(response.status, response.body))
             case _ =>
-              logger.error(s"RESPONSE status: ${response.status}, body: ${response.body}")
+              logger.error(s"[GetChargeHistoryConnector][getChargeHistory] RESPONSE status: ${response.status}, body: ${response.body}")
               Left(ChargeHistoryError(response.status, response.body))
           }
       } recover {
       case ex =>
-        logger.error(s"Unexpected failed future, ${ex.getMessage}")
+        logger.error(s"[GetChargeHistoryConnector][getChargeHistory] Unexpected failed future, ${ex.getMessage}")
         Left(ChargeHistoryError(INTERNAL_SERVER_ERROR, s"Unexpected failed future, ${ex.getMessage}"))
     }
   }
@@ -80,16 +84,16 @@ class GetChargeHistoryConnector @Inject()(val http: HttpClientV2,
     val notFoundCodes = Set("005", "014")
     unprocessableResponse.json.validate[HipResponseErrorsObject] match {
       case JsError(errors) =>
-        logger.error("Unable to parse response as Business Validation Error - " + errors)
-        logger.error(s"${unprocessableResponse.status} returned from HiP with body: ${unprocessableResponse.body}")
+        logger.error("[GetChargeHistoryConnector][getChargeHistory] Unable to parse response as Business Validation Error - " + errors)
+        logger.error(s"[GetChargeHistoryConnector][getChargeHistory] ${unprocessableResponse.status} returned from HiP with body: ${unprocessableResponse.body}")
         ChargeHistoryError(unprocessableResponse.status, unprocessableResponse.body)
       case JsSuccess(success, _) =>
         success match {
           case error: HipResponseErrorsObject if notFoundCodes.contains(error.errors.code) =>
-            logger.info(s"Resource not found code identified, code:${error.errors.code}, converting to 404 response")
+            logger.info(s"[GetChargeHistoryConnector][getChargeHistory] Resource not found code identified, code:${error.errors.code}, converting to 404 response")
             ChargeHistoryNotFound(NOT_FOUND, unprocessableResponse.body)
           case _ =>
-            logger.error(s"${unprocessableResponse.status} returned from HiP with body: ${unprocessableResponse.body}")
+            logger.error(s"[GetChargeHistoryConnector][getChargeHistory] ${unprocessableResponse.status} returned from HiP with body: ${unprocessableResponse.body}")
             ChargeHistoryError(unprocessableResponse.status, unprocessableResponse.body)
         }
     }

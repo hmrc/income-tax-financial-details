@@ -18,11 +18,13 @@ package connectors.httpParsers
 
 import models.paymentAllocations.{PaymentAllocations, PaymentDetails}
 import play.api.Logging
-import play.api.http.Status.{NOT_FOUND, OK}
+import play.api.http.Status.{BAD_GATEWAY, NOT_FOUND, OK, SERVICE_UNAVAILABLE}
 import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
 object PaymentAllocationsHttpParser extends Logging {
+
+  val CLIENT_CLOSED_REQUEST = 499
 
   sealed trait PaymentAllocationsError
 
@@ -36,28 +38,31 @@ object PaymentAllocationsHttpParser extends Logging {
     override def read(method: String, url: String, response: HttpResponse): PaymentAllocationsResponse = {
       response.status match {
         case OK =>
-          logger.debug("got OK PaymentAllocations response") // TODO - MIPR-2637: Inform V&C team about no longer logging the response body
+          logger.debug("[PaymentAllocationsHttpParser][read] got OK PaymentAllocations response") // TODO - MIPR-2637: Inform V&C team about no longer logging the response body
           response.json.validate[PaymentDetails] match {
             case JsSuccess(result, _) => result.paymentDetails.headOption match {
               case Some(paymentAllocations) =>
-                logger.info("successfully parsed response to PaymentAllocations") // TODO - MIPR-2637: Inform V&C team about no longer logging the response body
+                logger.info("[PaymentAllocationsHttpParser][read] successfully parsed response to PaymentAllocations") // TODO - MIPR-2637: Inform V&C team about no longer logging the response body
                 Right(paymentAllocations)
               case None =>
-                logger.error("could not parse response")
+                logger.error("[PaymentAllocationsHttpParser][read] could not parse response")
                 Left(UnexpectedResponse)
             }
             case JsError(errors) =>
-              logger.error(s"Json validation error. Reasons: ${errors}")
+              logger.error(s"[PaymentAllocationsHttpParser][read] Json validation error. Reasons: ${errors}")
               Left(UnexpectedResponse)
           }
         case NOT_FOUND =>
-          logger.info("no allocations found for payment")
+          logger.info("[PaymentAllocationsHttpParser][read] no allocations found for payment")
           Left(NotFoundResponse)
+        case CLIENT_CLOSED_REQUEST | BAD_GATEWAY | SERVICE_UNAVAILABLE =>
+          logger.warn(s"[PaymentAllocationsHttpParser][read] Downstream Timeout Error Response status: ${response.status}, body: ${response.body}")
+          Left(UnexpectedResponse)
         case status if status >= 400 && status < 500 =>
-          logger.error(s"Unexpected Response with status: $status")
+          logger.error(s"[PaymentAllocationsHttpParser][read] Unexpected Response with status: $status")
           Left(UnexpectedResponse)
         case status =>
-          logger.error(s"$status returned from DES with body: ${response.body}")
+          logger.error(s"[PaymentAllocationsHttpParser][read] $status returned from DES with body: ${response.body}")
           Left(UnexpectedResponse)
       }
     }
