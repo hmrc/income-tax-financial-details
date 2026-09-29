@@ -33,7 +33,8 @@ class TransactionSpec extends AnyWordSpec with Matchers {
         dueDate = Some(LocalDate.parse("2025-03-31")),
         documentDate = Some(LocalDate.parse("2025-03-31")),
         effectiveDateOfPayment = Some(LocalDate.parse("2025-03-31")),
-        transactionId = "TXN12345"
+        transactionId = "TXN12345",
+        dunningLock = false
       )
 
       val json = Json.toJson(transaction)
@@ -45,7 +46,8 @@ class TransactionSpec extends AnyWordSpec with Matchers {
         "dueDate" -> "2025-03-31",
         "documentDate" -> "2025-03-31",
         "effectiveDateOfPayment" -> "2025-03-31",
-        "transactionId" -> "TXN12345"
+        "transactionId" -> "TXN12345",
+        "dunningLock" -> false
       )
 
       json shouldBe expectedJson
@@ -59,7 +61,8 @@ class TransactionSpec extends AnyWordSpec with Matchers {
         "dueDate" -> "2025-04-15",
         "documentDate" -> "2025-04-15",
         "effectiveDateOfPayment" -> "2025-04-15",
-        "transactionId" -> "TXN67890"
+        "transactionId" -> "TXN67890",
+        "dunningLock" -> false
       )
 
       val result = json.as[Transaction]
@@ -71,7 +74,8 @@ class TransactionSpec extends AnyWordSpec with Matchers {
         dueDate = Some(LocalDate.parse("2025-04-15")),
         documentDate = Some(LocalDate.parse("2025-04-15")),
         effectiveDateOfPayment = Some(LocalDate.parse("2025-04-15")),
-        transactionId = "TXN67890"
+        transactionId = "TXN67890",
+        dunningLock = false
       )
     }
 
@@ -83,7 +87,8 @@ class TransactionSpec extends AnyWordSpec with Matchers {
         dueDate = None,
         documentDate = None,
         effectiveDateOfPayment = None,
-        transactionId = "TXN999"
+        transactionId = "TXN999",
+        dunningLock = false
       )
 
       val json = Json.toJson(transaction)
