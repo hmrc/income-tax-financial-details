@@ -27,6 +27,7 @@ case class Transaction(transactionType: TransactionType,
                        documentDate: Option[LocalDate],
                        effectiveDateOfPayment: Option[LocalDate],
                        transactionId: String,
+                       dunningLock: Boolean,
                        chargeClassification: Option[String] = None
                       )
 
