@@ -16,6 +16,8 @@ val jsoupVersion = "1.22.1"
 val currentScalaVersion = "3.3.6"
 val mongoVersion = "2.12.0"
 
+val wErrorScalacOption: String = "-Werror"
+
 val compile: Seq[ModuleID] = Seq(
   PlayImport.ws,
   "uk.gov.hmrc" %% "bootstrap-backend-play-30"   % bootstrapPlayVersion,
@@ -70,7 +72,10 @@ lazy val microservice = Project(appName, file("."))
   .settings(defaultSettings(): _*)
   .settings(majorVersion := 1)
   .settings(RoutesKeys.routesImport -= "controllers.Assets.Asset")
-  .settings(scalacOptions += "-Xfatal-warnings")
+  .settings(scalacOptions ++= Seq(
+    "-unchecked",
+    wErrorScalacOption)
+  )
   .settings(scalacOptions += "-deprecation:false")
   .settings(
     libraryDependencies ++= appDependencies,
@@ -111,6 +116,10 @@ lazy val it = project
   .settings(majorVersion := 1)
   .settings(
     testForkedParallel := true
+  )
+  .settings(scalacOptions ++= Seq(
+    "-unchecked",
+    wErrorScalacOption)
   )
   .settings(
     libraryDependencies ++= appDependenciesIt
