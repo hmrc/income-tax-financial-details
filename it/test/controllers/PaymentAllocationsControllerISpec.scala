@@ -18,8 +18,8 @@ package controllers
 
 import constants.BaseIntegrationTestConstants.*
 import helpers.ComponentSpecBase
-import helpers.servicemocks.DesPaymentAllocationsStub.*
-import models.paymentAllocations.{AllocationDetail, PaymentAllocations}
+import helpers.servicemocks.HipPaymentAllocationsStub.*
+import models.hip.paymentAllocations.{AllocationDetail, PaymentAllocations}
 import play.api.http.Status.*
 import play.api.libs.json.{JsObject, Json}
 import play.api.libs.ws.WSResponse
@@ -48,22 +48,24 @@ class PaymentAllocationsControllerISpec extends ComponentSpecBase {
   )
 
   val paymentAllocationsJson: JsObject = Json.obj(
-    "paymentDetails" -> Json.arr(
-      Json.obj(
-        "paymentAmount" -> 1000.00,
-        "paymentMethod" -> "method",
-        "valueDate" -> "2022-06-23",
-        "paymentReference" -> "reference",
-        "sapClearingDocsDetails" -> Json.arr(
-          Json.obj(
-            "sapDocNumber" -> "transactionId",
-            "taxPeriodStartDate" -> "2022-06-23",
-            "taxPeriodEndDate" -> "2022-06-23",
-            "chargeType" -> "type",
-            "mainType" -> "mainType",
-            "amount" -> 1500.00,
-            "clearedAmount" -> 500.00,
-            "chargeReference" -> "chargeReference"
+    "success" -> Json.obj(
+      "paymentDetails" -> Json.arr(
+        Json.obj(
+          "paymentAmount" -> 1000.00,
+          "paymentMethod" -> "method",
+          "valueDate" -> "2022-06-23",
+          "paymentReference" -> "reference",
+          "sapClearingDocsDetails" -> Json.arr(
+            Json.obj(
+              "sapDocNumber" -> "transactionId",
+              "taxPeriodStartDate" -> "2022-06-23",
+              "taxPeriodEndDate" -> "2022-06-23",
+              "chargeType" -> "type",
+              "mainType" -> "mainType",
+              "amount" -> 1500.00,
+              "clearedAmount" -> 500.00,
+              "chargeReference" -> "chargeReference"
+            )
           )
         )
       )
