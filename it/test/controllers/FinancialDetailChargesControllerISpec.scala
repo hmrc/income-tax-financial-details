@@ -22,7 +22,7 @@ import helpers.ComponentSpecBase
 import helpers.servicemocks.DesChargesStub.*
 import models.financialDetails.hip.ChargesHipResponse
 import play.api.http.Status.*
-import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
+import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.WSResponse
 
 class FinancialDetailChargesControllerISpec extends ComponentSpecBase {
