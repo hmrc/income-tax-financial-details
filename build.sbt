@@ -16,11 +16,14 @@ val jsoupVersion = "1.22.1"
 val currentScalaVersion = "3.3.6"
 val mongoVersion = "2.12.0"
 
-val wErrorScalacOption: String = "-Werror"
+val commonScalacOptions: Seq[String] = Seq(
+  "-deprecation",
+  "-unchecked",
+  "-Werror")
 
 val compile: Seq[ModuleID] = Seq(
   PlayImport.ws,
-  "uk.gov.hmrc" %% "bootstrap-backend-play-30"   % bootstrapPlayVersion,
+  "uk.gov.hmrc" %% "bootstrap-backend-play-30" % bootstrapPlayVersion,
   "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-30" % mongoVersion
 )
 
@@ -31,7 +34,7 @@ def test(scope: String = "test"): Seq[ModuleID] = Seq(
   "org.mockito" % "mockito-core" % mockitoVersion % scope,
   "com.github.tomakehurst" % "wiremock" % wiremockVersion % scope,
   "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.21.1",
-  "org.scalatest"       %% "scalatest"              % "3.2.19" % scope,
+  "org.scalatest" %% "scalatest" % "3.2.19" % scope,
   "uk.gov.hmrc.mongo" %% "hmrc-mongo-test-play-30" % mongoVersion % Test,
   caffeine
 )
@@ -41,7 +44,7 @@ def it(scope: String = "test"): Seq[ModuleID] = Seq(
   "org.jsoup" % "jsoup" % jsoupVersion % scope,
   "org.mockito" % "mockito-core" % mockitoVersion % scope,
   "com.github.tomakehurst" % "wiremock" % wiremockVersion % scope,
-  "org.scalatest"       %% "scalatest"              % "3.2.19",
+  "org.scalatest" %% "scalatest" % "3.2.19",
   "uk.gov.hmrc.mongo" %% "hmrc-mongo-test-play-30" % mongoVersion % Test,
   caffeine
 )
@@ -72,11 +75,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(defaultSettings(): _*)
   .settings(majorVersion := 1)
   .settings(RoutesKeys.routesImport -= "controllers.Assets.Asset")
-  .settings(scalacOptions ++= Seq(
-    "-unchecked",
-    wErrorScalacOption)
-  )
-  .settings(scalacOptions += "-deprecation:false")
+  .settings(scalacOptions ++= commonScalacOptions)
   .settings(
     libraryDependencies ++= appDependencies,
     retrieveManaged := true
@@ -95,7 +94,6 @@ lazy val microservice = Project(appName, file("."))
   .settings(ThisBuild / scalacOptions += "-Wconf:msg=Flag.*repeatedly:s")
   .settings(
     scalacOptions --= Seq("-Wunused", "-Wunused:all"),
-    scalacOptions += "-deprecation",
     Test / scalacOptions ++= Seq(
       "-Wunused:imports",
       "-Wunused:params",
@@ -114,14 +112,7 @@ lazy val it = project
   )
   .settings(scalaVersion := currentScalaVersion)
   .settings(majorVersion := 1)
-  .settings(
-    testForkedParallel := true
-  )
-  .settings(scalacOptions ++= Seq(
-    "-unchecked",
-    wErrorScalacOption)
-  )
-  .settings(
-    libraryDependencies ++= appDependenciesIt
-  )
+  .settings(testForkedParallel := true)
+  .settings(scalacOptions ++= commonScalacOptions)
+  .settings(libraryDependencies ++= appDependenciesIt)
   .settings(ThisBuild / scalacOptions += "-Wconf:msg=Flag.*repeatedly:s")
