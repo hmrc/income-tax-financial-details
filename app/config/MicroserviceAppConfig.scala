@@ -75,7 +75,7 @@ class MicroserviceAppConfig @Inject()(servicesConfig: ServicesConfig) {
       hipApi match {
         case GetChargeHistoryHipApi =>
           Seq(
-            ("X-Originating-System", "MDTPITVC"),
+            ("X-Originating-System", "MDTP"),
             ("X-Receipt-Date", DateUtils.nowAsUtc),
             ("X-Regime-Type", "ITSA"),
             ("X-Transmitting-System", "HIP")
@@ -83,13 +83,13 @@ class MicroserviceAppConfig @Inject()(servicesConfig: ServicesConfig) {
         case GetRepaymentHistoryDetails =>
           Seq(
             ("X-Transmitting-System", "HIP"),
-            ("X-Originating-System", "MDTPITVC"),
+            ("X-Originating-System", "MDTP"),
             ("X-Receipt-Date", DateUtils.nowAsUtc),
             ("X-Regime-Type", "ITSA")
           )
         case GetPaymentAllocationsHipApi =>
           Seq(
-            ("X-Originating-System", "MDTPITVC"),
+            ("X-Originating-System", "MDTP"),
             ("X-Receipt-Date", DateUtils.nowAsUtc),
             ("X-Transmitting-System", "HIP")
           )

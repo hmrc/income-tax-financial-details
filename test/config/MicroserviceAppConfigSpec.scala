@@ -16,7 +16,7 @@
 
 package config
 
-import models.hip.{GetLegacyCalcListHipApi}
+import models.hip.{GetChargeHistoryHipApi, GetLegacyCalcListHipApi, GetPaymentAllocationsHipApi, GetRepaymentHistoryDetails}
 import utils.TestSupport
 
 class MicroserviceAppConfigSpec extends TestSupport {
@@ -62,7 +62,33 @@ class MicroserviceAppConfigSpec extends TestSupport {
 
         // because these are extracted from app~Config
         microserviceAppConfig.getHIPHeaders(GetLegacyCalcListHipApi).toMap.keys.toList should contain theSameElementsAs List("Authorization", "correlationId")
+      }
 
+      "has the correct API-specific header values" in {
+        val expectedHeaders = Seq(
+          GetChargeHistoryHipApi -> Seq(
+            "X-Originating-System" -> "MDTP",
+            "X-Regime-Type" -> "ITSA",
+            "X-Transmitting-System" -> "HIP"
+          ),
+          GetRepaymentHistoryDetails -> Seq(
+            "X-Originating-System" -> "MDTP",
+            "X-Regime-Type" -> "ITSA",
+            "X-Transmitting-System" -> "HIP"
+          ),
+          GetPaymentAllocationsHipApi -> Seq(
+            "X-Originating-System" -> "MDTP",
+            "X-Transmitting-System" -> "HIP"
+          )
+        )
+
+        expectedHeaders.foreach { case (hipApi, headers) =>
+          val actualHeaders = microserviceAppConfig.getHIPHeaders(hipApi).toMap
+          headers.foreach { case (name, value) =>
+            actualHeaders(name) shouldBe value
+          }
+          actualHeaders("X-Receipt-Date") should fullyMatch regex "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z"
+        }
       }
     }
   }
