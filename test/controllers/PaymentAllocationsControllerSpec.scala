@@ -132,7 +132,8 @@ class PaymentAllocationsControllerSpec extends ControllerBaseSpec with MockMicro
             mainType = Some("mainType"),
             amount = Some(1000.00),
             clearedAmount = Some(500.00),
-            chargeReference = Some("chargeReference")
+            chargeReference = Some("chargeReference"),
+            mainTransaction = Some("4920")
           ))
         )
         mockAuth()

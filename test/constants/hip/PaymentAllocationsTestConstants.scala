@@ -40,7 +40,8 @@ object PaymentAllocationsTestConstants {
               mainType = Some("SA Payment on Account 1"),
               amount = Some(1220.34),
               clearedAmount = Some(1220.34),
-              chargeReference = Some("1594")
+              chargeReference = Some("1594"),
+              mainTransaction = Some("4920")
             ))
           ))
         )
@@ -62,7 +63,8 @@ object PaymentAllocationsTestConstants {
       |        "mainType" : "SA Payment on Account 1",
       |        "amount" : 1220.34,
       |        "clearedAmount" : 1220.34,
-      |        "chargeReference" : "1594"
+      |        "chargeReference" : "1594",
+      |        "mainTransaction": "4920"
       |      } ]
       |    } ]
       |}""".stripMargin
@@ -85,7 +87,8 @@ object PaymentAllocationsTestConstants {
               "mainType" -> "SA Payment on Account 1",
               "amount" -> 1220.34,
               "clearedAmount" -> 1220.34,
-              "chargeReference" -> "1594"
+              "chargeReference" -> "1594",
+              "mainTransaction" -> "4920"
             )
           )
         )
@@ -101,7 +104,8 @@ object PaymentAllocationsTestConstants {
     mainType = Some("SA Payment on Account 1"),
     amount = Some(1220.34),
     clearedAmount = Some(1220.34),
-    chargeReference = Some("1594")
+    chargeReference = Some("1594"),
+    mainTransaction = Some("4920")
   )
 
   val paymentAllocationSingle = PaymentAllocations(
